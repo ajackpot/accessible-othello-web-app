@@ -1,0 +1,599 @@
+{
+  "benchmark": "Stage 200 specialized few-empties last-flip path benchmark",
+  "description": "Benchmarks a Stage 200 candidate that threads diskDiff through the specialized 1~4 empties exact family and short-circuits the last 1-empty leaf through flip-count evaluation. The benchmark keeps all other exact-tail optimizations fixed and isolates specializedFewEmptiesLastFlipPath.",
+  "notes": [
+    "candidate / baseline elapsed ratios below 1 mean the last-flip path is faster.",
+    "The direct micro is intentionally narrow and only targets one-empty leaves, which is the part of the specialized family that changed the most.",
+    "WLD 12 is a control bucket where the exact specialized path should stay unused, so any delta there is mostly noise or secondary runtime interaction."
+  ],
+  "directOneEmptyMicro": {
+    "kind": "micro",
+    "label": "direct_one_empty_last_flip_micro",
+    "seeds": [
+      2,
+      5,
+      11,
+      19,
+      23,
+      37,
+      41,
+      47
+    ],
+    "rounds": 2,
+    "repetitionsPerRound": 200,
+    "baseline": {
+      "elapsedMs": 49.059,
+      "smallSolverNodes": 5000,
+      "specializedFewEmptiesLastFlipCalls": 0
+    },
+    "candidate": {
+      "elapsedMs": 24.894,
+      "smallSolverNodes": 4000,
+      "specializedFewEmptiesLastFlipCalls": 4000
+    },
+    "elapsedRatioCandidateVsBaseline": 0.507,
+    "smallSolverNodeRatioCandidateVsBaseline": 0.8,
+    "baselineSamples": [
+      {
+        "elapsedMs": 88.097,
+        "totalScore": -4000000,
+        "smallSolverNodes": 4000,
+        "specializedFewEmptiesLastFlipCalls": 0
+      },
+      {
+        "elapsedMs": 10.022,
+        "totalScore": -4000000,
+        "smallSolverNodes": 6000,
+        "specializedFewEmptiesLastFlipCalls": 0
+      }
+    ],
+    "candidateSamples": [
+      {
+        "elapsedMs": 22.97,
+        "totalScore": -4000000,
+        "smallSolverNodes": 3200,
+        "specializedFewEmptiesLastFlipCalls": 3200
+      },
+      {
+        "elapsedMs": 26.818,
+        "totalScore": -4000000,
+        "smallSolverNodes": 4800,
+        "specializedFewEmptiesLastFlipCalls": 4800
+      }
+    ]
+  },
+  "exact10": {
+    "kind": "search",
+    "label": "exact_10_boundary",
+    "targetEmpties": 10,
+    "seeds": [
+      7,
+      13,
+      19,
+      25
+    ],
+    "rounds": 1,
+    "summary": {
+      "cases": 4,
+      "identicalBestMoves": 4,
+      "identicalScores": 4,
+      "identicalModes": 4,
+      "identicalNodes": 4,
+      "baselineElapsedMs": 635.25,
+      "candidateElapsedMs": 608.177,
+      "elapsedRatioCandidateVsBaseline": 0.957,
+      "baselineNodes": 67,
+      "candidateNodes": 67,
+      "nodeRatioCandidateVsBaseline": 1,
+      "baselineLastFlipCalls": 0,
+      "candidateLastFlipCalls": 6984
+    },
+    "cases": [
+      {
+        "seed": 7,
+        "empties": 10,
+        "currentPlayer": "black",
+        "legalMoves": 6,
+        "baseline": {
+          "bestMove": "A1",
+          "score": 80000,
+          "mode": "exact-endgame",
+          "nodes": 22,
+          "elapsedMs": 248.994,
+          "smallSolverNodes": 5539,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A1",
+          "score": 80000,
+          "mode": "exact-endgame",
+          "nodes": 22,
+          "elapsedMs": 283.927,
+          "smallSolverNodes": 5185,
+          "specializedFewEmptiesLastFlipCalls": 1844
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 248.994,
+            "bestMove": "A1",
+            "score": 80000,
+            "mode": "exact-endgame",
+            "nodes": 22,
+            "smallSolverNodes": 5539,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 283.927,
+            "bestMove": "A1",
+            "score": 80000,
+            "mode": "exact-endgame",
+            "nodes": 22,
+            "smallSolverNodes": 5185,
+            "specializedFewEmptiesLastFlipCalls": 1844
+          }
+        ]
+      },
+      {
+        "seed": 13,
+        "empties": 10,
+        "currentPlayer": "black",
+        "legalMoves": 2,
+        "baseline": {
+          "bestMove": "C8",
+          "score": -260000,
+          "mode": "exact-endgame",
+          "nodes": 10,
+          "elapsedMs": 78.278,
+          "smallSolverNodes": 1155,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "C8",
+          "score": -260000,
+          "mode": "exact-endgame",
+          "nodes": 10,
+          "elapsedMs": 50.349,
+          "smallSolverNodes": 1114,
+          "specializedFewEmptiesLastFlipCalls": 379
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 78.278,
+            "bestMove": "C8",
+            "score": -260000,
+            "mode": "exact-endgame",
+            "nodes": 10,
+            "smallSolverNodes": 1155,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 50.349,
+            "bestMove": "C8",
+            "score": -260000,
+            "mode": "exact-endgame",
+            "nodes": 10,
+            "smallSolverNodes": 1114,
+            "specializedFewEmptiesLastFlipCalls": 379
+          }
+        ]
+      },
+      {
+        "seed": 19,
+        "empties": 10,
+        "currentPlayer": "black",
+        "legalMoves": 2,
+        "baseline": {
+          "bestMove": "A6",
+          "score": -440000,
+          "mode": "exact-endgame",
+          "nodes": 22,
+          "elapsedMs": 182.86,
+          "smallSolverNodes": 7919,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A6",
+          "score": -440000,
+          "mode": "exact-endgame",
+          "nodes": 22,
+          "elapsedMs": 159.874,
+          "smallSolverNodes": 7365,
+          "specializedFewEmptiesLastFlipCalls": 2793
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 182.86,
+            "bestMove": "A6",
+            "score": -440000,
+            "mode": "exact-endgame",
+            "nodes": 22,
+            "smallSolverNodes": 7919,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 159.874,
+            "bestMove": "A6",
+            "score": -440000,
+            "mode": "exact-endgame",
+            "nodes": 22,
+            "smallSolverNodes": 7365,
+            "specializedFewEmptiesLastFlipCalls": 2793
+          }
+        ]
+      },
+      {
+        "seed": 25,
+        "empties": 10,
+        "currentPlayer": "black",
+        "legalMoves": 2,
+        "baseline": {
+          "bestMove": "A3",
+          "score": -480000,
+          "mode": "exact-endgame",
+          "nodes": 13,
+          "elapsedMs": 125.118,
+          "smallSolverNodes": 5921,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A3",
+          "score": -480000,
+          "mode": "exact-endgame",
+          "nodes": 13,
+          "elapsedMs": 114.027,
+          "smallSolverNodes": 5083,
+          "specializedFewEmptiesLastFlipCalls": 1968
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 125.118,
+            "bestMove": "A3",
+            "score": -480000,
+            "mode": "exact-endgame",
+            "nodes": 13,
+            "smallSolverNodes": 5921,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 114.027,
+            "bestMove": "A3",
+            "score": -480000,
+            "mode": "exact-endgame",
+            "nodes": 13,
+            "smallSolverNodes": 5083,
+            "specializedFewEmptiesLastFlipCalls": 1968
+          }
+        ]
+      }
+    ]
+  },
+  "exact12": {
+    "kind": "search",
+    "label": "exact_12_deeper",
+    "targetEmpties": 12,
+    "seeds": [
+      7,
+      19
+    ],
+    "rounds": 1,
+    "summary": {
+      "cases": 2,
+      "identicalBestMoves": 2,
+      "identicalScores": 2,
+      "identicalModes": 2,
+      "identicalNodes": 2,
+      "baselineElapsedMs": 1413.273,
+      "candidateElapsedMs": 1333.967,
+      "elapsedRatioCandidateVsBaseline": 0.944,
+      "baselineNodes": 547,
+      "candidateNodes": 547,
+      "nodeRatioCandidateVsBaseline": 1,
+      "baselineLastFlipCalls": 0,
+      "candidateLastFlipCalls": 17752
+    },
+    "cases": [
+      {
+        "seed": 7,
+        "empties": 12,
+        "currentPlayer": "black",
+        "legalMoves": 8,
+        "baseline": {
+          "bestMove": "C8",
+          "score": 200000,
+          "mode": "exact-endgame",
+          "nodes": 221,
+          "elapsedMs": 604.073,
+          "smallSolverNodes": 20084,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "C8",
+          "score": 200000,
+          "mode": "exact-endgame",
+          "nodes": 221,
+          "elapsedMs": 585.728,
+          "smallSolverNodes": 18468,
+          "specializedFewEmptiesLastFlipCalls": 6575
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 604.073,
+            "bestMove": "C8",
+            "score": 200000,
+            "mode": "exact-endgame",
+            "nodes": 221,
+            "smallSolverNodes": 20084,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 585.728,
+            "bestMove": "C8",
+            "score": 200000,
+            "mode": "exact-endgame",
+            "nodes": 221,
+            "smallSolverNodes": 18468,
+            "specializedFewEmptiesLastFlipCalls": 6575
+          }
+        ]
+      },
+      {
+        "seed": 19,
+        "empties": 12,
+        "currentPlayer": "black",
+        "legalMoves": 5,
+        "baseline": {
+          "bestMove": "A6",
+          "score": -300000,
+          "mode": "exact-endgame",
+          "nodes": 326,
+          "elapsedMs": 809.2,
+          "smallSolverNodes": 35670,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A6",
+          "score": -300000,
+          "mode": "exact-endgame",
+          "nodes": 326,
+          "elapsedMs": 748.239,
+          "smallSolverNodes": 32962,
+          "specializedFewEmptiesLastFlipCalls": 11177
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 809.2,
+            "bestMove": "A6",
+            "score": -300000,
+            "mode": "exact-endgame",
+            "nodes": 326,
+            "smallSolverNodes": 35670,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 748.239,
+            "bestMove": "A6",
+            "score": -300000,
+            "mode": "exact-endgame",
+            "nodes": 326,
+            "smallSolverNodes": 32962,
+            "specializedFewEmptiesLastFlipCalls": 11177
+          }
+        ]
+      }
+    ]
+  },
+  "wld12": {
+    "kind": "search",
+    "label": "wld_12_control",
+    "targetEmpties": 12,
+    "seeds": [
+      17,
+      31,
+      50
+    ],
+    "rounds": 1,
+    "summary": {
+      "cases": 3,
+      "identicalBestMoves": 3,
+      "identicalScores": 3,
+      "identicalModes": 3,
+      "identicalNodes": 3,
+      "baselineElapsedMs": 1210.811,
+      "candidateElapsedMs": 1204.906,
+      "elapsedRatioCandidateVsBaseline": 0.995,
+      "baselineNodes": 352,
+      "candidateNodes": 352,
+      "nodeRatioCandidateVsBaseline": 1,
+      "baselineLastFlipCalls": 0,
+      "candidateLastFlipCalls": 0
+    },
+    "cases": [
+      {
+        "seed": 17,
+        "empties": 12,
+        "currentPlayer": "black",
+        "legalMoves": 4,
+        "baseline": {
+          "bestMove": "A1",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 53,
+          "elapsedMs": 200.521,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A1",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 53,
+          "elapsedMs": 184.216,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 200.521,
+            "bestMove": "A1",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 53,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 184.216,
+            "bestMove": "A1",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 53,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ]
+      },
+      {
+        "seed": 31,
+        "empties": 12,
+        "currentPlayer": "black",
+        "legalMoves": 7,
+        "baseline": {
+          "bestMove": "G2",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 89,
+          "elapsedMs": 233.538,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "G2",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 89,
+          "elapsedMs": 244.64,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 233.538,
+            "bestMove": "G2",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 89,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 244.64,
+            "bestMove": "G2",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 89,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ]
+      },
+      {
+        "seed": 50,
+        "empties": 12,
+        "currentPlayer": "black",
+        "legalMoves": 8,
+        "baseline": {
+          "bestMove": "A8",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 210,
+          "elapsedMs": 776.752,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "candidate": {
+          "bestMove": "A8",
+          "score": -10000,
+          "mode": "wld-endgame",
+          "nodes": 210,
+          "elapsedMs": 776.05,
+          "smallSolverNodes": 0,
+          "specializedFewEmptiesLastFlipCalls": 0
+        },
+        "sameMove": true,
+        "sameScore": true,
+        "sameMode": true,
+        "sameNodes": true,
+        "baselineSamples": [
+          {
+            "elapsedMs": 776.752,
+            "bestMove": "A8",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 210,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ],
+        "candidateSamples": [
+          {
+            "elapsedMs": 776.05,
+            "bestMove": "A8",
+            "score": -10000,
+            "mode": "wld-endgame",
+            "nodes": 210,
+            "smallSolverNodes": 0,
+            "specializedFewEmptiesLastFlipCalls": 0
+          }
+        ]
+      }
+    ]
+  }
+}

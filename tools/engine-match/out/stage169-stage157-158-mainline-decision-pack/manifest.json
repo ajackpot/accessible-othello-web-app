@@ -1,0 +1,181 @@
+{
+  "generatedAt": "2026-04-20T05:10:26.920Z",
+  "scope": "stage154-mainline-only",
+  "rationale": "stage151 late3 family is currently deprioritized; this pack keeps the stage157 adopted mainline overlays plus the single surviving stage158 mainline overlay (s154-stable-zebra) while retired stage158 non-selected keys remain historical-only.",
+  "defaults": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "openingPlies": 20,
+    "gamesPerSeed": 1,
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60
+  },
+  "baselines": [
+    {
+      "id": "s154-main",
+      "label": "s154-main",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    },
+    {
+      "id": "s154-both",
+      "label": "s154-both",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json"
+    }
+  ],
+  "stage157Candidates": [
+    {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid",
+      "legacyAliases": [
+        "s154-wide-hybrid"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 5,
+      "tier": "aggressive",
+      "risk": "medium",
+      "notes": "Ordering pattern bank가 없는 stage154에서만 넓은 top-K + probe를 시도하는 stage157 closeout 채택 후보.",
+      "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+      "mpcStructureProfileKey": "verify-tight-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-wide-hybrid.json",
+          "label": "s154-main + s157-main-wide-hybrid"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-wide-hybrid.json",
+          "label": "s154-both + s157-main-wide-hybrid"
+        }
+      ]
+    },
+    {
+      "stage": 157,
+      "key": "s157-main-frontier-gate",
+      "legacyAliases": [
+        "s154-frontier-gate"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 7,
+      "tier": "safe",
+      "risk": "low",
+      "notes": "Egaroucid/Hanshq 류 cheap signal만 남긴 stage157 closeout 채택 후보.",
+      "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+      "mpcStructureProfileKey": "static-gate-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-frontier-gate.json",
+          "label": "s154-main + s157-main-frontier-gate"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-frontier-gate.json",
+          "label": "s154-both + s157-main-frontier-gate"
+        }
+      ]
+    },
+    {
+      "stage": 157,
+      "key": "s157-main-assertive-both",
+      "legacyAliases": [
+        "s154-assertive-both"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 9,
+      "tier": "aggressive",
+      "risk": "high",
+      "notes": "library 최고공격 후보. stage157 closeout에서는 long-think non-collapse형 채택으로 정리됐습니다.",
+      "moveOrderingStructureProfileKey": "hybrid-probe-v1",
+      "mpcStructureProfileKey": "assertive-both-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-assertive-both.json",
+          "label": "s154-main + s157-main-assertive-both"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-assertive-both.json",
+          "label": "s154-both + s157-main-assertive-both"
+        }
+      ]
+    }
+  ],
+  "stage158Candidates": [
+    {
+      "stage": 158,
+      "key": "s154-stable-zebra",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 4,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "stage158 survivor candidate. stable/quiet ordering + Zebra ladder MPC. Reinforced retest 후 채택됐지만, stage157 survivor들과의 후속 처리 결정은 다음 session으로 넘깁니다.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+      "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-stable-zebra.json",
+          "label": "s154-main + s154-stable-zebra"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage169-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-stable-zebra.json",
+          "label": "s154-both + s154-stable-zebra"
+        }
+      ]
+    }
+  ],
+  "decisionOrder": [
+    "s157-main-wide-hybrid",
+    "s157-main-frontier-gate",
+    "s157-main-assertive-both",
+    "s154-stable-zebra"
+  ]
+}

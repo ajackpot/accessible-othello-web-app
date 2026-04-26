@@ -1,0 +1,213 @@
+{
+  "compactFormat": "compact-v1",
+  "factorizedFormat": "factorized-binary-varint-v1",
+  "compactPositionCount": 40192,
+  "factorizedPositionCount": 40192,
+  "allComparisonsMatch": true,
+  "comparisons": [
+    {
+      "line": [],
+      "same": true,
+      "compactTop3": [
+        {
+          "coord": "D3",
+          "count": 30948.25,
+          "priorScore": 0
+        },
+        {
+          "coord": "C4",
+          "count": 30948.25,
+          "priorScore": 0
+        },
+        {
+          "coord": "F5",
+          "count": 30948.25,
+          "priorScore": 0
+        }
+      ],
+      "factorizedTop3": [
+        {
+          "coord": "D3",
+          "count": 30948.25,
+          "priorScore": 0
+        },
+        {
+          "coord": "C4",
+          "count": 30948.25,
+          "priorScore": 0
+        },
+        {
+          "coord": "F5",
+          "count": 30948.25,
+          "priorScore": 0
+        }
+      ]
+    },
+    {
+      "line": [
+        "F5"
+      ],
+      "same": true,
+      "compactTop3": [
+        {
+          "coord": "D6",
+          "count": 80731,
+          "priorScore": 19248
+        },
+        {
+          "coord": "F6",
+          "count": 41543,
+          "priorScore": 9749
+        },
+        {
+          "coord": "F4",
+          "count": 1519,
+          "priorScore": -43818
+        }
+      ],
+      "factorizedTop3": [
+        {
+          "coord": "D6",
+          "count": 80731,
+          "priorScore": 19248
+        },
+        {
+          "coord": "F6",
+          "count": 41543,
+          "priorScore": 9749
+        },
+        {
+          "coord": "F4",
+          "count": 1519,
+          "priorScore": -43818
+        }
+      ]
+    },
+    {
+      "line": [
+        "F5",
+        "D6"
+      ],
+      "same": true,
+      "compactTop3": [
+        {
+          "coord": "C3",
+          "count": 42119,
+          "priorScore": 26575
+        },
+        {
+          "coord": "C5",
+          "count": 21411,
+          "priorScore": 15620
+        },
+        {
+          "coord": "C4",
+          "count": 15916,
+          "priorScore": 13550
+        }
+      ],
+      "factorizedTop3": [
+        {
+          "coord": "C3",
+          "count": 42119,
+          "priorScore": 26575
+        },
+        {
+          "coord": "C5",
+          "count": 21411,
+          "priorScore": 15620
+        },
+        {
+          "coord": "C4",
+          "count": 15916,
+          "priorScore": 13550
+        }
+      ]
+    },
+    {
+      "line": [
+        "F5",
+        "D6",
+        "C3"
+      ],
+      "same": true,
+      "compactTop3": [
+        {
+          "coord": "D3",
+          "count": 39067,
+          "priorScore": 35335
+        },
+        {
+          "coord": "F4",
+          "count": 1938,
+          "priorScore": -7632
+        },
+        {
+          "coord": "G5",
+          "count": 734,
+          "priorScore": -13694
+        }
+      ],
+      "factorizedTop3": [
+        {
+          "coord": "D3",
+          "count": 39067,
+          "priorScore": 35335
+        },
+        {
+          "coord": "F4",
+          "count": 1938,
+          "priorScore": -7632
+        },
+        {
+          "coord": "G5",
+          "count": 734,
+          "priorScore": -13694
+        }
+      ]
+    },
+    {
+      "line": [
+        "C4",
+        "C3",
+        "D3",
+        "C5"
+      ],
+      "same": true,
+      "compactTop3": [
+        {
+          "coord": "B4",
+          "count": 13991,
+          "priorScore": 25800
+        },
+        {
+          "coord": "D6",
+          "count": 17076,
+          "priorScore": 25202
+        },
+        {
+          "coord": "B3",
+          "count": 4355,
+          "priorScore": 12786
+        }
+      ],
+      "factorizedTop3": [
+        {
+          "coord": "B4",
+          "count": 13991,
+          "priorScore": 25800
+        },
+        {
+          "coord": "D6",
+          "count": 17076,
+          "priorScore": 25202
+        },
+        {
+          "coord": "B3",
+          "count": 4355,
+          "priorScore": 12786
+        }
+      ]
+    }
+  ]
+}

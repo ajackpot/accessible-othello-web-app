@@ -1,0 +1,36 @@
+$ node /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/benchmark-vs-trineutron.mjs --variants custom --games 4 --opening-plies 20 --seed 29 --our-time-ms 240 --their-time-ms 240 --our-max-depth 6 --their-max-depth 18 --search-algorithm classic-mtdf-2ply --aspiration-window 60 --max-table-entries 90000 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --solver-adjudication-max-depth 14 --their-noise-scale 4 --variant-seed-mode shared --output-json /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/s154-main.json --variant-label s154-main --generated-module tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js --engine-options-json tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json
+
+STDOUT:
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 29..32
+Our search          : classic-mtdf-2ply (Classic MTD(f)), aspiration=60, table=90000
+Our engine time     : 240ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 240ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : custom
+Custom profiles     : eval=balanced13-alllate-smoothed stability extras 0.90x, ordering=stage154-main-recenter__move-ordering__balanced, tuple=diagonal-top24-latea-endgame-patched-calibrated, mpc=stage154-main-recenter__runtime-mpc__overlapHighTight, pattern-bank=1, ordering-pattern-bank=0
+Custom engine opts  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json
+Custom module path  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js
+Games per variant   : 4 openings x 2 colors = 8
+
+[variant: s154-main]
+opening#01 black loss diff=-48 our 14,336n/6,242ms vs tri 69,959n/3,665ms [exact-adjudication]
+opening#01 white win  diff= 26 our 20,158n/5,317ms vs tri 91,608n/3,536ms [exact-adjudication]
+opening#02 black win  diff= 22 our 19,786n/5,323ms vs tri 92,294n/3,555ms [exact-adjudication]
+opening#02 white loss diff=-12 our 19,117n/4,511ms vs tri 83,922n/3,575ms [exact-adjudication]
+opening#03 black win  diff= 30 our 22,562n/5,839ms vs tri 114,463n/3,588ms [exact-adjudication]
+opening#03 white win  diff=  2 our 17,839n/5,253ms vs tri 84,022n/3,597ms [exact-adjudication]
+opening#04 black win  diff= 59 our 19,322n/4,904ms vs tri 77,210n/3,600ms [exact-adjudication]
+opening#04 white loss diff=-16 our 18,059n/4,668ms vs tri 65,615n/3,603ms [exact-adjudication]
+score: 5/8 (62.5%)
+W-L-D: 5-3-0
+avg disc diff: 7.88
+exact adjudications: 8/8
+
+Saved benchmark summary to /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/s154-main.json
+
+
+STDERR:
+

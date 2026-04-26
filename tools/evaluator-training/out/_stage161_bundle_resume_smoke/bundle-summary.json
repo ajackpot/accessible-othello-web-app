@@ -1,0 +1,34 @@
+[
+  {
+    "familyKey": "stage151-split-late3",
+    "label": "stage151 split_late3",
+    "sourceModule": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+    "moveOrderingSupersetBuckets": [
+      "7-8",
+      "9-9",
+      "10-10",
+      "11-12",
+      "13-14",
+      "15-16",
+      "17-18",
+      "19-19"
+    ],
+    "orderingPatternBankVariantKeys": [
+      "full",
+      "noend",
+      "latea",
+      "off"
+    ],
+    "mpcRuntimeVariantKeys": [
+      "safe4High",
+      "overlapHighSafe",
+      "overlapHighTight",
+      "splitHighTight",
+      "overlapBothSoftLow"
+    ],
+    "candidateCount": 6,
+    "candidateSummaryPath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/candidate-summary.json",
+    "manifestPath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/bundle-manifest.json",
+    "candidates": null
+  }
+]

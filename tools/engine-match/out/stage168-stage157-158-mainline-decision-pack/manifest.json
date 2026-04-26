@@ -1,0 +1,341 @@
+{
+  "generatedAt": "2026-04-19T22:06:27.514Z",
+  "scope": "stage154-mainline-only",
+  "rationale": "stage151 late3 family is currently deprioritized; this pack prepares only the stage154-main / stage154-both decision lane requested for sequential stage157/158 adoption decisions.",
+  "defaults": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "openingPlies": 20,
+    "gamesPerSeed": 1,
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60
+  },
+  "baselines": [
+    {
+      "id": "s154-main",
+      "label": "s154-main",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    },
+    {
+      "id": "s154-both",
+      "label": "s154-both",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json"
+    }
+  ],
+  "stage157Candidates": [
+    {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid",
+      "legacyAliases": [
+        "s154-wide-hybrid"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 5,
+      "tier": "aggressive",
+      "risk": "medium",
+      "notes": "Ordering pattern bank가 없는 stage154에서만 넓은 top-K + probe를 시도하는 stage157 closeout 채택 후보.",
+      "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+      "mpcStructureProfileKey": "verify-tight-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-wide-hybrid.json",
+          "label": "s154-main + s157-main-wide-hybrid"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-wide-hybrid.json",
+          "label": "s154-both + s157-main-wide-hybrid"
+        }
+      ]
+    },
+    {
+      "stage": 157,
+      "key": "s157-main-frontier-gate",
+      "legacyAliases": [
+        "s154-frontier-gate"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 7,
+      "tier": "safe",
+      "risk": "low",
+      "notes": "Egaroucid/Hanshq 류 cheap signal만 남긴 stage157 closeout 채택 후보.",
+      "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+      "mpcStructureProfileKey": "static-gate-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-frontier-gate.json",
+          "label": "s154-main + s157-main-frontier-gate"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-frontier-gate.json",
+          "label": "s154-both + s157-main-frontier-gate"
+        }
+      ]
+    },
+    {
+      "stage": 157,
+      "key": "s157-main-assertive-both",
+      "legacyAliases": [
+        "s154-assertive-both"
+      ],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 9,
+      "tier": "aggressive",
+      "risk": "high",
+      "notes": "library 최고공격 후보. stage157 closeout에서는 long-think non-collapse형 채택으로 정리됐습니다.",
+      "moveOrderingStructureProfileKey": "hybrid-probe-v1",
+      "mpcStructureProfileKey": "assertive-both-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s157-main-assertive-both.json",
+          "label": "s154-main + s157-main-assertive-both"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s157-main-assertive-both.json",
+          "label": "s154-both + s157-main-assertive-both"
+        }
+      ]
+    }
+  ],
+  "stage158Candidates": [
+    {
+      "stage": 158,
+      "key": "s154-anchor-main",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 1,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "stage157 anchor. Hybrid main + conservative MPC.",
+      "moveOrderingStructureProfileKey": "hybrid-main-v1",
+      "mpcStructureProfileKey": "conservative-hybrid-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-anchor-main.json",
+          "label": "s154-main + s154-anchor-main"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-anchor-main.json",
+          "label": "s154-both + s154-anchor-main"
+        }
+      ]
+    },
+    {
+      "stage": 158,
+      "key": "s154-stable-quiet",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 2,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "Edax/Othello-sensei 힌트를 ordering에만 주입한 분리 후보.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+      "mpcStructureProfileKey": "conservative-hybrid-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-stable-quiet.json",
+          "label": "s154-main + s154-stable-quiet"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-stable-quiet.json",
+          "label": "s154-both + s154-stable-quiet"
+        }
+      ]
+    },
+    {
+      "stage": 158,
+      "key": "s154-stable-quiet-probe",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 3,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "stable/quiet ordering + top-K probe.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-probe-v1",
+      "mpcStructureProfileKey": "conservative-hybrid-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-stable-quiet-probe.json",
+          "label": "s154-main + s154-stable-quiet-probe"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-stable-quiet-probe.json",
+          "label": "s154-both + s154-stable-quiet-probe"
+        }
+      ]
+    },
+    {
+      "stage": 158,
+      "key": "s154-stable-zebra",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 4,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "stage154 신규 주력 후보. stable/quiet ordering + Zebra ladder MPC.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+      "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-stable-zebra.json",
+          "label": "s154-main + s154-stable-zebra"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-stable-zebra.json",
+          "label": "s154-both + s154-stable-zebra"
+        }
+      ]
+    },
+    {
+      "stage": 158,
+      "key": "s154-stable-zebra-open",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 5,
+      "tier": "balanced",
+      "risk": "medium",
+      "notes": "Zebra ladder가 representative smoke에서도 실제로 probe selection까지 내려가도록 guard를 다소 연 후보.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+      "mpcStructureProfileKey": "stage154-zebra-open-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-stable-zebra-open.json",
+          "label": "s154-main + s154-stable-zebra-open"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-stable-zebra-open.json",
+          "label": "s154-both + s154-stable-zebra-open"
+        }
+      ]
+    },
+    {
+      "stage": 158,
+      "key": "s154-zebra-both-probe",
+      "legacyAliases": [],
+      "familyKey": "stage154-main-recenter",
+      "familyLabel": "stage154 main_recenter",
+      "priority": 5,
+      "tier": "aggressive",
+      "risk": "high",
+      "notes": "구조 최고공격 후보. smoke만 먼저 확인하고 본선 우선순위는 낮게 둡니다.",
+      "moveOrderingStructureProfileKey": "stage154-stable-quiet-probe-v1",
+      "mpcStructureProfileKey": "stage154-zebra-both-v1",
+      "overlayByBaseline": [
+        {
+          "baselineId": "s154-main",
+          "baselineLabel": "s154-main",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-main__s154-zebra-both-probe.json",
+          "label": "s154-main + s154-zebra-both-probe"
+        },
+        {
+          "baselineId": "s154-both",
+          "baselineLabel": "s154-both",
+          "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+          "baseEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+          "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-pack/engine-options/s154-both__s154-zebra-both-probe.json",
+          "label": "s154-both + s154-zebra-both-probe"
+        }
+      ]
+    }
+  ],
+  "decisionOrder": [
+    "s157-main-wide-hybrid",
+    "s157-main-frontier-gate",
+    "s157-main-assertive-both",
+    "s154-anchor-main",
+    "s154-stable-quiet",
+    "s154-stable-quiet-probe",
+    "s154-stable-zebra",
+    "s154-stable-zebra-open",
+    "s154-zebra-both-probe"
+  ]
+}

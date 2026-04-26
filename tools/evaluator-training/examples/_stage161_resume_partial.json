@@ -1,0 +1,46 @@
+{
+  "mpc": {
+    "maxSamplesPerBucket": 2,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "progressEvery": 1,
+    "timeLimitMs": 2000,
+    "maxAcceptedTotal": 1,
+    "sharedSearchPairs": {
+      "mode": "auto",
+      "checkpointEvery": 1
+    },
+    "checkpoint": {
+      "enabled": true,
+      "every": 1
+    },
+    "supersets": {
+      "overlap8": {
+        "calibrationBuckets": [
+          "18-21:4>8"
+        ]
+      },
+      "split8": {
+        "calibrationBuckets": [
+          "20-21:4>8"
+        ]
+      }
+    },
+    "calibrationVariants": {
+      "baseline4": {
+        "source": "overlap8",
+        "keepSpecs": [
+          "18-21:4>8"
+        ]
+      },
+      "overlap8": {
+        "source": "overlap8"
+      },
+      "split8": {
+        "source": "split8"
+      }
+    }
+  }
+}

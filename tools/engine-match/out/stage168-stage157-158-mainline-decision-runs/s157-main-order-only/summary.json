@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-04-19T07:32:38.087Z",
+  "candidate": {
+    "stage": 157,
+    "key": "s157-main-order-only",
+    "legacyAliases": [
+      "s154-order-main"
+    ],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 1,
+    "tier": "balanced",
+    "risk": "low",
+    "notes": "Ordering only. stage154에서는 먼저 cheap hybrid ordering의 순효과를 분리해서 봅니다.",
+    "moveOrderingStructureProfileKey": "hybrid-main-v1",
+    "mpcStructureProfileKey": "baseline-v1"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71,
+      89,
+      107
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 2
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-runs/s157-main-order-only/engine-options/s154-main__s157-main-order-only.json",
+      "resultJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-runs/s157-main-order-only/results/s154-main__s157-main-order-only.json"
+    },
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-runs/s157-main-order-only/engine-options/s154-both__s157-main-order-only.json",
+      "resultJson": "tools/engine-match/out/stage168-stage157-158-mainline-decision-runs/s157-main-order-only/results/s154-both__s157-main-order-only.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 7,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.5833333333333334,
+      "candidateScoreRate": 0.4166666666666667,
+      "pointGap": -0.16666666666666669,
+      "baselineNodesPerMs": 15.02521180650451,
+      "candidateNodesPerMs": 15.047642470662637,
+      "recommendation": "s154-both가 s154-both + s157-main-order-only보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 5,
+      "candidatePoints": 7,
+      "baselineScoreRate": 0.4166666666666667,
+      "candidateScoreRate": 0.5833333333333334,
+      "pointGap": 0.16666666666666669,
+      "baselineNodesPerMs": 16.021788810086683,
+      "candidateNodesPerMs": 16.021260146888288,
+      "recommendation": "s154-both + s157-main-order-only가 s154-both보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 17.76745999563305,
+      "candidateNodesPerMs": 17.408341882533982,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 7.5,
+      "candidatePoints": 4.5,
+      "baselineScoreRate": 0.625,
+      "candidateScoreRate": 0.375,
+      "pointGap": -0.25,
+      "baselineNodesPerMs": 14.645046280425094,
+      "candidateNodesPerMs": 14.624028608761433,
+      "recommendation": "s154-main가 s154-main + s157-main-order-only보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 4,
+      "candidatePoints": 8,
+      "baselineScoreRate": 0.3333333333333333,
+      "candidateScoreRate": 0.6666666666666666,
+      "pointGap": 0.3333333333333333,
+      "baselineNodesPerMs": 15.020357516770716,
+      "candidateNodesPerMs": 15.053894525674163,
+      "recommendation": "s154-main + s157-main-order-only가 s154-main보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 7,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.5833333333333334,
+      "candidateScoreRate": 0.4166666666666667,
+      "pointGap": -0.16666666666666669,
+      "baselineNodesPerMs": 15.172252978697797,
+      "candidateNodesPerMs": 14.806482737826022,
+      "recommendation": "s154-main가 s154-main + s157-main-order-only보다 paired score 기준 우세합니다."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "noisy3000-pvs-seed71__s154-main",
+  "variantId": "s154-main",
+  "variantLabel": "s154-main",
+  "scenarioId": "noisy3000-pvs-seed71",
+  "scenarioLabel": "noisy 3000ms PVS seed71",
+  "startedAt": 1776511541.7329638,
+  "finishedAt": 1776511634.4592476,
+  "wallSeconds": 92.72628378868103,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-pvs-seed71__s154-main.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/logs/noisy3000-pvs-seed71__s154-main.log"
+}

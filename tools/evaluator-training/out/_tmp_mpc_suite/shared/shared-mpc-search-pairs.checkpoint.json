@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "signature": "{\"version\":1,\"inputPaths\":[\"/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl\"],\"calibrationSpecs\":[{\"key\":\"mpc-18-21-d4-d8\",\"minEmpties\":18,\"maxEmpties\":21,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"18-21 / d4→d8\",\"order\":1},{\"key\":\"mpc-22-25-d4-d8\",\"minEmpties\":22,\"maxEmpties\":25,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"22-25 / d4→d8\",\"order\":0}],\"sampleStride\":1,\"sampleResidue\":0,\"maxSamplesPerBucket\":2,\"timeLimitMs\":1000,\"aspirationWindow\":40,\"maxTableEntries\":50000,\"bucketPreset\":null,\"evaluationProfileName\":\"balanced13-alllate-smoothed stability extras 0.90x\",\"moveOrderingProfileName\":\"trained-move-ordering-linear-v2\",\"tupleResidualProfileName\":\"diagonal-top24-latea-endgame-patched-calibrated\",\"mpcProfileName\":\"balanced13-alllate-smoothed-stability-090__runtime-mpc\",\"patternBankProfileNames\":null,\"moveOrderingPatternBankProfileNames\":null}",
+  "savedAt": "2026-04-16T12:52:18.566Z",
+  "completed": true,
+  "stopReason": "input-exhausted",
+  "outputJsonlPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/shared/shared-mpc-search-pairs.jsonl",
+  "summaryJsonPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/shared/shared-mpc-search-pairs.summary.json",
+  "bucketPreset": null,
+  "calibrationSpecs": [
+    {
+      "key": "mpc-18-21-d4-d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "18-21 / d4→d8",
+      "order": 1
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "order": 0
+    }
+  ],
+  "bucketData": [
+    {
+      "acceptedSamples": 0,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 0,
+          "nodes": 0,
+          "elapsedMs": 0
+        },
+        "deep": {
+          "searches": 0,
+          "nodes": 0,
+          "elapsedMs": 0
+        }
+      }
+    },
+    {
+      "acceptedSamples": 2,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 2,
+          "nodes": 1359,
+          "elapsedMs": 479
+        },
+        "deep": {
+          "searches": 2,
+          "nodes": 41154,
+          "elapsedMs": 2073
+        }
+      }
+    }
+  ],
+  "globalSearchCost": {
+    "shallow": {
+      "searches": 2,
+      "nodes": 1359,
+      "elapsedMs": 479
+    },
+    "deep": {
+      "searches": 2,
+      "nodes": 41154,
+      "elapsedMs": 2073
+    }
+  },
+  "diagnostics": {
+    "visitedSamples": 40,
+    "matchedSamples": 2,
+    "acceptedSamples": 2,
+    "recordsWritten": 2,
+    "lastProcessedInputSampleIndex": 39,
+    "resumedFromCheckpoint": false
+  }
+}

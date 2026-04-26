@@ -1,0 +1,23 @@
+{
+  "familyKey": "stage154-main-recenter",
+  "label": "stage154 main_recenter",
+  "sourceModulePath": "tools/evaluator-training/out/stage154/modules/learned-eval-profile.main_only.recenter.factorized.generated.js",
+  "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+  "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-move-ordering-profile.json",
+  "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+  "mpcProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-mpc-profile.json",
+  "evaluationPatternBankPaths": [
+    "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+  ],
+  "orderingPatternBankSourcePaths": [],
+  "profileNames": {
+    "evaluation": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrdering": "trained-move-ordering-linear-v2",
+    "tuple": "diagonal-top24-latea-endgame-patched-calibrated",
+    "mpc": "balanced13-alllate-smoothed-stability-090__runtime-mpc",
+    "evaluationPatternBanks": [
+      "pattern-bank-v1 balanced13 patched"
+    ],
+    "orderingPatternBanks": []
+  }
+}

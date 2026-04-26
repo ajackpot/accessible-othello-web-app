@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-04-20T11:51:20.252Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-frontier-zebra-bothlite",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 5,
+    "tier": "safe",
+    "risk": "low",
+    "notes": "logic reinforcement re-entry 후보. frontier-zebra original hold의 stronger-baseline 160ms 음수를 MPC-side에서만 교정하려는 마지막 보강안입니다. guarded Zebra ladder에 low-cut을 아주 제한적으로 열고 volatility guard를 더 엄격하게 둡니다.",
+    "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+    "mpcStructureProfileKey": "stage170-frontier-zebra-bothlite-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-frontier-gate"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71,
+      89,
+      107
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-main",
+      "s154-both"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-reentry-round7/s170-main-frontier-zebra-bothlite/engine-options/s154-main__s170-main-frontier-zebra-bothlite.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-reentry-round7/s170-main-frontier-zebra-bothlite/results/s154-main__s170-main-frontier-zebra-bothlite.json"
+    },
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-reentry-round7/s170-main-frontier-zebra-bothlite/engine-options/s154-both__s170-main-frontier-zebra-bothlite.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-reentry-round7/s170-main-frontier-zebra-bothlite/results/s154-both__s170-main-frontier-zebra-bothlite.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.446769568665731,
+      "candidateNodesPerMs": 8.327562670637876,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.538948446818631,
+      "candidateNodesPerMs": 9.264015455274476,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.932601034136804,
+      "candidateNodesPerMs": 9.642812351067299,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 5,
+      "candidatePoints": 7,
+      "baselineScoreRate": 0.4166666666666667,
+      "candidateScoreRate": 0.5833333333333334,
+      "pointGap": 0.16666666666666669,
+      "baselineNodesPerMs": 7.989595168331041,
+      "candidateNodesPerMs": 7.753256888995617,
+      "recommendation": "s154-main + s170-main-frontier-zebra-bothlite가 s154-main보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.627750073335289,
+      "candidateNodesPerMs": 9.344417182407442,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 5,
+      "candidatePoints": 7,
+      "baselineScoreRate": 0.4166666666666667,
+      "candidateScoreRate": 0.5833333333333334,
+      "pointGap": 0.16666666666666669,
+      "baselineNodesPerMs": 9.762622149837133,
+      "candidateNodesPerMs": 9.533720522705652,
+      "recommendation": "s154-main + s170-main-frontier-zebra-bothlite가 s154-main보다 paired score 기준 우세합니다."
+    }
+  ]
+}

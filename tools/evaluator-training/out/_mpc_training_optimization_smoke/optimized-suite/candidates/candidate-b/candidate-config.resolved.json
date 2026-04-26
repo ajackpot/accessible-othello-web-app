@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-04-16T12:55:55.560Z",
+  "key": "candidate-b",
+  "name": "candidate-b",
+  "description": null,
+  "calibrationBuckets": [
+    "22-25:4>8"
+  ],
+  "sampleStride": 1,
+  "sampleResidue": 0,
+  "maxSamplesPerBucket": 4,
+  "holdoutMod": 2,
+  "holdoutResidue": 0,
+  "targetHoldoutCoverage": 0.99,
+  "targetHighHoldoutCoverage": 0.99,
+  "targetLowHoldoutCoverage": 0.99,
+  "timeLimitMs": 1000,
+  "progressEvery": 1,
+  "maxTableEntries": 50000,
+  "aspirationWindow": 40,
+  "zValues": [
+    1,
+    1.5,
+    1.96,
+    2.5,
+    3
+  ],
+  "runtimeVariant": {
+    "defaultMode": "high",
+    "enableHighCut": null,
+    "enableLowCut": null,
+    "maxWindow": 1,
+    "minDepth": 2,
+    "minDepthGap": 2,
+    "maxDepthDistance": 1,
+    "minPly": 1,
+    "maxChecksPerNode": 2,
+    "intervalScale": 1,
+    "highScale": 1,
+    "lowScale": 1,
+    "depthDistanceScale": 1.25
+  },
+  "exportModule": false,
+  "benchmarks": {
+    "depth": {
+      "enabled": false,
+      "empties": [
+        18,
+        22,
+        26,
+        30
+      ],
+      "seedStart": 1,
+      "seedCount": 6,
+      "repetitions": 1,
+      "timeLimitMs": 2000,
+      "maxDepth": 8,
+      "exactEndgameEmpties": 10,
+      "baselineMpcMode": null,
+      "candidateMpcMode": null
+    },
+    "exact": {
+      "enabled": false,
+      "empties": [
+        10,
+        12,
+        14
+      ],
+      "seedStart": 1,
+      "seedCount": 6,
+      "repetitions": 1,
+      "timeLimitMs": 60000,
+      "maxDepth": 12,
+      "baselineMpcMode": null,
+      "candidateMpcMode": null
+    }
+  },
+  "sharedEvaluationProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-evaluation-profile.snapshot.json",
+  "sharedMoveOrderingProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-move-ordering-profile.snapshot.json",
+  "sharedTupleProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-tuple-residual-profile.snapshot.json",
+  "sharedBaselineMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-mpc-profile.snapshot.json",
+  "benchmarkBaseline": {
+    "evaluationProfilePath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-evaluation-profile.snapshot.json",
+    "moveOrderingProfilePath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-move-ordering-profile.snapshot.json",
+    "tupleProfilePath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-tuple-residual-profile.snapshot.json",
+    "mpcProfilePath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-mpc-profile.snapshot.json",
+    "mpcMode": null
+  },
+  "outputPaths": {
+    "candidateDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b",
+    "benchmarksDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/benchmarks",
+    "rawMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json",
+    "finalMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.json",
+    "generatedModulePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/learned-eval-profile.generated.js",
+    "depthBenchmarkPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/benchmarks/depth.benchmark.json",
+    "exactBenchmarkPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/benchmarks/exact.benchmark.json",
+    "statusPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/candidate-status.json",
+    "configPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/candidate-config.resolved.json"
+  }
+}

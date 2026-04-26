@@ -1,0 +1,52 @@
+{
+  "rows": [
+    {
+      "scenarioId": "probe-mtdf-1500",
+      "algorithm": "classic-mtdf-2ply",
+      "seed": 29,
+      "timeMs": 1500,
+      "wallSeconds": 52,
+      "games": 2,
+      "points": 1,
+      "averageDiscDiff": 10,
+      "averageOurTimeMsPerGame": 5634.5,
+      "averageTheirTimeMsPerGame": 19510.5
+    },
+    {
+      "scenarioId": "probe-mtdf-2100",
+      "algorithm": "classic-mtdf-2ply",
+      "seed": 29,
+      "timeMs": 2100,
+      "wallSeconds": 71,
+      "games": 2,
+      "points": 1,
+      "averageDiscDiff": -9,
+      "averageOurTimeMsPerGame": 7385,
+      "averageTheirTimeMsPerGame": 27308
+    },
+    {
+      "scenarioId": "probe-mtdf-3000",
+      "algorithm": "classic-mtdf-2ply",
+      "seed": 29,
+      "timeMs": 3000,
+      "wallSeconds": 95,
+      "games": 2,
+      "points": 1,
+      "averageDiscDiff": -3,
+      "averageOurTimeMsPerGame": 7542.5,
+      "averageTheirTimeMsPerGame": 39004.5
+    },
+    {
+      "scenarioId": "probe-pvs-3000",
+      "algorithm": "classic",
+      "seed": 71,
+      "timeMs": 3000,
+      "wallSeconds": 94,
+      "games": 2,
+      "points": 2,
+      "averageDiscDiff": 8,
+      "averageOurTimeMsPerGame": 7408.5,
+      "averageTheirTimeMsPerGame": 39014.5
+    }
+  ]
+}

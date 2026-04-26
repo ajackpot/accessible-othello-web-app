@@ -1,0 +1,30 @@
+{
+  "scope": "candidate",
+  "key": "candidate-b",
+  "name": "candidate-b",
+  "createdAt": "2026-04-16T12:55:55.560Z",
+  "steps": {
+    "fit-mpc-profile-from-search-pairs": {
+      "status": "success",
+      "description": "candidate-b: fit MPC from shared pairs",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/fit-mpc-profile-from-search-pairs.mjs --search-pairs-jsonl /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.jsonl --calibration-buckets 22-25:4>8 --max-samples-per-bucket 4 --holdout-mod 2 --holdout-residue 0 --target-holdout-coverage 0.99 --z-values 1,1.5,1.96,2.5,3 --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json",
+      "signature": "47b535fa3e9c3e6e35cd782b0ce3e0ae40da88d258c7fbf1b020e7b252db77a8",
+      "outputs": [
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json"
+      ],
+      "startedAt": "2026-04-16T12:55:55.562Z",
+      "finishedAt": "2026-04-16T12:55:55.810Z"
+    },
+    "make-mpc-runtime-variant": {
+      "status": "success",
+      "description": "candidate-b: derive runtime variant",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/make-mpc-runtime-variant.mjs --mpc-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.json --name trained-mpc-candidate-b --description \"candidate-b runtime-tuned MPC variant\" --default-mode high --max-window 1 --min-depth 2 --min-depth-gap 2 --max-depth-distance 1 --min-ply 1 --max-checks-per-node 2 --interval-scale 1 --high-scale 1 --low-scale 1 --depth-distance-scale 1.25",
+      "signature": "5311589583a4276bf90d25afeaa962d0c6279a4d9fbf96eb35bb99cd7ef4cd63",
+      "outputs": [
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.json"
+      ],
+      "startedAt": "2026-04-16T12:55:55.812Z",
+      "finishedAt": "2026-04-16T12:55:56.036Z"
+    }
+  }
+}

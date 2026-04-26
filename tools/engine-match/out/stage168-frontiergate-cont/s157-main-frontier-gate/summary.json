@@ -1,0 +1,139 @@
+{
+  "generatedAt": "2026-04-19T13:01:00.030Z",
+  "candidate": {
+    "stage": 157,
+    "key": "s157-main-frontier-gate",
+    "legacyAliases": [
+      "s154-frontier-gate"
+    ],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 7,
+    "tier": "safe",
+    "risk": "low",
+    "notes": "Egaroucid/Hanshq 류 cheap signal만 남긴 후보.",
+    "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+    "mpcStructureProfileKey": "static-gate-v1"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-frontiergate-cont/s157-main-frontier-gate/engine-options/s154-main__s157-main-frontier-gate.json",
+      "resultJson": "tools/engine-match/out/stage168-frontiergate-cont/s157-main-frontier-gate/results/s154-main__s157-main-frontier-gate.json"
+    },
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-frontiergate-cont/s157-main-frontier-gate/engine-options/s154-both__s157-main-frontier-gate.json",
+      "resultJson": "tools/engine-match/out/stage168-frontiergate-cont/s157-main-frontier-gate/results/s154-both__s157-main-frontier-gate.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.584674880834607,
+      "candidateNodesPerMs": 8.885331835626697,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 3,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.375,
+      "candidateScoreRate": 0.625,
+      "pointGap": 0.25,
+      "baselineNodesPerMs": 9.356676588855814,
+      "candidateNodesPerMs": 9.328542956047414,
+      "recommendation": "s154-both + s157-main-frontier-gate가 s154-both보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 3,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.375,
+      "candidateScoreRate": 0.625,
+      "pointGap": 0.25,
+      "baselineNodesPerMs": 10.068055181954424,
+      "candidateNodesPerMs": 10.007417119310732,
+      "recommendation": "s154-both + s157-main-frontier-gate가 s154-both보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 7.436256702992562,
+      "candidateNodesPerMs": 7.620532929328937,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.794667499869812,
+      "candidateNodesPerMs": 8.726752354685955,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 3,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.375,
+      "candidateScoreRate": 0.625,
+      "pointGap": 0.25,
+      "baselineNodesPerMs": 9.31237211341713,
+      "candidateNodesPerMs": 9.109662773241551,
+      "recommendation": "s154-main + s157-main-frontier-gate가 s154-main보다 paired score 기준 우세합니다."
+    }
+  ]
+}

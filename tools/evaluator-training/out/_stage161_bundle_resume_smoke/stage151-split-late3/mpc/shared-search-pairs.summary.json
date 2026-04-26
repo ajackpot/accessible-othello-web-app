@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "outputJsonlPath": "/mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.jsonl",
+  "source": {
+    "inputCount": 1,
+    "inputPaths": [
+      "/mnt/data/stage161_work/tools/evaluator-training/out/stage35_mpc_synthetic_18_21.jsonl"
+    ],
+    "estimatedInputSamples": null,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 2,
+    "timeLimitMs": 2000,
+    "aspirationWindow": 40,
+    "maxTableEntries": 200000,
+    "bucketPreset": null,
+    "evaluationProfileName": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrderingProfileName": "stage151-split-late3__move-ordering__superset"
+  },
+  "diagnostics": {
+    "visitedSamples": 2,
+    "matchedSamples": 4,
+    "acceptedSamples": 4,
+    "recordsWritten": 2,
+    "resumedFromCheckpoint": true,
+    "lastProcessedInputSampleIndex": 1,
+    "stopReason": "max-accepted-total",
+    "shallowSearchCost": {
+      "searches": 4,
+      "nodes": 2742,
+      "elapsedMs": 2500,
+      "averageNodesPerSearch": 685.5,
+      "averageElapsedMsPerSearch": 625
+    },
+    "deepSearchCost": {
+      "searches": 4,
+      "nodes": 52376,
+      "elapsedMs": 8216,
+      "averageNodesPerSearch": 13094,
+      "averageElapsedMsPerSearch": 2054
+    },
+    "elapsedSeconds": 3.754
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-21-d4-d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "18-21 / d4→d8",
+      "order": 0,
+      "acceptedSamples": 2,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 2,
+        "nodes": 1371,
+        "elapsedMs": 1250,
+        "averageNodesPerSearch": 685.5,
+        "averageElapsedMsPerSearch": 625
+      },
+      "deepSearchCost": {
+        "searches": 2,
+        "nodes": 26188,
+        "elapsedMs": 4108,
+        "averageNodesPerSearch": 13094,
+        "averageElapsedMsPerSearch": 2054
+      }
+    },
+    {
+      "key": "mpc-20-21-d4-d8",
+      "minEmpties": 20,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "20-21 / d4→d8",
+      "order": 1,
+      "acceptedSamples": 2,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 2,
+        "nodes": 1371,
+        "elapsedMs": 1250,
+        "averageNodesPerSearch": 685.5,
+        "averageElapsedMsPerSearch": 625
+      },
+      "deepSearchCost": {
+        "searches": 2,
+        "nodes": 26188,
+        "elapsedMs": 4108,
+        "averageNodesPerSearch": 13094,
+        "averageElapsedMsPerSearch": 2054
+      }
+    }
+  ]
+}

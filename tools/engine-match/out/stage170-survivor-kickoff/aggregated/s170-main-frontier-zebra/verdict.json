@@ -1,0 +1,30 @@
+{
+  "candidate": "s170-main-frontier-zebra",
+  "verdict": "hold",
+  "overall": {
+    "baselinePoints": 21.5,
+    "candidatePoints": 26.5,
+    "totalGames": 48,
+    "pointGap": 0.10416666666666667
+  },
+  "pattern": {
+    "s154-main": [
+      "win",
+      "loss",
+      "win"
+    ],
+    "s154-both": [
+      "tie",
+      "win",
+      "tie"
+    ]
+  },
+  "notes": [
+    "overall is +5.0 points for the candidate (26.5/48 vs 21.5/48)",
+    "s154-both stays non-loss across all three time buckets",
+    "240ms does not collapse: main is positive and both is tied",
+    "the remaining risk is the s154-main 160ms negative cell",
+    "throughput is near-neutral overall despite slight slowdown in five of six rows",
+    "reinforced retest is the clearest next step before adoption"
+  ]
+}

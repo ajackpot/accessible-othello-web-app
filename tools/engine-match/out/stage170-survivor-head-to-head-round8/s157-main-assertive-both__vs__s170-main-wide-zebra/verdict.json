@@ -1,0 +1,38 @@
+{
+  "decision": "hold",
+  "matchup": {
+    "first": "s157-main-assertive-both",
+    "second": "s170-main-wide-zebra"
+  },
+  "patternSecondPerspective": [
+    "승리",
+    "패배",
+    "동률"
+  ],
+  "overall": {
+    "firstPoints": 17,
+    "secondPoints": 19,
+    "totalGames": 36,
+    "pointDiffSecondMinusFirst": 2,
+    "pointGapRate": 0.05555555555555555,
+    "firstNodesPerMs": 8.700273910066194,
+    "secondNodesPerMs": 9.066195204419364
+  },
+  "timeSlices": {
+    "80ms": {
+      "firstPoints": 4,
+      "secondPoints": 8
+    },
+    "160ms": {
+      "firstPoints": 7,
+      "secondPoints": 5
+    },
+    "240ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    }
+  },
+  "provisionalLeader": "s170-main-wide-zebra",
+  "rationale": "wide-zebra has a real short-think edge and a slight overall lead, but it loses the 160ms slice and only draws at 240ms, so it has not cleanly displaced the assertive-both anchor.",
+  "nextRecommendation": "Run s170-main-frontier-zebra-bothlite vs s170-main-wide-zebra direct head-to-head next. If that still leaves ambiguity, return to assertive-both vs wide-zebra with a 160ms-focused reinforced retest."
+}

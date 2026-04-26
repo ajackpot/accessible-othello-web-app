@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2026-04-20T16:11:50.144Z",
+  "first": {
+    "stage": 170,
+    "key": "s170-main-frontier-zebra-bothlite",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+    "mpcStructureProfileKey": "stage170-frontier-zebra-bothlite-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/engine-options/s170-main-frontier-zebra-bothlite.json"
+  },
+  "second": {
+    "stage": 176,
+    "key": "s176-main-wide-zebra-bothlite",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage170-frontier-zebra-bothlite-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/engine-options/s176-main-wide-zebra-bothlite.json"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4
+  },
+  "microResults": [
+    {
+      "timeLimitMs": 80,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/80ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/80ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/80ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/80ms_seed71.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/160ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/160ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/160ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/160ms_seed71.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/240ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/240ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/240ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-01/trial-01/pairings/s170-main-frontier-zebra-bothlite__vs__s176-main-wide-zebra-bothlite/results/micro/240ms_seed71.json"
+    }
+  ]
+}

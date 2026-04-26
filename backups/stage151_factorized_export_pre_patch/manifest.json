@@ -1,0 +1,14 @@
+{
+  "createdAt": "2026-04-15T00:00:00Z",
+  "reason": "Pre-factorized-export patch backup for pattern-bank and opening-prior module pipelines.",
+  "files": [
+    "js/ai/pattern-bank.js",
+    "js/ai/opening-prior.js",
+    "js/ai/opening-prior.generated.js",
+    "tools/evaluator-training/lib.mjs",
+    "tools/evaluator-training/build-generated-profile-module.mjs",
+    "tools/evaluator-training/export-profile-module.mjs",
+    "tools/evaluator-training/install-pattern-bank-profile.mjs",
+    "tools/evaluator-training/build-opening-prior-module.mjs"
+  ]
+}

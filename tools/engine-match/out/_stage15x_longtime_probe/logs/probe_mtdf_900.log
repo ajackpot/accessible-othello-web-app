@@ -1,0 +1,23 @@
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 29..29
+Our search          : classic-mtdf-2ply (Classic MTD(f)), aspiration=60, table=90000
+Our engine time     : 900ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 900ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : custom
+Custom profiles     : eval=balanced13-alllate-smoothed stability extras 0.90x, ordering=stage154-main-recenter__move-ordering__balanced, tuple=diagonal-top24-latea-endgame-patched-calibrated, mpc=stage154-main-recenter__runtime-mpc__overlapHighTight, pattern-bank=1, ordering-pattern-bank=0
+Custom engine opts  : /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-main-s158-open.json
+Custom module path  : /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js
+Games per variant   : 1 openings x 2 colors = 2
+
+[variant: s154-main + s158-stable-zebra-open]
+opening#01 black loss diff=-32 our 64,443n/7,239ms vs tri 785,870n/11,716ms [exact-adjudication]
+opening#01 white win  diff= 58 our 45,673n/4,318ms vs tri 866,866n/11,708ms [exact-adjudication]
+score: 1/2 (50.0%)
+W-L-D: 1-1-0
+avg disc diff: 13.00
+exact adjudications: 2/2
+
+Saved benchmark summary to /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_longtime_probe/probe_mtdf_900.json

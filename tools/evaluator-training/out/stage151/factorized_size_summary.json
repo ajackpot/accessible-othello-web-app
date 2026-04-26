@@ -1,0 +1,18 @@
+{
+  "opening_prior_before": {
+    "rawBytes": 2705826,
+    "gzipBytes": 854618
+  },
+  "opening_prior_after": {
+    "rawBytes": 1651073,
+    "gzipBytes": 749821
+  },
+  "split_late3_compact": {
+    "rawBytes": 11248023,
+    "gzipBytes": 3943236
+  },
+  "split_late3_factorized": {
+    "rawBytes": 2640131,
+    "gzipBytes": 1693436
+  }
+}

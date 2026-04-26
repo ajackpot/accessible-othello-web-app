@@ -1,0 +1,75 @@
+{
+  "decision": "채택",
+  "candidate": "s170-main-frontier-zebra-bothlite",
+  "basis": "reinforced-reentry",
+  "patterns": {
+    "s154-main": [
+      "승리",
+      "동률",
+      "승리"
+    ],
+    "s154-both": [
+      "동률",
+      "동률",
+      "동률"
+    ]
+  },
+  "byBaseline": {
+    "s154-main": {
+      "baselinePoints": 16,
+      "candidatePoints": 20,
+      "totalGames": 36,
+      "avgBaselineNodesPerMs": 9.126655797167821,
+      "avgCandidateNodesPerMs": 8.877131531369571
+    },
+    "s154-both": {
+      "baselinePoints": 18,
+      "candidatePoints": 18,
+      "totalGames": 36,
+      "avgBaselineNodesPerMs": 9.306106349873723,
+      "avgCandidateNodesPerMs": 9.078130158993217
+    }
+  },
+  "byTime": {
+    "80": {
+      "baselinePoints": 11,
+      "candidatePoints": 13,
+      "totalGames": 24,
+      "avgBaselineNodesPerMs": 8.218182368498386,
+      "avgCandidateNodesPerMs": 8.040409779816747
+    },
+    "160": {
+      "baselinePoints": 12,
+      "candidatePoints": 12,
+      "totalGames": 24,
+      "avgBaselineNodesPerMs": 9.583349260076961,
+      "avgCandidateNodesPerMs": 9.30421631884096
+    },
+    "240": {
+      "baselinePoints": 11,
+      "candidatePoints": 13,
+      "totalGames": 24,
+      "avgBaselineNodesPerMs": 9.847611591986968,
+      "avgCandidateNodesPerMs": 9.588266436886475
+    }
+  },
+  "overall": {
+    "baselinePoints": 34,
+    "candidatePoints": 38,
+    "totalGames": 72,
+    "pointGap": 0.05555555555555555,
+    "avgBaselineNodesPerMs": 9.216381073520772,
+    "avgCandidateNodesPerMs": 8.977630845181393
+  },
+  "notes": [
+    "6개 baseline/time 셀 전부 non-negative",
+    "original hold의 핵심 리스크였던 s154-both 160ms 음수가 동률로 해소됨",
+    "ordering-side stabilized branch와 달리 main-lane 240ms 승리를 유지함",
+    "overall baseline 34.0/72, candidate 38.0/72"
+  ],
+  "laneResolution": {
+    "original": "s170-main-frontier-zebra 원형 hold는 successor 채택으로 실무상 종료",
+    "stabilized": "비채택 유지",
+    "successor": "s170-main-frontier-zebra-bothlite 채택"
+  }
+}

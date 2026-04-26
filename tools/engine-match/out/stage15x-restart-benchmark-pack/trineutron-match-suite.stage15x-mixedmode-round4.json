@@ -1,0 +1,94 @@
+{
+  "defaults": {
+    "openingPlies": 20,
+    "ourMaxDepth": 6,
+    "theirMaxDepth": 18,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "solverAdjudicationMaxDepth": 14,
+    "variantSeedMode": "shared",
+    "searchAlgorithm": "classic-mtdf-2ply",
+    "aspirationWindow": 60,
+    "maxTableEntries": 90000
+  },
+  "referenceVariantId": "active",
+  "variants": [
+    {
+      "id": "active",
+      "variant": "active",
+      "label": "active-installed"
+    },
+    {
+      "id": "s151-full-both",
+      "type": "custom",
+      "label": "s151-full-both",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-full-both.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-full-both.json"
+    },
+    {
+      "id": "s154-both",
+      "type": "custom",
+      "label": "s154-both",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json"
+    },
+    {
+      "id": "s154-main",
+      "type": "custom",
+      "label": "s154-main",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "noisy240-mtdf-seed29",
+      "label": "noisy 240ms MTDf seed29",
+      "seed": 29,
+      "games": 4,
+      "ourTimeMs": 240,
+      "theirTimeMs": 240,
+      "theirNoiseScale": 4,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy240-mtdf-seed53",
+      "label": "noisy 240ms MTDf seed53",
+      "seed": 53,
+      "games": 4,
+      "ourTimeMs": 240,
+      "theirTimeMs": 240,
+      "theirNoiseScale": 4,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy240-pvs-seed71",
+      "label": "noisy 240ms PVS seed71",
+      "seed": 71,
+      "games": 2,
+      "ourTimeMs": 240,
+      "theirTimeMs": 240,
+      "theirNoiseScale": 4,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy240-mcts-guided-seed83",
+      "label": "noisy 240ms MCTS guided seed83",
+      "seed": 83,
+      "games": 2,
+      "ourTimeMs": 240,
+      "theirTimeMs": 240,
+      "theirNoiseScale": 4,
+      "searchAlgorithm": "mcts-guided",
+      "aspirationWindow": 0,
+      "maxTableEntries": 90000
+    }
+  ]
+}

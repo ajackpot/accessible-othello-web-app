@@ -1,0 +1,13 @@
+{
+  "runId": "noisy1500-mtdf-seed53__active",
+  "variantId": "active",
+  "variantLabel": "active-installed",
+  "scenarioId": "noisy1500-mtdf-seed53",
+  "scenarioLabel": "noisy 1500ms MTD(f) seed53",
+  "startedAt": 1776513297.9187381,
+  "finishedAt": 1776513343.989506,
+  "wallSeconds": 46.070767879486084,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/results/noisy1500-mtdf-seed53__active.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/logs/noisy1500-mtdf-seed53__active.log"
+}

@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "name": "trained-mpc-candidate-b",
+  "description": "candidate-b runtime-tuned MPC variant",
+  "runtime": {
+    "enableHighCut": true,
+    "enableLowCut": false,
+    "maxWindow": 1,
+    "maxChecksPerNode": 2,
+    "minDepth": 2,
+    "minDepthGap": 2,
+    "maxDepthDistance": 1,
+    "minPly": 1,
+    "highScale": 1,
+    "lowScale": 1,
+    "depthDistanceScale": 1.25,
+    "defaultMode": "high",
+    "maxTriesPerNode": 2
+  },
+  "calibrations": [
+    {
+      "key": "mpc-22-25-d4-d8",
+      "label": "22-25 / d4→d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "usable": false,
+      "intercept": 5758.810902343681,
+      "slope": 1.289654302750806,
+      "correlation": 1,
+      "rSquared": 1,
+      "intervalHalfWidth": 2.7284841053187847e-12,
+      "recommendedZ": {
+        "z": 3,
+        "coverage": 0,
+        "intervalHalfWidth": 2.7284841053187847e-12
+      },
+      "regression": {
+        "intercept": 5758.810902343681,
+        "slope": 1.289654302750806,
+        "correlation": 1,
+        "rSquared": 1,
+        "sampleCount": 2
+      },
+      "trainMetrics": {
+        "count": 2,
+        "mae": 9.094947017729282e-13,
+        "rmse": 1.2862197421537486e-12,
+        "meanResidual": 9.094947017729282e-13,
+        "stdDevResidual": 9.094947017729282e-13,
+        "maxAbsResidual": 1.8189894035458565e-12
+      },
+      "holdoutMetrics": {
+        "count": 2,
+        "mae": 22834.7799084866,
+        "rmse": 32209.289054282137,
+        "meanResidual": -22834.7799084866,
+        "stdDevResidual": 22715.878321413766,
+        "maxAbsResidual": 45550.658229900364
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0,
+          "intervalHalfWidth": 9.094947017729282e-13
+        },
+        {
+          "z": 1.5,
+          "coverage": 0,
+          "intervalHalfWidth": 1.3642420526593924e-12
+        },
+        {
+          "z": 1.96,
+          "coverage": 0,
+          "intervalHalfWidth": 1.7826096154749393e-12
+        },
+        {
+          "z": 2.5,
+          "coverage": 0,
+          "intervalHalfWidth": 2.2737367544323206e-12
+        },
+        {
+          "z": 3,
+          "coverage": 0,
+          "intervalHalfWidth": 2.7284841053187847e-12
+        }
+      ],
+      "shallowSearchCost": {
+        "searches": 4,
+        "nodes": 10152,
+        "elapsedMs": 913,
+        "averageNodesPerSearch": 2538,
+        "averageElapsedMsPerSearch": 228.25
+      },
+      "deepSearchCost": {
+        "searches": 4,
+        "nodes": 83194,
+        "elapsedMs": 4127,
+        "averageNodesPerSearch": 20798.5,
+        "averageElapsedMsPerSearch": 1031.75
+      },
+      "sampleCount": 4,
+      "trainSampleCount": 2,
+      "holdoutSampleCount": 2
+    }
+  ],
+  "source": {
+    "searchPairsInputCount": 1,
+    "searchPairsInputPaths": [
+      "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.jsonl"
+    ],
+    "maxSamplesPerBucket": 4,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "targetHoldoutCoverage": 0.99,
+    "bucketPreset": null,
+    "adaptiveStopEnabled": false,
+    "adaptiveMinSamplesPerBucket": 160,
+    "adaptiveCheckEvery": 20,
+    "derivedFromProfileName": "calibrated-mpc-profile-v1",
+    "derivedFromProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json",
+    "derivedAt": "2026-04-16T12:55:56.013Z",
+    "runtimeVariant": {
+      "intervalScale": 1,
+      "mode": "high",
+      "runtime": {
+        "enableHighCut": true,
+        "enableLowCut": false,
+        "maxWindow": 1,
+        "maxChecksPerNode": 2,
+        "minDepth": 2,
+        "minDepthGap": 2,
+        "maxDepthDistance": 1,
+        "minPly": 1,
+        "highScale": 1,
+        "lowScale": 1,
+        "depthDistanceScale": 1.25,
+        "defaultMode": "high",
+        "maxTriesPerNode": 2
+      }
+    }
+  },
+  "diagnostics": {
+    "visitedRecords": 4,
+    "matchedRecords": 4,
+    "acceptedSamples": 4,
+    "usableCalibrationCount": 0,
+    "shallowSearchCost": {
+      "searches": 4,
+      "nodes": 10152,
+      "elapsedMs": 913,
+      "averageNodesPerSearch": 2538,
+      "averageElapsedMsPerSearch": 228.25
+    },
+    "deepSearchCost": {
+      "searches": 4,
+      "nodes": 83194,
+      "elapsedMs": 4127,
+      "averageNodesPerSearch": 20798.5,
+      "averageElapsedMsPerSearch": 1031.75
+    },
+    "stopReason": "all-buckets-complete",
+    "elapsedSeconds": 0.011,
+    "runtimeVariant": {
+      "baseProfileName": "calibrated-mpc-profile-v1",
+      "intervalScale": 1,
+      "mode": "high",
+      "runtime": {
+        "enableHighCut": true,
+        "enableLowCut": false,
+        "maxWindow": 1,
+        "maxChecksPerNode": 2,
+        "minDepth": 2,
+        "minDepthGap": 2,
+        "maxDepthDistance": 1,
+        "minPly": 1,
+        "highScale": 1,
+        "lowScale": 1,
+        "depthDistanceScale": 1.25,
+        "defaultMode": "high",
+        "maxTriesPerNode": 2
+      }
+    }
+  },
+  "stage": {
+    "number": 156,
+    "tag": "stage156",
+    "file": "stage-info.json",
+    "label": "Stage 156",
+    "updatedAt": "2026-04-15T23:40:00+09:00",
+    "kind": "mpc-profile",
+    "status": "runtime-variant",
+    "derivedFromProfileName": "calibrated-mpc-profile-v1",
+    "derivedFromProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/candidates/candidate-b/trained-mpc-profile.raw.json"
+  }
+}

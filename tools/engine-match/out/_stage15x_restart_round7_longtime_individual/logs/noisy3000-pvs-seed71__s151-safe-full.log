@@ -1,0 +1,25 @@
+$ node tools/engine-match/benchmark-vs-trineutron.mjs --output-json tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-pvs-seed71__s151-safe-full.json --games 1 --opening-plies 20 --opening-source random --seed 71 --our-time-ms 3000 --their-time-ms 3000 --our-max-depth 6 --their-max-depth 18 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --their-noise-scale 4 --variant-seed-mode shared --search-algorithm classic --aspiration-window 60 --max-table-entries 90000 --variants custom --generated-module tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-safe-full.generated.js --engine-options-json tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-safe-full.json --variant-label s151-safe-full
+
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 71..71
+Our search          : classic (Classic PVS), aspiration=60, table=90000
+Our engine time     : 3000ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 3000ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : custom
+Custom profiles     : eval=balanced13-alllate-smoothed stability extras 0.90x, ordering=stage151-split-late3__move-ordering__safe, tuple=diagonal-top24-latea-endgame-patched-calibrated, mpc=stage151-split-late3__runtime-mpc__safe4High, pattern-bank=1, ordering-pattern-bank=1
+Custom engine opts  : /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-safe-full.json
+Custom module path  : /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-safe-full.generated.js
+Games per variant   : 1 openings x 2 colors = 2
+
+[variant: s151-safe-full]
+opening#01 black loss diff= -8 our 57,643n/5,643ms vs tri 3,036,866n/39,020ms [exact-adjudication]
+opening#01 white win  diff= 20 our 74,473n/7,099ms vs tri 2,530,752n/39,017ms [exact-adjudication]
+score: 1/2 (50.0%)
+W-L-D: 1-1-0
+avg disc diff: 6.00
+exact adjudications: 2/2
+
+Saved benchmark summary to /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-pvs-seed71__s151-safe-full.json

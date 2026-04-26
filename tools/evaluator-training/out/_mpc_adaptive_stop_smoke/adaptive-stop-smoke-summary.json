@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-04-16T12:59:28.955Z",
+  "pairPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_adaptive_stop_smoke/perfect-pairs.jsonl",
+  "outputJsonPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_adaptive_stop_smoke/adaptive-stop-fit.json",
+  "sampleCount": 15,
+  "usable": true,
+  "closedEarly": true,
+  "closedReason": "adaptive-usable@15",
+  "recommendedZ": {
+    "z": 1,
+    "coverage": 1,
+    "intervalHalfWidth": 0
+  }
+}

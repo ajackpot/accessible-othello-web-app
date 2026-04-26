@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-04-19T11:14:47.972Z",
+  "candidate": {
+    "stage": 157,
+    "key": "s157-main-tight-probe",
+    "legacyAliases": [
+      "s154-tight-probe"
+    ],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 4,
+    "tier": "balanced",
+    "risk": "medium",
+    "notes": "Probe를 1개 후보로만 제한한 stage154용 타이트 후보.",
+    "moveOrderingStructureProfileKey": "stage154-tight-probe-v1",
+    "mpcStructureProfileKey": "stage154-verify-tight-v1"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71,
+      89,
+      107
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 0
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-tightprobe-reinforced/s157-main-tight-probe/engine-options/s154-main__s157-main-tight-probe.json",
+      "resultJson": "tools/engine-match/out/stage168-tightprobe-reinforced/s157-main-tight-probe/results/s154-main__s157-main-tight-probe.json"
+    },
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage168-tightprobe-reinforced/s157-main-tight-probe/engine-options/s154-both__s157-main-tight-probe.json",
+      "resultJson": "tools/engine-match/out/stage168-tightprobe-reinforced/s157-main-tight-probe/results/s154-both__s157-main-tight-probe.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.528312192753535,
+      "candidateNodesPerMs": 8.306149651620721,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 5.5,
+      "candidatePoints": 6.5,
+      "baselineScoreRate": 0.4583333333333333,
+      "candidateScoreRate": 0.5416666666666666,
+      "pointGap": 0.08333333333333331,
+      "baselineNodesPerMs": 9.391064673031886,
+      "candidateNodesPerMs": 9.29728555917481,
+      "recommendation": "s154-both + s157-main-tight-probe가 s154-both보다 paired score 기준 우세합니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.985308420783209,
+      "candidateNodesPerMs": 9.67874785764694,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.345898948136439,
+      "candidateNodesPerMs": 8.266968606526865,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.512125846624427,
+      "candidateNodesPerMs": 9.165518991011888,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 9.451571421223187,
+      "candidateNodesPerMs": 9.094598306820169,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    }
+  ]
+}

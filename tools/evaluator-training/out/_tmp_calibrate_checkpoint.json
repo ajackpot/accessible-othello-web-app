@@ -1,0 +1,89 @@
+{
+  "version": 2,
+  "signature": "{\"version\":1,\"inputPaths\":[\"/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl\"],\"calibrationSpecs\":[{\"key\":\"mpc-22-25-d4-d8\",\"minEmpties\":22,\"maxEmpties\":25,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"22-25 / d4→d8\",\"order\":0}],\"sampleStride\":1,\"sampleResidue\":0,\"maxSamplesPerBucket\":4,\"holdoutMod\":3,\"holdoutResidue\":0,\"timeLimitMs\":1000,\"aspirationWindow\":40,\"maxTableEntries\":200000,\"bucketPreset\":null,\"evaluationProfileName\":\"trained-phase-linear-v1\",\"moveOrderingProfileName\":\"stage44-candidateH2-edgePattern125-cornerPattern125-11-12\",\"tupleResidualProfileName\":\"diagonal-top24-latea-endgame-patched-calibrated\",\"mpcProfileName\":\"balanced13-alllate-smoothed-stability-090__runtime-mpc\",\"patternBankProfileNames\":null,\"moveOrderingPatternBankProfileNames\":null}",
+  "savedAt": "2026-04-16T12:51:53.347Z",
+  "completed": true,
+  "stopReason": "all-buckets-complete",
+  "outputJsonPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_calibrate_direct_resumed.json",
+  "bucketPreset": null,
+  "calibrationSpecs": [
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "order": 0
+    }
+  ],
+  "bucketData": [
+    {
+      "sampleIndex": 4,
+      "acceptedSamples": 4,
+      "trainSamples": [
+        {
+          "sampleIndex": 1,
+          "empties": 24,
+          "shallowScore": -5592,
+          "deepScore": 238
+        },
+        {
+          "sampleIndex": 2,
+          "empties": 24,
+          "shallowScore": -103188,
+          "deepScore": -68460
+        }
+      ],
+      "holdoutSamples": [
+        {
+          "sampleIndex": 0,
+          "empties": 24,
+          "shallowScore": 2194,
+          "deepScore": 11751
+        },
+        {
+          "sampleIndex": 3,
+          "empties": 24,
+          "shallowScore": 63499,
+          "deepScore": 67656
+        }
+      ],
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "closed": false,
+      "closedReason": null,
+      "searchCost": {
+        "shallow": {
+          "searches": 4,
+          "nodes": 8842,
+          "elapsedMs": 1236
+        },
+        "deep": {
+          "searches": 4,
+          "nodes": 89889,
+          "elapsedMs": 4122
+        }
+      }
+    }
+  ],
+  "globalSearchCost": {
+    "shallow": {
+      "searches": 4,
+      "nodes": 8842,
+      "elapsedMs": 1236
+    },
+    "deep": {
+      "searches": 4,
+      "nodes": 89889,
+      "elapsedMs": 4122
+    }
+  },
+  "diagnostics": {
+    "visitedSamples": 4,
+    "matchedSamples": 4,
+    "acceptedSamples": 4,
+    "lastProcessedInputSampleIndex": 3,
+    "resumedFromCheckpoint": true
+  }
+}

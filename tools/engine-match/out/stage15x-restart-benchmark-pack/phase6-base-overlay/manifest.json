@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-04-20T05:11:37.160Z",
+  "configPath": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/trineutron-match-suite.stage15x-base-overlay-round6.json",
+  "overlayManifest": [
+    {
+      "id": "s154-main-s158-quiet",
+      "overlayKey": "s154-stable-quiet",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-main-s158-quiet.json",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+      "mpcStructureProfile": "conservative-hybrid-v1"
+    },
+    {
+      "id": "s154-main-s158-open",
+      "overlayKey": "s154-stable-zebra-open",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-main-s158-open.json",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+      "mpcStructureProfile": "stage154-zebra-open-v1"
+    },
+    {
+      "id": "s154-both-s158-both",
+      "overlayKey": "s154-zebra-both-probe",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-both-s158-both.json",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-probe-v1",
+      "mpcStructureProfile": "stage154-zebra-both-v1"
+    }
+  ],
+  "variantIds": [
+    "active",
+    "s151-full-both",
+    "s151-safe-full",
+    "s154-main",
+    "s154-both",
+    "s154-main-s158-quiet",
+    "s154-main-s158-open",
+    "s154-both-s158-both"
+  ],
+  "scenarioIds": [
+    "noisy240-mtdf-seed29",
+    "noisy240-mtdf-seed53",
+    "noisy240-pvs-seed71",
+    "noisy240-pvs-seed89"
+  ]
+}

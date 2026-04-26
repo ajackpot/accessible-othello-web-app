@@ -1,0 +1,90 @@
+[info] stage151-split-late3: shared MPC search-pair precompute auto-enabled (2 supersets)
+[run ] stage151-split-late3: precompute shared MPC search pairs
+MPC search-pair precompute start
+  inputs           : 1 file(s)
+  calibration specs: 18-21:d4>d8, 20-21:d4>d8
+  bucket preset    : custom/default
+  sample stride    : every 1 sample(s), residue 0
+  max/bucket       : 2
+  time/search      : 2,000 ms
+  checkpoint       : tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.checkpoint.json (resume requested)
+  output jsonl     : tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.jsonl
+  estimated samples: n/a
+  resumed progress : accepted=2 | records=1 | last sample index=0
+  resume JSONL     : truncate-extra-tail (2 -> 1 record(s))
+
+Saved MPC search pairs to /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.jsonl
+Saved summary to /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.summary.json
+Records written : 2
+  18-21 / d4→d8        | accepted=   2 | pass=  0 | invalid=  0
+  20-21 / d4→d8        | accepted=   2 | pass=  0 | invalid=  0
+[run ] stage151-split-late3: fit MPC superset overlap8 from shared pairs
+MPC fit-from-pairs start
+  search pairs     : 1 file(s)
+  calibration specs: 18-21:d4>d8
+  bucket preset    : custom/default
+  max/bucket       : 2
+  adaptive stop    : off
+  target coverage  : 99.0%
+
+Saved fitted MPC profile to /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/calibration.overlap8.json
+Usable calibrations : 0/1
+  18-21 / d4→d8        | n=   2 | corr=n/a | sigma=n/a | z=n/a | coverage=n/a | usable=no
+[run ] stage151-split-late3: fit MPC superset split8 from shared pairs
+MPC fit-from-pairs start
+  search pairs     : 1 file(s)
+  calibration specs: 20-21:d4>d8
+  bucket preset    : custom/default
+  max/bucket       : 2
+  adaptive stop    : off
+  target coverage  : 99.0%
+
+Saved fitted MPC profile to /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/calibration.split8.json
+Usable calibrations : 0/1
+  20-21 / d4→d8        | n=   2 | corr=n/a | sigma=n/a | z=n/a | coverage=n/a | usable=no
+[run ] stage151-split-late3: derive MPC calibration variant baseline4
+Base profile     : stage151-split-late3__mpc__overlap8
+Output           : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/calibration-variant.baseline4.json
+Calibrations kept: 1
+  18-21 / d4→d8
+[run ] stage151-split-late3: derive runtime MPC variant safe4High
+Base profile : stage151-split-late3__mpc-calibration__baseline4
+Output       : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/runtime.safe4High.json
+Mode         : high
+maxChecks    : 1
+highScale    : 1
+lowScale     : 1
+intervalScale: 1
+[run ] stage151-split-late3: derive runtime MPC variant overlapHighSafe
+Base profile : stage151-split-late3__mpc__overlap8
+Output       : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/runtime.overlapHighSafe.json
+Mode         : high
+maxChecks    : 2
+highScale    : 1
+lowScale     : 1
+intervalScale: 1
+[run ] stage151-split-late3: derive runtime MPC variant overlapHighTight
+Base profile : stage151-split-late3__mpc__overlap8
+Output       : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/runtime.overlapHighTight.json
+Mode         : high
+maxChecks    : 2
+highScale    : 0.93
+lowScale     : 1
+intervalScale: 1
+[run ] stage151-split-late3: derive runtime MPC variant splitHighTight
+Base profile : stage151-split-late3__mpc__split8
+Output       : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/runtime.splitHighTight.json
+Mode         : high
+maxChecks    : 2
+highScale    : 0.93
+lowScale     : 1
+intervalScale: 1
+[run ] stage151-split-late3: derive runtime MPC variant overlapBothSoftLow
+Base profile : stage151-split-late3__mpc__overlap8
+Output       : /mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/runtime.overlapBothSoftLow.json
+Mode         : both
+maxChecks    : 2
+highScale    : 1
+lowScale     : 0.9
+intervalScale: 1
+Done: 1 family(s) processed.

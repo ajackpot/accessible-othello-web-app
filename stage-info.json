@@ -1,0 +1,7 @@
+{
+  "stage": 204,
+  "tag": "stage204",
+  "label": "Stage 204",
+  "updatedAt": "2026-04-22T20:50:00+09:00",
+  "summary": "Closed out the phase2 candidate pass with a refreshed Stage 192 remainder map, search/tail runtime-default helper exports, shared few-empties move-buffer refactoring, and documentation/version sync"
+}

@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-04-18T11:41:19+09:00",
+  "reason": "Discard stale pre-fix stage15x benchmark artifacts while retaining only representative reset samples.",
+  "kept": [
+    "benchmarks/stage167/stage167_benchmark_reset_samples_20260418.json",
+    "docs/reports/review/review-stage-167-benchmark-reset-samples.md",
+    "docs/reports/review/review-stage-167-stage154-pattern-export-root-cause-analysis.md",
+    "tools/evaluator-training/out/_stage167_stage15x_export_repair/repair-report.json",
+    "docs/reports/implementation/impl-stage-167-stage15x-factorized-export-repair-report.md",
+    "tools/engine-match/out/_stage167_pattern_audit_fixed/stage166_pattern_asset_audit.json",
+    "docs/reports/review/review-stage-166-stage154-pattern-asset-audit.md"
+  ],
+  "removed": [
+    {
+      "path": "tools/engine-match/out/stage15x-main-benchmark-pack",
+      "bytes": 21188
+    },
+    {
+      "path": "tools/engine-match/out/_stage154_support_screening",
+      "bytes": 1027325
+    },
+    {
+      "path": "tools/engine-match/out/_stage154_structural_screening_seq",
+      "bytes": 1114113
+    },
+    {
+      "path": "tools/engine-match/out/_stage163_refactor_check",
+      "bytes": 362355
+    },
+    {
+      "path": "tools/engine-match/out/_stage165_main_round3_240ms",
+      "bytes": 1048388
+    },
+    {
+      "path": "tools/engine-match/out/_stage166_pattern_readout.md",
+      "bytes": 1915
+    },
+    {
+      "path": "tools/engine-match/out/_stage166_pattern_stress_selection",
+      "bytes": 5284
+    },
+    {
+      "path": "tools/engine-match/out/_stage166_pattern_stress_suite",
+      "bytes": 679312
+    },
+    {
+      "path": "tools/engine-match/out/_stage166_pattern_audit",
+      "bytes": 99185
+    }
+  ]
+}

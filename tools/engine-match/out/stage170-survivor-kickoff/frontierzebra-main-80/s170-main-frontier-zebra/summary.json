@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-04-20T06:57:13.564Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-frontier-zebra",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 3,
+    "tier": "safe",
+    "risk": "low",
+    "notes": "cheap frontier ordering survivor와 guarded Zebra MPC survivor를 결합한 저위험 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "late-potential-frontier-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-frontier-gate"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-main"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-kickoff/frontierzebra-main-80/s170-main-frontier-zebra/engine-options/s154-main__s170-main-frontier-zebra.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-kickoff/frontierzebra-main-80/s170-main-frontier-zebra/results/s154-main__s170-main-frontier-zebra.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 3,
+      "candidatePoints": 5,
+      "baselineScoreRate": 0.375,
+      "candidateScoreRate": 0.625,
+      "pointGap": 0.25,
+      "baselineNodesPerMs": 15.473082706766917,
+      "candidateNodesPerMs": 15.413245033112583,
+      "recommendation": "s154-main + s170-main-frontier-zebra가 s154-main보다 paired score 기준 우세합니다."
+    }
+  ]
+}

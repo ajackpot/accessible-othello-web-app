@@ -1,0 +1,27 @@
+{
+  "familyKey": "stage151-split-late3",
+  "label": "stage151 split_late3",
+  "sourceModulePath": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+  "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+  "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-move-ordering-profile.json",
+  "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+  "mpcProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-mpc-profile.json",
+  "evaluationPatternBankPaths": [
+    "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+  ],
+  "orderingPatternBankSourcePaths": [
+    "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/ordering-pattern-bank.source.01.json"
+  ],
+  "profileNames": {
+    "evaluation": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrdering": "trained-move-ordering-linear-v2",
+    "tuple": "diagonal-top24-latea-endgame-patched-calibrated",
+    "mpc": "balanced13-alllate-smoothed-stability-090__runtime-mpc",
+    "evaluationPatternBanks": [
+      "pattern-bank-v1 balanced13"
+    ],
+    "orderingPatternBanks": [
+      "corner-diagonal-late-patch-v1 late3"
+    ]
+  }
+}

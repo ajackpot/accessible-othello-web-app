@@ -1,0 +1,202 @@
+[
+  {
+    "familyKey": "stage151-split-late3",
+    "label": "stage151 split_late3",
+    "sourceModule": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+    "moveOrderingSupersetBuckets": [
+      "7-8",
+      "9-9",
+      "10-10",
+      "11-12",
+      "13-14",
+      "15-16",
+      "17-18",
+      "19-19"
+    ],
+    "orderingPatternBankVariantKeys": [
+      "full",
+      "noend",
+      "latea",
+      "off"
+    ],
+    "mpcRuntimeVariantKeys": [
+      "safe4High",
+      "overlapHighSafe",
+      "overlapHighTight",
+      "splitHighTight",
+      "overlapBothSoftLow"
+    ],
+    "candidateCount": 6,
+    "candidateSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/candidate-summary.json",
+    "manifestPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/bundle-manifest.json",
+    "candidates": [
+      {
+        "key": "s151-safe-full",
+        "rationale": "Conservative full late3 retune: keep all ordering PB but use safest MPC.",
+        "moveOrderingVariant": "safe",
+        "orderingPatternBankVariant": "full",
+        "mpcRuntimeVariant": "safe4High",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-safe-full.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-safe-full.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-safe-full.json",
+        "size": {
+          "rawBytes": 2639334,
+          "gzipBytes": 1680656
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.safe.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.safe4High.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/ordering-pattern-bank.source.01.json"
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs",
+          "moveOrderingPatternBankMaxEmpties": 19
+        }
+      },
+      {
+        "key": "s151-noend-main",
+        "rationale": "Primary stage151 lane: remove 0-6 ordering PB and pair with overlap high-only tight MPC.",
+        "moveOrderingVariant": "balanced",
+        "orderingPatternBankVariant": "noend",
+        "mpcRuntimeVariant": "overlapHighTight",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-main.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-main.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-noend-main.json",
+        "size": {
+          "rawBytes": 2569991,
+          "gzipBytes": 1634381
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.balanced.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.overlapHighTight.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/ordering-pattern-bank/ordering-pattern-bank.noend.json"
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs",
+          "moveOrderingPatternBankMaxEmpties": 19
+        }
+      },
+      {
+        "key": "s151-latea-main",
+        "rationale": "Keep only 13-19 ordering PB to test whether late-a is the real signal.",
+        "moveOrderingVariant": "balanced",
+        "orderingPatternBankVariant": "latea",
+        "mpcRuntimeVariant": "overlapHighTight",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-latea-main.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-latea-main.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-latea-main.json",
+        "size": {
+          "rawBytes": 2459537,
+          "gzipBytes": 1562538
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.balanced.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.overlapHighTight.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/ordering-pattern-bank/ordering-pattern-bank.latea.json"
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs",
+          "moveOrderingPatternBankMaxEmpties": 19
+        }
+      },
+      {
+        "key": "s151-linear-only",
+        "rationale": "Stage151 evaluation family with late3 ordering PB completely removed.",
+        "moveOrderingVariant": "balanced",
+        "orderingPatternBankVariant": "off",
+        "mpcRuntimeVariant": "overlapHighTight",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-linear-only.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-linear-only.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-linear-only.json",
+        "size": {
+          "rawBytes": 2338412,
+          "gzipBytes": 1482830
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.balanced.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.overlapHighTight.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": null
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs"
+        }
+      },
+      {
+        "key": "s151-noend-split",
+        "rationale": "Same noend ordering PB but with split-stage high-only MPC.",
+        "moveOrderingVariant": "wide",
+        "orderingPatternBankVariant": "noend",
+        "mpcRuntimeVariant": "splitHighTight",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-split.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-split.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-noend-split.json",
+        "size": {
+          "rawBytes": 2569966,
+          "gzipBytes": 1634447
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.superset.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.splitHighTight.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/ordering-pattern-bank/ordering-pattern-bank.noend.json"
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs",
+          "moveOrderingPatternBankMaxEmpties": 19
+        }
+      },
+      {
+        "key": "s151-full-both",
+        "rationale": "Most aggressive late3 family candidate with full PB + both-mode MPC.",
+        "moveOrderingVariant": "wide",
+        "orderingPatternBankVariant": "full",
+        "mpcRuntimeVariant": "overlapBothSoftLow",
+        "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-full-both.generated.js",
+        "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-full-both.summary.json",
+        "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/engine-options/s151-full-both.json",
+        "size": {
+          "rawBytes": 2640992,
+          "gzipBytes": 1681054
+        },
+        "componentPaths": {
+          "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+          "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.superset.json",
+          "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+          "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.overlapBothSoftLow.json",
+          "evaluationPatternBankPaths": [
+            "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+          ],
+          "orderingPatternBankPath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/ordering-pattern-bank.source.01.json"
+        },
+        "engineOptions": {
+          "classicSearchDriver": "pvs",
+          "moveOrderingPatternBankMaxEmpties": 19
+        }
+      }
+    ]
+  }
+]

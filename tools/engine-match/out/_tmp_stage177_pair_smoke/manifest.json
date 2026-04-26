@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-04-20T16:07:19.828Z",
+  "first": {
+    "stage": 157,
+    "key": "s157-main-assertive-both",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "hybrid-probe-v1",
+    "mpcStructureProfileKey": "assertive-both-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/_tmp_stage177_pair_smoke/engine-options/s157-main-assertive-both.json"
+  },
+  "second": {
+    "stage": 176,
+    "key": "s176-main-wide-zebra-bothlite",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage170-frontier-zebra-bothlite-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/_tmp_stage177_pair_smoke/engine-options/s176-main-wide-zebra-bothlite.json"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4
+  },
+  "microResults": [
+    {
+      "timeLimitMs": 80,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/_tmp_stage177_pair_smoke/results/micro/80ms_seed17.json"
+    }
+  ]
+}

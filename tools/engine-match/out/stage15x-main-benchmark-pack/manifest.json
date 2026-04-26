@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-04-20T05:11:36.927Z",
+  "supportStackDir": "tools/evaluator-training/out/stage15x-support-stack",
+  "supportConfig": "tools/engine-match/out/stage15x-main-benchmark-pack/trineutron-match-suite.stage154-support-screening.json",
+  "structuralConfig": "tools/engine-match/out/stage15x-main-benchmark-pack/trineutron-match-suite.stage154-structural-screening.json",
+  "structuralCandidateSummaries": [
+    {
+      "key": "s154-anchor-main",
+      "notes": "stage157 anchor. Hybrid main + conservative MPC. Stage158 direct-pair에서는 비채택으로 정리된 retired mainline candidate입니다.",
+      "moveOrderingStructureProfile": "hybrid-main-v1",
+      "mpcStructureProfile": "conservative-hybrid-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-anchor-main.json"
+    },
+    {
+      "key": "s154-stable-quiet",
+      "notes": "Edax/Othello-sensei 힌트를 ordering에만 주입한 분리 후보. Stage158 direct-pair에서는 비채택으로 정리된 retired mainline candidate입니다.",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+      "mpcStructureProfile": "conservative-hybrid-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-quiet.json"
+    },
+    {
+      "key": "s154-stable-quiet-probe",
+      "notes": "stable/quiet ordering + top-K probe. Reinforced retest까지 마친 뒤 비채택으로 닫은 retired mainline candidate입니다.",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-probe-v1",
+      "mpcStructureProfile": "conservative-hybrid-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-quiet-probe.json"
+    },
+    {
+      "key": "s154-stable-zebra",
+      "notes": "stage158 survivor candidate. stable/quiet ordering + Zebra ladder MPC. Reinforced retest 후 채택됐지만, stage157 survivor들과의 후속 처리 결정은 다음 session으로 넘깁니다.",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+      "mpcStructureProfile": "stage154-zebra-guarded-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-zebra.json"
+    },
+    {
+      "key": "s154-stable-zebra-open",
+      "notes": "Zebra ladder가 representative smoke에서도 실제로 probe selection까지 내려가도록 guard를 다소 연 후보. Stage158 direct-pair에서는 비채택으로 정리된 retired mainline candidate입니다.",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+      "mpcStructureProfile": "stage154-zebra-open-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-zebra-open.json"
+    },
+    {
+      "key": "s154-zebra-both-probe",
+      "notes": "구조 최고공격 후보. Reinforced retest까지 마친 뒤 비채택으로 닫은 retired mainline candidate입니다.",
+      "moveOrderingStructureProfile": "stage154-stable-quiet-probe-v1",
+      "mpcStructureProfile": "stage154-zebra-both-v1",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-zebra-both-probe.json"
+    }
+  ]
+}

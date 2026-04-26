@@ -1,0 +1,18 @@
+{
+  "scope": "suite",
+  "createdAt": "2026-04-16T12:55:49.618Z",
+  "steps": {
+    "shared-search-pairs": {
+      "status": "success",
+      "description": "shared MPC search-pair precompute",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/precompute-mpc-search-pairs.mjs --input /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl --evaluation-profile-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-evaluation-profile.snapshot.json --move-ordering-profile-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-move-ordering-profile.snapshot.json --tuple-profile-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/active-tuple-residual-profile.snapshot.json --calibration-buckets 22-25:4>8 --sample-stride 1 --sample-residue 0 --max-samples-per-bucket 4 --time-limit-ms 1000 --progress-every 1 --max-table-entries 50000 --aspiration-window 40 --output-jsonl /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.jsonl --summary-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.summary.json --checkpoint-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.checkpoint.json --checkpoint-every 2",
+      "signature": "11315ee870f0de110a1991929a25ad60879970e9de4d358cb068beca9c086ae7",
+      "outputs": [
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.jsonl",
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.summary.json"
+      ],
+      "startedAt": "2026-04-16T12:55:49.620Z",
+      "finishedAt": "2026-04-16T12:55:55.089Z"
+    }
+  }
+}

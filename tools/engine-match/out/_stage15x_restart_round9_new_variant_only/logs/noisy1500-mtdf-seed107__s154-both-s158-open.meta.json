@@ -1,0 +1,13 @@
+{
+  "runId": "noisy1500-mtdf-seed107__s154-both-s158-open",
+  "variantId": "s154-both-s158-open",
+  "variantLabel": "s154-both + s158-stable-zebra-open",
+  "scenarioId": "noisy1500-mtdf-seed107",
+  "scenarioLabel": "noisy 1500ms MTD(f) seed107",
+  "startedAt": 1776519907.7911441,
+  "finishedAt": 1776519955.916681,
+  "wallSeconds": 48.12553691864014,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-mtdf-seed107__s154-both-s158-open.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-mtdf-seed107__s154-both-s158-open.log"
+}

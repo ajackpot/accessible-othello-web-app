@@ -1,0 +1,36 @@
+$ node /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/benchmark-vs-trineutron.mjs --variants custom --games 4 --opening-plies 20 --seed 89 --our-time-ms 240 --their-time-ms 240 --our-max-depth 6 --their-max-depth 18 --search-algorithm classic --aspiration-window 60 --max-table-entries 90000 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --solver-adjudication-max-depth 14 --their-noise-scale 4 --variant-seed-mode shared --output-json /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-pvs-seed89/s154-main.json --variant-label s154-main --generated-module tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js --engine-options-json tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json
+
+STDOUT:
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 89..92
+Our search          : classic (Classic PVS), aspiration=60, table=90000
+Our engine time     : 240ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 240ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : custom
+Custom profiles     : eval=balanced13-alllate-smoothed stability extras 0.90x, ordering=stage154-main-recenter__move-ordering__balanced, tuple=diagonal-top24-latea-endgame-patched-calibrated, mpc=stage154-main-recenter__runtime-mpc__overlapHighTight, pattern-bank=1, ordering-pattern-bank=0
+Custom engine opts  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json
+Custom module path  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js
+Games per variant   : 4 openings x 2 colors = 8
+
+[variant: s154-main]
+opening#01 black win  diff= 42 our 15,638n/6,500ms vs tri 54,143n/3,632ms [exact-adjudication]
+opening#01 white win  diff= 18 our 17,162n/5,017ms vs tri 63,572n/3,581ms [exact-adjudication]
+opening#02 black win  diff=  2 our 18,627n/6,047ms vs tri 88,481n/3,714ms [exact-adjudication]
+opening#02 white win  diff= 14 our 21,390n/5,267ms vs tri 79,975n/3,570ms [exact-adjudication]
+opening#03 black win  diff= 28 our 23,339n/6,170ms vs tri 68,475n/3,629ms [exact-adjudication]
+opening#03 white win  diff= 12 our 21,013n/5,831ms vs tri 78,081n/3,601ms [exact-adjudication]
+opening#04 black win  diff= 47 our 20,117n/5,068ms vs tri 71,400n/3,281ms [exact-adjudication]
+opening#04 white draw diff=  0 our 17,297n/5,923ms vs tri 70,955n/3,542ms [exact-adjudication]
+score: 7.5/8 (93.8%)
+W-L-D: 7-0-1
+avg disc diff: 20.38
+exact adjudications: 8/8
+
+Saved benchmark summary to /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-pvs-seed89/s154-main.json
+
+
+STDERR:
+

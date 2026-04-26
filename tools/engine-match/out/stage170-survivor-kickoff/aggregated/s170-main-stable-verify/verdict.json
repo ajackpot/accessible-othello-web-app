@@ -1,0 +1,20 @@
+{
+  "candidate": "s170-main-stable-verify",
+  "verdict": "reject",
+  "overall": {
+    "baselinePoints": 28.5,
+    "candidatePoints": 19.5,
+    "totalGames": 48,
+    "pointGap": -0.1875
+  },
+  "pattern": {
+    "s154-main": ["loss", "loss", "loss"],
+    "s154-both": ["win", "tie", "tie"]
+  },
+  "notes": [
+    "the candidate loses all three time buckets against s154-main",
+    "the only positive cell is s154-both 80ms",
+    "candidate is slower in all six aggregated rows",
+    "this combo should be retired rather than retested"
+  ]
+}

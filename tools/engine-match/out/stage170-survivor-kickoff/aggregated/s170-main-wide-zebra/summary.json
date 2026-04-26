@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-04-20T06:22:41.721Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-wide-zebra",
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 1,
+    "tier": "aggressive",
+    "risk": "medium",
+    "notes": "Stage157의 가장 선명한 wide ordering survivor와 stage158의 guarded Zebra MPC survivor를 교차 결합한 1순위 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "sourceFiles": [
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-main-80/s170-main-wide-zebra/results/s154-main__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-main-160a/s170-main-wide-zebra/results/s154-main__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-main-160b/s170-main-wide-zebra/results/s154-main__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-main-240a/s170-main-wide-zebra/results/s154-main__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-main-240b/s170-main-wide-zebra/results/s154-main__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-80/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-160a/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-160b/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-240a/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-240b/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json"
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 2.5,
+      "candidatePoints": 5.5,
+      "baselineScoreRate": 0.3125,
+      "candidateScoreRate": 0.6875,
+      "pointGap": 0.375,
+      "baselineNodesPerMs": 12.257251313996496,
+      "candidateNodesPerMs": 12.054178957718783,
+      "recommendation": "candidate overlay가 baseline보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 5,
+      "candidatePoints": 3,
+      "baselineScoreRate": 0.625,
+      "candidateScoreRate": 0.375,
+      "pointGap": -0.25,
+      "baselineNodesPerMs": 13.50935814158318,
+      "candidateNodesPerMs": 13.358817364443711,
+      "recommendation": "baseline이 candidate overlay보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 14.133491861752285,
+      "candidateNodesPerMs": 13.914404580467108,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 12.034536132340136,
+      "candidateNodesPerMs": 11.899071696622556,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 2,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.25,
+      "candidateScoreRate": 0.75,
+      "pointGap": 0.5,
+      "baselineNodesPerMs": 13.547206902200623,
+      "candidateNodesPerMs": 13.505799571216535,
+      "recommendation": "candidate overlay가 baseline보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 6,
+      "candidatePoints": 2,
+      "baselineScoreRate": 0.75,
+      "candidateScoreRate": 0.25,
+      "pointGap": -0.5,
+      "baselineNodesPerMs": 14.440168818272095,
+      "candidateNodesPerMs": 14.195760145366444,
+      "recommendation": "baseline이 candidate overlay보다 앞섰습니다."
+    }
+  ],
+  "overall": {
+    "baselinePoints": 23.5,
+    "candidatePoints": 24.5,
+    "totalGames": 48,
+    "pointGap": 0.020833333333333332
+  }
+}

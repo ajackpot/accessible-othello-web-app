@@ -1,0 +1,285 @@
+{
+  "generatedAt": "2026-04-16T12:55:32.648Z",
+  "configPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite.config.json",
+  "outputDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite",
+  "moduleFormat": "compact",
+  "dryRun": false,
+  "resume": false,
+  "continueOnError": false,
+  "inputPaths": [
+    "tools/evaluator-training/out/stage35_mpc_synthetic.jsonl"
+  ],
+  "sharedProfiles": {
+    "activeEvaluationSnapshot": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json",
+    "activeMoveOrderingSnapshot": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json",
+    "activeTupleSnapshot": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-tuple-residual-profile.snapshot.json",
+    "activeMpcSnapshot": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-mpc-profile.snapshot.json",
+    "evaluationProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json",
+    "moveOrderingProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json",
+    "tupleProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-tuple-residual-profile.snapshot.json",
+    "baselineMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-mpc-profile.snapshot.json"
+  },
+  "benchmarkBaseline": {
+    "evaluationProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json",
+    "moveOrderingProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json",
+    "tupleProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-tuple-residual-profile.snapshot.json",
+    "mpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-mpc-profile.snapshot.json",
+    "mpcMode": null
+  },
+  "sharedSearchPairs": {
+    "mode": "off",
+    "enabled": false,
+    "canShareSearchPairs": true,
+    "reason": null,
+    "calibrationBuckets": [
+      "22-25:4>8"
+    ],
+    "maxSamplesPerBucket": 4,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "timeLimitMs": 1000,
+    "progressEvery": 1,
+    "maxTableEntries": 50000,
+    "aspirationWindow": 40,
+    "outputJsonlPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.jsonl",
+    "summaryJsonPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.summary.json",
+    "checkpointJsonPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.checkpoint.json",
+    "checkpointEvery": 50
+  },
+  "candidates": [
+    {
+      "key": "candidate-a",
+      "name": "candidate-a",
+      "description": null,
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "sampleStride": 1,
+      "sampleResidue": 0,
+      "maxSamplesPerBucket": 4,
+      "holdoutMod": 2,
+      "holdoutResidue": 0,
+      "targetHoldoutCoverage": 0.99,
+      "targetHighHoldoutCoverage": 0.99,
+      "targetLowHoldoutCoverage": 0.99,
+      "timeLimitMs": 1000,
+      "progressEvery": 1,
+      "maxTableEntries": 50000,
+      "aspirationWindow": 40,
+      "zValues": [
+        1,
+        1.5,
+        1.96,
+        2.5,
+        3
+      ],
+      "runtimeVariant": {
+        "defaultMode": "high",
+        "enableHighCut": null,
+        "enableLowCut": null,
+        "maxWindow": 1,
+        "minDepth": 2,
+        "minDepthGap": 2,
+        "maxDepthDistance": 1,
+        "minPly": 1,
+        "maxChecksPerNode": 1,
+        "intervalScale": 1,
+        "highScale": 1,
+        "lowScale": 1,
+        "depthDistanceScale": 1.25
+      },
+      "exportModule": false,
+      "benchmarks": {
+        "depth": {
+          "enabled": false,
+          "empties": [
+            18,
+            22,
+            26,
+            30
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 2000,
+          "maxDepth": 8,
+          "exactEndgameEmpties": 10,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        },
+        "exact": {
+          "enabled": false,
+          "empties": [
+            10,
+            12,
+            14
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 60000,
+          "maxDepth": 12,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        }
+      },
+      "outputDir": null
+    },
+    {
+      "key": "candidate-b",
+      "name": "candidate-b",
+      "description": null,
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "sampleStride": 1,
+      "sampleResidue": 0,
+      "maxSamplesPerBucket": 4,
+      "holdoutMod": 2,
+      "holdoutResidue": 0,
+      "targetHoldoutCoverage": 0.99,
+      "targetHighHoldoutCoverage": 0.99,
+      "targetLowHoldoutCoverage": 0.99,
+      "timeLimitMs": 1000,
+      "progressEvery": 1,
+      "maxTableEntries": 50000,
+      "aspirationWindow": 40,
+      "zValues": [
+        1,
+        1.5,
+        1.96,
+        2.5,
+        3
+      ],
+      "runtimeVariant": {
+        "defaultMode": "high",
+        "enableHighCut": null,
+        "enableLowCut": null,
+        "maxWindow": 1,
+        "minDepth": 2,
+        "minDepthGap": 2,
+        "maxDepthDistance": 1,
+        "minPly": 1,
+        "maxChecksPerNode": 2,
+        "intervalScale": 1,
+        "highScale": 1,
+        "lowScale": 1,
+        "depthDistanceScale": 1.25
+      },
+      "exportModule": false,
+      "benchmarks": {
+        "depth": {
+          "enabled": false,
+          "empties": [
+            18,
+            22,
+            26,
+            30
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 2000,
+          "maxDepth": 8,
+          "exactEndgameEmpties": 10,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        },
+        "exact": {
+          "enabled": false,
+          "empties": [
+            10,
+            12,
+            14
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 60000,
+          "maxDepth": 12,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        }
+      },
+      "outputDir": null
+    },
+    {
+      "key": "candidate-c",
+      "name": "candidate-c",
+      "description": null,
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "sampleStride": 1,
+      "sampleResidue": 0,
+      "maxSamplesPerBucket": 4,
+      "holdoutMod": 2,
+      "holdoutResidue": 0,
+      "targetHoldoutCoverage": 0.99,
+      "targetHighHoldoutCoverage": 0.99,
+      "targetLowHoldoutCoverage": 0.99,
+      "timeLimitMs": 1000,
+      "progressEvery": 1,
+      "maxTableEntries": 50000,
+      "aspirationWindow": 40,
+      "zValues": [
+        1,
+        1.5,
+        1.96,
+        2.5,
+        3
+      ],
+      "runtimeVariant": {
+        "defaultMode": "both",
+        "enableHighCut": null,
+        "enableLowCut": null,
+        "maxWindow": 1,
+        "minDepth": 2,
+        "minDepthGap": 2,
+        "maxDepthDistance": 1,
+        "minPly": 1,
+        "maxChecksPerNode": 2,
+        "intervalScale": 1,
+        "highScale": 1,
+        "lowScale": 0.95,
+        "depthDistanceScale": 1.25
+      },
+      "exportModule": false,
+      "benchmarks": {
+        "depth": {
+          "enabled": false,
+          "empties": [
+            18,
+            22,
+            26,
+            30
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 2000,
+          "maxDepth": 8,
+          "exactEndgameEmpties": 10,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        },
+        "exact": {
+          "enabled": false,
+          "empties": [
+            10,
+            12,
+            14
+          ],
+          "seedStart": 1,
+          "seedCount": 6,
+          "repetitions": 1,
+          "timeLimitMs": 60000,
+          "maxDepth": 12,
+          "baselineMpcMode": null,
+          "candidateMpcMode": null
+        }
+      },
+      "outputDir": null
+    }
+  ]
+}

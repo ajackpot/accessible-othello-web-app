@@ -1,0 +1,442 @@
+{
+  "version": 1,
+  "name": "stage151-split-late3__mpc-calibration__baseline4",
+  "description": "stage151-split-late3 MPC calibration variant baseline4",
+  "source": {
+    "searchPairsInputCount": 1,
+    "searchPairsInputPaths": [
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\out\\stage15x-support-stack\\stage151-split-late3\\mpc\\shared-search-pairs.jsonl"
+    ],
+    "maxSamplesPerBucket": 400,
+    "holdoutMod": 10,
+    "holdoutResidue": 0,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "targetHoldoutCoverage": 0.99,
+    "bucketPreset": null,
+    "adaptiveStopEnabled": false,
+    "adaptiveMinSamplesPerBucket": 160,
+    "adaptiveCheckEvery": 20,
+    "derivedFromProfileName": "stage151-split-late3__mpc__overlap8",
+    "derivedFromProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/calibration.overlap8.json",
+    "derivedAt": "2026-04-17T21:03:05.129Z",
+    "variant": {
+      "keepSpecs": [
+        {
+          "raw": "18-21:4>8",
+          "minEmpties": 18,
+          "maxEmpties": 21,
+          "shallowDepth": 4,
+          "deepDepth": 8
+        },
+        {
+          "raw": "22-25:4>8",
+          "minEmpties": 22,
+          "maxEmpties": 25,
+          "shallowDepth": 4,
+          "deepDepth": 8
+        },
+        {
+          "raw": "26-29:6>10",
+          "minEmpties": 26,
+          "maxEmpties": 29,
+          "shallowDepth": 6,
+          "deepDepth": 10
+        },
+        {
+          "raw": "30-33:6>10",
+          "minEmpties": 30,
+          "maxEmpties": 33,
+          "shallowDepth": 6,
+          "deepDepth": 10
+        }
+      ]
+    }
+  },
+  "diagnostics": {
+    "visitedRecords": 1694,
+    "matchedRecords": 3200,
+    "acceptedSamples": 3200,
+    "usableCalibrationCount": 8,
+    "shallowSearchCost": {
+      "searches": 3200,
+      "nodes": 15101790,
+      "elapsedMs": 585474,
+      "averageNodesPerSearch": 4719.309375,
+      "averageElapsedMsPerSearch": 182.960625
+    },
+    "deepSearchCost": {
+      "searches": 3200,
+      "nodes": 917718206,
+      "elapsedMs": 21253791,
+      "averageNodesPerSearch": 286786.939375,
+      "averageElapsedMsPerSearch": 6641.8096875
+    },
+    "stopReason": "all-buckets-complete",
+    "elapsedSeconds": 0.017,
+    "derivedVariant": {
+      "baseProfileName": "stage151-split-late3__mpc__overlap8",
+      "keptCalibrationCount": 4,
+      "keptCalibrationKeys": [
+        "mpc-18-21-d4-d8",
+        "mpc-22-25-d4-d8",
+        "mpc-26-29-d6-d10",
+        "mpc-30-33-d6-d10"
+      ]
+    }
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-21-d4-d8",
+      "label": "18-21 / d4→d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "sampleCount": 400,
+      "trainSampleCount": 360,
+      "holdoutSampleCount": 40,
+      "usable": true,
+      "regression": {
+        "sampleCount": 360,
+        "intercept": 1234.440251254747,
+        "slope": 1.0387402852693706,
+        "correlation": 0.9855380419271083,
+        "rSquared": 0.9712852320855185
+      },
+      "trainMetrics": {
+        "count": 360,
+        "mae": 9717.342253371024,
+        "rmse": 12722.110652374866,
+        "meanResidual": 1.2480288407661849e-12,
+        "stdDevResidual": 12722.110652374866,
+        "maxAbsResidual": 56718.88393576912
+      },
+      "holdoutMetrics": {
+        "count": 40,
+        "mae": 10718.215205070137,
+        "rmse": 13872.101174416428,
+        "meanResidual": -2287.5423964878873,
+        "stdDevResidual": 13682.19064249275,
+        "maxAbsResidual": 40563.10356259403
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0.8,
+          "intervalHalfWidth": 12722.110652374866
+        },
+        {
+          "z": 1.5,
+          "coverage": 0.875,
+          "intervalHalfWidth": 19083.165978562298
+        },
+        {
+          "z": 1.96,
+          "coverage": 0.9,
+          "intervalHalfWidth": 24935.336878654736
+        },
+        {
+          "z": 2.5,
+          "coverage": 0.975,
+          "intervalHalfWidth": 31805.276630937165
+        },
+        {
+          "z": 3,
+          "coverage": 0.975,
+          "intervalHalfWidth": 38166.331957124596
+        }
+      ],
+      "recommendedZ": {
+        "z": 3,
+        "coverage": 0.975,
+        "intervalHalfWidth": 38166.331957124596
+      },
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 426633,
+        "elapsedMs": 29615,
+        "averageNodesPerSearch": 1066.5825,
+        "averageElapsedMsPerSearch": 74.0375
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 21015553,
+        "elapsedMs": 699033,
+        "averageNodesPerSearch": 52538.8825,
+        "averageElapsedMsPerSearch": 1747.5825
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "label": "22-25 / d4→d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "sampleCount": 400,
+      "trainSampleCount": 360,
+      "holdoutSampleCount": 40,
+      "usable": true,
+      "regression": {
+        "sampleCount": 360,
+        "intercept": 3062.8293168602577,
+        "slope": 1.027535146404089,
+        "correlation": 0.9877295676390633,
+        "rSquared": 0.9756096987884508
+      },
+      "trainMetrics": {
+        "count": 360,
+        "mae": 8869.948064536895,
+        "rmse": 11802.106277935402,
+        "meanResidual": 2.0210993372731737e-13,
+        "stdDevResidual": 11802.106277935402,
+        "maxAbsResidual": 55468.905513862264
+      },
+      "holdoutMetrics": {
+        "count": 40,
+        "mae": 7961.154385990478,
+        "rmse": 10297.72402716636,
+        "meanResidual": 3966.5371388779895,
+        "stdDevResidual": 9503.141757628418,
+        "maxAbsResidual": 24714.288735201364
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0.75,
+          "intervalHalfWidth": 11802.106277935402
+        },
+        {
+          "z": 1.5,
+          "coverage": 0.9,
+          "intervalHalfWidth": 17703.1594169031
+        },
+        {
+          "z": 1.96,
+          "coverage": 0.975,
+          "intervalHalfWidth": 23132.128304753387
+        },
+        {
+          "z": 2.5,
+          "coverage": 1,
+          "intervalHalfWidth": 29505.265694838505
+        },
+        {
+          "z": 3,
+          "coverage": 1,
+          "intervalHalfWidth": 35406.3188338062
+        }
+      ],
+      "recommendedZ": {
+        "z": 2.5,
+        "coverage": 1,
+        "intervalHalfWidth": 29505.265694838505
+      },
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 479296,
+        "elapsedMs": 30095,
+        "averageNodesPerSearch": 1198.24,
+        "averageElapsedMsPerSearch": 75.2375
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 31157139,
+        "elapsedMs": 924810,
+        "averageNodesPerSearch": 77892.8475,
+        "averageElapsedMsPerSearch": 2312.025
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    },
+    {
+      "key": "mpc-26-29-d6-d10",
+      "label": "26-29 / d6→d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "sampleCount": 400,
+      "trainSampleCount": 360,
+      "holdoutSampleCount": 40,
+      "usable": true,
+      "regression": {
+        "sampleCount": 360,
+        "intercept": 4461.898412775493,
+        "slope": 1.0090461075045598,
+        "correlation": 0.99263497947727,
+        "rSquared": 0.9853242024818402
+      },
+      "trainMetrics": {
+        "count": 360,
+        "mae": 7188.721343111179,
+        "rmse": 9427.007477969091,
+        "meanResidual": 9.802331785774893e-13,
+        "stdDevResidual": 9427.007477969091,
+        "maxAbsResidual": 35544.8129983055
+      },
+      "holdoutMetrics": {
+        "count": 40,
+        "mae": 6858.402260670306,
+        "rmse": 8429.447279231093,
+        "meanResidual": 472.43939240566834,
+        "stdDevResidual": 8416.197624452496,
+        "maxAbsResidual": 24089.44721715989
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0.775,
+          "intervalHalfWidth": 9427.007477969091
+        },
+        {
+          "z": 1.5,
+          "coverage": 0.925,
+          "intervalHalfWidth": 14140.511216953637
+        },
+        {
+          "z": 1.96,
+          "coverage": 0.975,
+          "intervalHalfWidth": 18476.93465681942
+        },
+        {
+          "z": 2.5,
+          "coverage": 0.975,
+          "intervalHalfWidth": 23567.518694922728
+        },
+        {
+          "z": 3,
+          "coverage": 1,
+          "intervalHalfWidth": 28281.022433907274
+        }
+      ],
+      "recommendedZ": {
+        "z": 3,
+        "coverage": 1,
+        "intervalHalfWidth": 28281.022433907274
+      },
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 4254731,
+        "elapsedMs": 139667,
+        "averageNodesPerSearch": 10636.8275,
+        "averageElapsedMsPerSearch": 349.1675
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 173901814,
+        "elapsedMs": 3898167,
+        "averageNodesPerSearch": 434754.535,
+        "averageElapsedMsPerSearch": 9745.4175
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    },
+    {
+      "key": "mpc-30-33-d6-d10",
+      "label": "30-33 / d6→d10",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "sampleCount": 400,
+      "trainSampleCount": 360,
+      "holdoutSampleCount": 40,
+      "usable": true,
+      "regression": {
+        "sampleCount": 360,
+        "intercept": 4315.247301692972,
+        "slope": 1.003744188180462,
+        "correlation": 0.9930614566276073,
+        "rSquared": 0.9861710566393451
+      },
+      "trainMetrics": {
+        "count": 360,
+        "mae": 6713.8419506798755,
+        "rmse": 9135.281022806885,
+        "meanResidual": -6.164352978683181e-13,
+        "stdDevResidual": 9135.281022806885,
+        "maxAbsResidual": 32663.78104407555
+      },
+      "holdoutMetrics": {
+        "count": 40,
+        "mae": 9042.357624554495,
+        "rmse": 13012.264827514038,
+        "meanResidual": -1189.3234868792888,
+        "stdDevResidual": 12957.798639619163,
+        "maxAbsResidual": 47298.88424087351
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0.7,
+          "intervalHalfWidth": 9135.281022806885
+        },
+        {
+          "z": 1.5,
+          "coverage": 0.825,
+          "intervalHalfWidth": 13702.921534210327
+        },
+        {
+          "z": 1.96,
+          "coverage": 0.825,
+          "intervalHalfWidth": 17905.150804701494
+        },
+        {
+          "z": 2.5,
+          "coverage": 0.9,
+          "intervalHalfWidth": 22838.20255701721
+        },
+        {
+          "z": 3,
+          "coverage": 0.95,
+          "intervalHalfWidth": 27405.843068420654
+        }
+      ],
+      "recommendedZ": {
+        "z": 3,
+        "coverage": 0.95,
+        "intervalHalfWidth": 27405.843068420654
+      },
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 5815048,
+        "elapsedMs": 179978,
+        "averageNodesPerSearch": 14537.62,
+        "averageElapsedMsPerSearch": 449.945
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 185963972,
+        "elapsedMs": 4109022,
+        "averageNodesPerSearch": 464909.93,
+        "averageElapsedMsPerSearch": 10272.555
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    }
+  ],
+  "stage": {
+    "number": 156,
+    "tag": "stage156",
+    "file": "stage-info.json",
+    "label": "Stage 156",
+    "updatedAt": "2026-04-15T23:40:00+09:00",
+    "kind": "mpc-profile",
+    "status": "derived-variant",
+    "derivedFromProfileName": "stage151-split-late3__mpc__overlap8",
+    "derivedFromProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/calibration.overlap8.json"
+  }
+}

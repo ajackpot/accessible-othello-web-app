@@ -1,0 +1,21 @@
+{
+  "candidate": "s170-main-wide-zebra",
+  "verdict": "adopt",
+  "overall": {
+    "baselinePoints": 32.5,
+    "candidatePoints": 39.5,
+    "totalGames": 72,
+    "pointGap": 0.09722222222222222
+  },
+  "pattern": {
+    "s154-main": ["win", "tie", "win"],
+    "s154-both": ["tie", "tie", "win"]
+  },
+  "notes": [
+    "all six aggregated cells are non-loss for the candidate",
+    "the stronger baseline s154-both has no negative cells",
+    "240ms is positive on both baselines",
+    "overall score is +7.0 points for the candidate",
+    "throughput is slightly mixed but not materially worse"
+  ]
+}

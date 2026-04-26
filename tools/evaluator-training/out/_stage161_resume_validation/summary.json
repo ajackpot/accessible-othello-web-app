@@ -1,0 +1,30 @@
+{
+  "type": "stage161-resume-main-verification",
+  "batchFix": {
+    "file": "tools/evaluator-training/run-stage15x-support-stack-bundle.bat",
+    "rootCause": "LF-only line endings caused Windows cmd label resolution failure",
+    "fixed": "rewritten with CRLF line endings"
+  },
+  "stage154Main": {
+    "ready": true,
+    "module": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+    "engineOptions": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+    "moveOrderingPatternBankRequired": false,
+    "moveOrderingPatternBankComment": "stage154 source module contains no move-ordering pattern bank by design"
+  },
+  "stage151Resume": {
+    "checkpointCompleted": false,
+    "recordsWrittenCheckpoint": 544,
+    "jsonlValidLines": 550,
+    "acceptedSamples": 1632,
+    "acceptedTarget": 6400,
+    "bundleResumeExpectedAction": "truncate-extra-tail to checkpoint recordsWritten, then continue shared-pair precompute and fit"
+  },
+  "validationArtifacts": {
+    "note": "docs/reports/review/review-stage-161-resume-main-verification-notes.md",
+    "bundlePartialLog": "tools/evaluator-training/out/_stage161_resume_validation/bundle-partial.log",
+    "bundleResumeLog": "tools/evaluator-training/out/_stage161_resume_validation/bundle-resume.log",
+    "mainCandidateSmokeLog": "tools/evaluator-training/out/_stage161_resume_validation/main-candidate-smoke.log",
+    "mainBenchmarkPlanExample": "tools/engine-match/examples/trineutron-match-suite.stage15x-main.example.json"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "format": "compact-v1",
+  "name": "balanced13-alllate-smoothed-stability-090__runtime-mpc",
+  "stage": {
+    "number": 136,
+    "tag": "stage136",
+    "file": "stage-info.json",
+    "label": "Stage 136",
+    "updatedAt": "2026-04-13T23:59:00+09:00",
+    "kind": "mpc-profile",
+    "status": "runtime-variant",
+    "derivedFromProfileName": "balanced13-alllate-smoothed-stability-090__mpc-calibration",
+    "derivedFromProfilePath": "tools/evaluator-training/out/stage136-balanced13-support-stack/mpc/trained-mpc-profile.json"
+  },
+  "runtime": {
+    "enableHighCut": true,
+    "enableLowCut": false,
+    "maxWindow": 1,
+    "maxChecksPerNode": 2,
+    "minDepth": 2,
+    "minDepthGap": 2,
+    "maxDepthDistance": 1,
+    "minPly": 1,
+    "highScale": 0.93,
+    "lowScale": 1,
+    "depthDistanceScale": 1.25
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-21-d3-d7",
+      "label": "18-21 / d3→d7",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 3,
+      "deepDepth": 7,
+      "usable": true,
+      "intercept": -2103.6795216741275,
+      "slope": 1.046944692063539,
+      "intervalHalfWidth": 43295.843612113706,
+      "recommendedZ": {
+        "z": 3,
+        "intervalHalfWidth": 43295.843612113706,
+        "coverage": 0.975
+      }
+    },
+    {
+      "key": "mpc-18-21-d4-d8",
+      "label": "18-21 / d4→d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "usable": true,
+      "intercept": 2356.1537402930326,
+      "slope": 1.0512878295195345,
+      "intervalHalfWidth": 40225.19038302559,
+      "recommendedZ": {
+        "z": 3,
+        "intervalHalfWidth": 40225.19038302559,
+        "coverage": 0.975
+      }
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "label": "22-25 / d4→d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "usable": true,
+      "intercept": 3378.1105143888117,
+      "slope": 1.029726530719194,
+      "intervalHalfWidth": 31704.27034105199,
+      "recommendedZ": {
+        "z": 2.5,
+        "intervalHalfWidth": 31704.27034105199,
+        "coverage": 1
+      }
+    },
+    {
+      "key": "mpc-22-25-d4-d9",
+      "label": "22-25 / d4→d9",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 9,
+      "usable": true,
+      "intercept": 8003.463399719734,
+      "slope": 1.0300649747304085,
+      "intervalHalfWidth": 35565.64658788782,
+      "recommendedZ": {
+        "z": 2.5,
+        "intervalHalfWidth": 35565.64658788782,
+        "coverage": 1
+      }
+    },
+    {
+      "key": "mpc-26-29-d5-d10",
+      "label": "26-29 / d5→d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 5,
+      "deepDepth": 10,
+      "usable": true,
+      "intercept": -7298.743225513464,
+      "slope": 1.012680278068169,
+      "intervalHalfWidth": 36963.62767790835,
+      "recommendedZ": {
+        "z": 3,
+        "intervalHalfWidth": 36963.62767790835,
+        "coverage": 0.975
+      }
+    },
+    {
+      "key": "mpc-26-29-d6-d10",
+      "label": "26-29 / d6→d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "usable": true,
+      "intercept": 3408.053912251492,
+      "slope": 1.0094501464807109,
+      "intervalHalfWidth": 24279.737961739123,
+      "recommendedZ": {
+        "z": 2.5,
+        "intervalHalfWidth": 24279.737961739123,
+        "coverage": 1
+      }
+    },
+    {
+      "key": "mpc-30-33-d5-d11",
+      "label": "30-33 / d5→d11",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 5,
+      "deepDepth": 11,
+      "usable": true,
+      "intercept": -6137.495278534993,
+      "slope": 1.0151814699160266,
+      "intervalHalfWidth": 35059.72621381645,
+      "recommendedZ": {
+        "z": 2.5,
+        "intervalHalfWidth": 35059.72621381645,
+        "coverage": 1
+      }
+    },
+    {
+      "key": "mpc-30-33-d6-d10",
+      "label": "30-33 / d6→d10",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "usable": true,
+      "intercept": 2040.0592168714923,
+      "slope": 1.0135274256947069,
+      "intervalHalfWidth": 31136.76354669876,
+      "recommendedZ": {
+        "z": 3,
+        "intervalHalfWidth": 31136.76354669876,
+        "coverage": 1
+      }
+    }
+  ]
+}

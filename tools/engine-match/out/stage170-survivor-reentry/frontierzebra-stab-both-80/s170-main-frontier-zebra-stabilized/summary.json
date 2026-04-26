@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-04-20T11:11:24.197Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-frontier-zebra-stabilized",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 4,
+    "tier": "safe",
+    "risk": "low",
+    "notes": "logic reinforcement re-entry 후보. frontier-gate의 cheap signal skeleton은 유지하되 TT depth gate + square-parity tie-break + narrow top-K로 160ms 교차축 ambiguity를 낮추려는 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "stage170-frontier-stabilized-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-frontier-gate"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71,
+      89,
+      107
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-both"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-reentry/frontierzebra-stab-both-80/s170-main-frontier-zebra-stabilized/engine-options/s154-both__s170-main-frontier-zebra-stabilized.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-reentry/frontierzebra-stab-both-80/s170-main-frontier-zebra-stabilized/results/s154-both__s170-main-frontier-zebra-stabilized.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 12,
+      "baselinePoints": 6,
+      "candidatePoints": 6,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 15.73730261808736,
+      "candidateNodesPerMs": 15.625673621666436,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-04-18T09:16:02.828Z",
+  "configPath": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/trineutron-match-suite.stage15x-base-overlay-round6.json",
+  "runs": {
+    "noisy240-mtdf-seed29::active": {
+      "status": "success",
+      "signature": "6b21cdb752848ecdb27796b926f0ba9a18d3bb718c2d6c7475e8eaff517632a2",
+      "outputJsonPath": "tools/engine-match/out/_stage15x_restart_round6_base_overlay/results/noisy240-mtdf-seed29/active.json",
+      "exitCode": 0,
+      "finishedAt": "2026-04-18T09:16:52.796Z",
+      "aggregate": {
+        "games": 8,
+        "wins": 3,
+        "losses": 5,
+        "draws": 0,
+        "points": 3,
+        "discDiff": 2,
+        "totalPlayedPly": 208,
+        "totalOurTimeMs": 24499,
+        "totalTheirTimeMs": 25071,
+        "totalOurNodes": 445710,
+        "totalTheirNodes": 1620233,
+        "exactAdjudications": 8,
+        "exactAdjudicationTimeMs": 2893,
+        "exactAdjudicationNodes": 22121,
+        "scoreRate": 0.375,
+        "averageDiscDiff": 0.25,
+        "averagePlayedPly": 26,
+        "averageOurTimeMsPerGame": 3062.375,
+        "averageTheirTimeMsPerGame": 3133.875,
+        "averageOurNodesPerGame": 55713.75,
+        "averageTheirNodesPerGame": 202529.125,
+        "averageExactAdjudicationTimeMs": 361.625,
+        "averageExactAdjudicationNodes": 2765.125
+      }
+    }
+  }
+}

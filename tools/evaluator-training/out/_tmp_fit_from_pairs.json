@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "name": "calibrated-mpc-profile-v1",
+  "description": "precomputed shallow/deep search pair 기반 MPC/ProbCut 보정 프로필입니다.",
+  "source": {
+    "searchPairsInputCount": 1,
+    "searchPairsInputPaths": [
+      "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_precompute_pairs.jsonl"
+    ],
+    "maxSamplesPerBucket": 3,
+    "holdoutMod": 3,
+    "holdoutResidue": 0,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "targetHoldoutCoverage": 0.99,
+    "bucketPreset": null,
+    "adaptiveStopEnabled": false,
+    "adaptiveMinSamplesPerBucket": 160,
+    "adaptiveCheckEvery": 20
+  },
+  "diagnostics": {
+    "visitedRecords": 3,
+    "matchedRecords": 3,
+    "acceptedSamples": 3,
+    "usableCalibrationCount": 0,
+    "shallowSearchCost": {
+      "searches": 3,
+      "nodes": 7945,
+      "elapsedMs": 781,
+      "averageNodesPerSearch": 2648.3333333333335,
+      "averageElapsedMsPerSearch": 260.3333333333333
+    },
+    "deepSearchCost": {
+      "searches": 3,
+      "nodes": 62899,
+      "elapsedMs": 3103,
+      "averageNodesPerSearch": 20966.333333333332,
+      "averageElapsedMsPerSearch": 1034.3333333333333
+    },
+    "stopReason": "all-buckets-complete",
+    "elapsedSeconds": 0.011
+  },
+  "calibrations": [
+    {
+      "key": "mpc-22-25-d4-d8",
+      "label": "22-25 / d4→d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "sampleCount": 3,
+      "trainSampleCount": 2,
+      "holdoutSampleCount": 1,
+      "usable": false,
+      "regression": {
+        "sampleCount": 2,
+        "intercept": 4174.218861428752,
+        "slope": 0.7039017992540678,
+        "correlation": 1,
+        "rSquared": 1
+      },
+      "trainMetrics": {
+        "count": 2,
+        "mae": 2.0463630789890885e-12,
+        "rmse": 2.893994419845934e-12,
+        "meanResidual": 2.0463630789890885e-12,
+        "stdDevResidual": 2.0463630789890885e-12,
+        "maxAbsResidual": 4.092726157978177e-12
+      },
+      "holdoutMetrics": {
+        "count": 1,
+        "mae": 6032.4205910078235,
+        "rmse": 6032.4205910078235,
+        "meanResidual": -6032.4205910078235,
+        "stdDevResidual": 0,
+        "maxAbsResidual": 6032.4205910078235
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": 0,
+          "intervalHalfWidth": 2.0463630789890885e-12
+        },
+        {
+          "z": 1.5,
+          "coverage": 0,
+          "intervalHalfWidth": 3.069544618483633e-12
+        },
+        {
+          "z": 1.96,
+          "coverage": 0,
+          "intervalHalfWidth": 4.010871634818614e-12
+        },
+        {
+          "z": 2.5,
+          "coverage": 0,
+          "intervalHalfWidth": 5.115907697472721e-12
+        },
+        {
+          "z": 3,
+          "coverage": 0,
+          "intervalHalfWidth": 6.139089236967266e-12
+        }
+      ],
+      "recommendedZ": {
+        "z": 3,
+        "coverage": 0,
+        "intervalHalfWidth": 6.139089236967266e-12
+      },
+      "shallowSearchCost": {
+        "searches": 3,
+        "nodes": 7945,
+        "elapsedMs": 781,
+        "averageNodesPerSearch": 2648.3333333333335,
+        "averageElapsedMsPerSearch": 260.3333333333333
+      },
+      "deepSearchCost": {
+        "searches": 3,
+        "nodes": 62899,
+        "elapsedMs": 3103,
+        "averageNodesPerSearch": 20966.333333333332,
+        "averageElapsedMsPerSearch": 1034.3333333333333
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    }
+  ]
+}

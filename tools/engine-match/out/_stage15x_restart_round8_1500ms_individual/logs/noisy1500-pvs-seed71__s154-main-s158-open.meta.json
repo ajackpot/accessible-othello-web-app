@@ -1,0 +1,13 @@
+{
+  "runId": "noisy1500-pvs-seed71__s154-main-s158-open",
+  "variantId": "s154-main-s158-open",
+  "variantLabel": "s154-main + s158-stable-zebra-open",
+  "scenarioId": "noisy1500-pvs-seed71",
+  "scenarioLabel": "noisy 1500ms PVS seed71",
+  "startedAt": 1776513666.3603218,
+  "finishedAt": 1776513714.2710667,
+  "wallSeconds": 47.9107449054718,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/results/noisy1500-pvs-seed71__s154-main-s158-open.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/logs/noisy1500-pvs-seed71__s154-main-s158-open.log"
+}

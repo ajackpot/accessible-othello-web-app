@@ -1,0 +1,137 @@
+[
+  {
+    "key": "s154-safe",
+    "rationale": "Closest conservative retune: 10-18 ordering core + 4-bucket high-only MPC.",
+    "moveOrderingVariant": "safe",
+    "orderingPatternBankVariant": "base",
+    "mpcRuntimeVariant": "safe4High",
+    "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-safe.generated.js",
+    "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-safe.summary.json",
+    "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-safe.json",
+    "size": {
+      "rawBytes": 2336872,
+      "gzipBytes": 1482521
+    },
+    "componentPaths": {
+      "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+      "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.safe.json",
+      "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+      "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.safe4High.json",
+      "evaluationPatternBankPaths": [
+        "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+      ],
+      "orderingPatternBankPath": null
+    },
+    "engineOptions": {
+      "classicSearchDriver": "pvs"
+    }
+  },
+  {
+    "key": "s154-main",
+    "rationale": "Primary stage154 lane: 9-19 ordering + overlap high-only tight MPC.",
+    "moveOrderingVariant": "balanced",
+    "orderingPatternBankVariant": "base",
+    "mpcRuntimeVariant": "overlapHighTight",
+    "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+    "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.summary.json",
+    "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+    "size": {
+      "rawBytes": 2338543,
+      "gzipBytes": 1482892
+    },
+    "componentPaths": {
+      "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+      "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.balanced.json",
+      "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+      "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.overlapHighTight.json",
+      "evaluationPatternBankPaths": [
+        "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+      ],
+      "orderingPatternBankPath": null
+    },
+    "engineOptions": {
+      "classicSearchDriver": "pvs"
+    }
+  },
+  {
+    "key": "s154-wide-safe",
+    "rationale": "Wider 7-19 ordering with still-safe high-only MPC.",
+    "moveOrderingVariant": "wide",
+    "orderingPatternBankVariant": "base",
+    "mpcRuntimeVariant": "overlapHighSafe",
+    "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-wide-safe.generated.js",
+    "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-wide-safe.summary.json",
+    "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-wide-safe.json",
+    "size": {
+      "rawBytes": 2338521,
+      "gzipBytes": 1482923
+    },
+    "componentPaths": {
+      "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+      "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.superset.json",
+      "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+      "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.overlapHighSafe.json",
+      "evaluationPatternBankPaths": [
+        "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+      ],
+      "orderingPatternBankPath": null
+    },
+    "engineOptions": {
+      "classicSearchDriver": "pvs"
+    }
+  },
+  {
+    "key": "s154-split",
+    "rationale": "Alternative split-stage MPC without changing evaluator family.",
+    "moveOrderingVariant": "balanced",
+    "orderingPatternBankVariant": "base",
+    "mpcRuntimeVariant": "splitHighTight",
+    "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.generated.js",
+    "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.summary.json",
+    "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-split.json",
+    "size": {
+      "rawBytes": 2338535,
+      "gzipBytes": 1482915
+    },
+    "componentPaths": {
+      "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+      "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.balanced.json",
+      "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+      "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.splitHighTight.json",
+      "evaluationPatternBankPaths": [
+        "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+      ],
+      "orderingPatternBankPath": null
+    },
+    "engineOptions": {
+      "classicSearchDriver": "pvs"
+    }
+  },
+  {
+    "key": "s154-both",
+    "rationale": "Most aggressive stage154 candidate still aligned with mainstream MPC usage.",
+    "moveOrderingVariant": "wide",
+    "orderingPatternBankVariant": "base",
+    "mpcRuntimeVariant": "overlapBothSoftLow",
+    "modulePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+    "moduleSummaryPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.summary.json",
+    "engineOptionsPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+    "size": {
+      "rawBytes": 2338525,
+      "gzipBytes": 1482920
+    },
+    "componentPaths": {
+      "evaluationProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+      "moveOrderingProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.superset.json",
+      "tupleProfilePath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+      "runtimeMpcPath": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.overlapBothSoftLow.json",
+      "evaluationPatternBankPaths": [
+        "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+      ],
+      "orderingPatternBankPath": null
+    },
+    "engineOptions": {
+      "classicSearchDriver": "pvs"
+    }
+  }
+]

@@ -1,0 +1,386 @@
+{
+  "policy": {
+    "perConditionRounds": 4,
+    "timeControlsMs": [
+      80,
+      160,
+      240
+    ],
+    "opponentsPerTrial": 2,
+    "pairingsPerTrial": 2,
+    "gamesPerPairing": 12,
+    "gamesPerTrial": 24,
+    "trialsPerSession": 2,
+    "gamesPerSession": 48,
+    "plannedSessionCount": 3,
+    "totalPlannedGames": 144,
+    "scheduleRule": "각 trial은 변경된 후보 1개만 새 logic으로 교체하고, 나머지 invariant pairing은 가장 최근 동일-logic 결과를 carry-forward 합니다.",
+    "escalateBeyondPlanWhen": "trial 결과가 near-draw/sign-flip이거나, 새로운 보강 후보가 중간에 생기면 owning lane 다음 차례에 splice하거나 별도 session을 추가합니다."
+  },
+  "lineup": [
+    {
+      "slotOrdinal": 1,
+      "laneKey": "wide-zebra",
+      "baseCandidateKey": "s170-main-wide-zebra",
+      "baseStatus": "adopted_provisional_leader",
+      "option1": {
+        "optionOrdinal": 1,
+        "key": "s176-main-wide-zebra-bothlite",
+        "changeAxis": "mpc",
+        "sourceIdentity": "keep `wide-hybrid-v1` ordering, replace guarded Zebra MPC with `stage170-frontier-zebra-bothlite-v1`",
+        "hypothesis": "160ms 약세를 줄이면서 80ms 우세를 최대한 유지합니다.",
+        "whyNow": "frontier lane에서는 both-lite MPC가 실제로 stronger-baseline 160ms 음수를 지우고 채택까지 연결됐습니다."
+      },
+      "option2": {
+        "optionOrdinal": 2,
+        "key": "s176-main-wide-zebra-midtrim",
+        "changeAxis": "ordering",
+        "sourceIdentity": "keep guarded Zebra MPC, but trim `wide-hybrid` width one notch (top-K/probe/window midtrim custom profile planned)",
+        "hypothesis": "80ms edge를 유지하면서 160ms sign flip을 줄입니다.",
+        "whyNow": "primary both-lite swap이 80ms edge를 잃거나 long-think을 흐리게 만들 때만 엽니다."
+      },
+      "diagnosis": "80ms short-think는 가장 강하지만, `s157-main-assertive-both` direct match에서 160ms를 내주고 240ms takeover가 없습니다. 개선 포인트는 ordering이 아니라 MPC mid-think calibration 쪽이 우선입니다.",
+      "exhaustedWhen": "both-lite swap과 midtrim ordering이 모두 실패하면, 현재 wide-zebra lane은 사실상 구조 고점에 도달한 것으로 봅니다."
+    },
+    {
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "baseCandidateKey": "s157-main-assertive-both",
+      "baseStatus": "adopted_challenger",
+      "option1": {
+        "optionOrdinal": 1,
+        "key": "s176-main-wide-assertive",
+        "changeAxis": "ordering",
+        "sourceIdentity": "replace `hybrid-probe-v1` with `wide-hybrid-v1`, keep `assertive-both-v1` MPC",
+        "hypothesis": "80ms deficit를 메우면서 기존 160/240ms 안정성을 최대한 유지합니다.",
+        "whyNow": "현재 assertive lane의 약점은 short-think ordering 폭 부족으로 해석하는 것이 가장 자연스럽고, MPC 자체는 이미 long-think 안정성을 입증했습니다."
+      },
+      "option2": {
+        "optionOrdinal": 2,
+        "key": "s176-main-assertive-both-lite",
+        "changeAxis": "mpc",
+        "sourceIdentity": "keep `hybrid-probe-v1`, but moderate `assertive-both` one notch (checks/window/gate tightening custom MPC planned)",
+        "hypothesis": "wide ordering이 과적합되거나 160/240ms를 해치면, MPC aggressiveness를 소폭 낮춰 short-think 손실 없이 균형점을 찾습니다.",
+        "whyNow": "현재는 throughput과 long-think가 이미 좋아, MPC-lite는 backup path로만 보관하는 편이 맞습니다."
+      },
+      "diagnosis": "long-think non-collapse와 throughput은 좋지만, `s170-main-wide-zebra` direct match에서 80ms short-think를 내줍니다. 개선 포인트는 MPC를 더 세게 여는 것이 아니라 ordering의 초반 폭을 넓혀 fast lane 대응력을 올리는 쪽입니다.",
+      "exhaustedWhen": "wide-assertive와 assertive-both-lite가 둘 다 실패하면, assertive lane은 이미 자신의 최고 고점 부근에 있다고 보는 것이 타당합니다."
+    },
+    {
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "baseCandidateKey": "s170-main-frontier-zebra-bothlite",
+      "baseStatus": "adopted_challenger",
+      "option1": {
+        "optionOrdinal": 1,
+        "key": "s176-main-frontier-bothlite-parity",
+        "changeAxis": "ordering",
+        "sourceIdentity": "keep both-lite MPC, add only exact parity/square-class tie-break to frontier ordering (custom frontier-parity profile planned)",
+        "hypothesis": "80ms 약세를 거의 공짜 비용으로 줄이고, 160/240ms draw 성격을 유지합니다.",
+        "whyNow": "직전 ordering stabilization branch는 너무 무거웠고 실패했습니다. 이번엔 TT gate/top-K 없이 가장 싼 tie-break만 여는 쪽이 맞습니다."
+      },
+      "option2": {
+        "optionOrdinal": 2,
+        "key": "s176-main-frontier-bothlite-topk2",
+        "changeAxis": "ordering",
+        "sourceIdentity": "if parity-only is insufficient, add tiny lightweight top-K (2) without probe/TT stabilization",
+        "hypothesis": "parity-only가 무효일 때만 short-think 보조를 한 단계 더 줍니다.",
+        "whyNow": "stabilized branch의 실패를 고려하면, ordering 보강은 반드시 한 단계씩만 늘려야 합니다."
+      },
+      "diagnosis": "mid/long-think는 안정적이고 `s157-main-assertive-both`와도 exact draw지만, `s170-main-wide-zebra`에게 80ms를 내주고 throughput도 밀립니다. 개선 포인트는 MPC가 아니라 ordering에 아주 작은 short-think assist를 더하는 것입니다.",
+      "exhaustedWhen": "parity-only와 tiny-topK 둘 다 실패하면, frontier-bothlite lane은 현재 구조상 plateau 상단에 도달한 것으로 정리할 수 있습니다."
+    }
+  ],
+  "trials": [
+    {
+      "trialOrdinal": 1,
+      "sessionOrdinal": 1,
+      "slotOrdinal": 1,
+      "laneKey": "wide-zebra",
+      "optionOrdinal": 1,
+      "mutatedCandidateKey": "s176-main-wide-zebra-bothlite",
+      "baseCandidateKey": "s170-main-wide-zebra",
+      "opponentCandidateKeys": [
+        "s157-main-assertive-both",
+        "s170-main-frontier-zebra-bothlite"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s157-main-assertive-both",
+        "candidateBKey": "s170-main-frontier-zebra-bothlite",
+        "slotAOrdinal": 2,
+        "slotBOrdinal": 3,
+        "carryForwardFrom": "historical round10 adopted trio result"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    },
+    {
+      "trialOrdinal": 2,
+      "sessionOrdinal": 1,
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "optionOrdinal": 1,
+      "mutatedCandidateKey": "s176-main-wide-assertive",
+      "baseCandidateKey": "s157-main-assertive-both",
+      "opponentCandidateKeys": [
+        "s170-main-frontier-zebra-bothlite",
+        "s176-main-wide-zebra-bothlite"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s170-main-frontier-zebra-bothlite",
+        "candidateBKey": "s176-main-wide-zebra-bothlite",
+        "slotAOrdinal": 3,
+        "slotBOrdinal": 1,
+        "carryForwardFrom": "trial1 invariant pairing"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    },
+    {
+      "trialOrdinal": 3,
+      "sessionOrdinal": 2,
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "optionOrdinal": 1,
+      "mutatedCandidateKey": "s176-main-frontier-bothlite-parity",
+      "baseCandidateKey": "s170-main-frontier-zebra-bothlite",
+      "opponentCandidateKeys": [
+        "s176-main-wide-zebra-bothlite",
+        "s176-main-wide-assertive"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-wide-zebra-bothlite",
+        "candidateBKey": "s176-main-wide-assertive",
+        "slotAOrdinal": 1,
+        "slotBOrdinal": 2,
+        "carryForwardFrom": "trial2 invariant pairing"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    },
+    {
+      "trialOrdinal": 4,
+      "sessionOrdinal": 2,
+      "slotOrdinal": 1,
+      "laneKey": "wide-zebra",
+      "optionOrdinal": 2,
+      "mutatedCandidateKey": "s176-main-wide-zebra-midtrim",
+      "baseCandidateKey": "s176-main-wide-zebra-bothlite",
+      "opponentCandidateKeys": [
+        "s176-main-wide-assertive",
+        "s176-main-frontier-bothlite-parity"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-wide-assertive",
+        "candidateBKey": "s176-main-frontier-bothlite-parity",
+        "slotAOrdinal": 2,
+        "slotBOrdinal": 3,
+        "carryForwardFrom": "trial3 invariant pairing"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    },
+    {
+      "trialOrdinal": 5,
+      "sessionOrdinal": 3,
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "optionOrdinal": 2,
+      "mutatedCandidateKey": "s176-main-assertive-both-lite",
+      "baseCandidateKey": "s176-main-wide-assertive",
+      "opponentCandidateKeys": [
+        "s176-main-frontier-bothlite-parity",
+        "s176-main-wide-zebra-midtrim"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-frontier-bothlite-parity",
+        "candidateBKey": "s176-main-wide-zebra-midtrim",
+        "slotAOrdinal": 3,
+        "slotBOrdinal": 1,
+        "carryForwardFrom": "trial4 invariant pairing"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    },
+    {
+      "trialOrdinal": 6,
+      "sessionOrdinal": 3,
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "optionOrdinal": 2,
+      "mutatedCandidateKey": "s176-main-frontier-bothlite-topk2",
+      "baseCandidateKey": "s176-main-frontier-bothlite-parity",
+      "opponentCandidateKeys": [
+        "s176-main-wide-zebra-midtrim",
+        "s176-main-assertive-both-lite"
+      ],
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-wide-zebra-midtrim",
+        "candidateBKey": "s176-main-assertive-both-lite",
+        "slotAOrdinal": 1,
+        "slotBOrdinal": 2,
+        "carryForwardFrom": "trial5 invariant pairing"
+      },
+      "roundsPerCondition": 4,
+      "gamesPerTrial": 24
+    }
+  ],
+  "sessions": [
+    {
+      "sessionOrdinal": 1,
+      "trialOrdinals": [
+        1,
+        2
+      ],
+      "totalGames": 48,
+      "startingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 0,
+          "candidateKey": "s170-main-wide-zebra"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 0,
+          "candidateKey": "s157-main-assertive-both"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 0,
+          "candidateKey": "s170-main-frontier-zebra-bothlite"
+        }
+      ],
+      "endingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-zebra-bothlite"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-assertive"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 0,
+          "candidateKey": "s170-main-frontier-zebra-bothlite"
+        }
+      ],
+      "mutatedCandidateKeys": [
+        "s176-main-wide-zebra-bothlite",
+        "s176-main-wide-assertive"
+      ]
+    },
+    {
+      "sessionOrdinal": 2,
+      "trialOrdinals": [
+        3,
+        4
+      ],
+      "totalGames": 48,
+      "startingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-zebra-bothlite"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-assertive"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 0,
+          "candidateKey": "s170-main-frontier-zebra-bothlite"
+        }
+      ],
+      "endingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-assertive"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        }
+      ],
+      "mutatedCandidateKeys": [
+        "s176-main-frontier-bothlite-parity",
+        "s176-main-wide-zebra-midtrim"
+      ]
+    },
+    {
+      "sessionOrdinal": 3,
+      "trialOrdinals": [
+        5,
+        6
+      ],
+      "totalGames": 48,
+      "startingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-assertive"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        }
+      ],
+      "endingState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-assertive-both-lite"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-frontier-bothlite-topk2"
+        }
+      ],
+      "mutatedCandidateKeys": [
+        "s176-main-assertive-both-lite",
+        "s176-main-frontier-bothlite-topk2"
+      ]
+    }
+  ]
+}

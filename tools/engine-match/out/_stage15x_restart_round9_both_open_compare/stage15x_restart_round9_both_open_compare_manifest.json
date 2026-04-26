@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-04-18T13:45:00Z",
+  "comparisonMode": "stored-round8-controls-plus-fresh-round9-new-variant",
+  "baselineRound8Manifest": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/stage15x_restart_round8_1500ms_manifest.json",
+  "newVariantRound9Manifest": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/stage15x_restart_round9_new_variant_only_manifest.json",
+  "variants": [
+    {
+      "id": "active",
+      "label": "active-installed",
+      "source": "stored-round8"
+    },
+    {
+      "id": "s154-main-s158-open",
+      "label": "s154-main + s158-stable-zebra-open",
+      "source": "stored-round8"
+    },
+    {
+      "id": "s154-both-s158-open",
+      "label": "s154-both + s158-stable-zebra-open",
+      "source": "fresh-round9"
+    },
+    {
+      "id": "s154-both",
+      "label": "s154-both",
+      "source": "stored-round8"
+    },
+    {
+      "id": "s154-main",
+      "label": "s154-main",
+      "source": "stored-round8"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "noisy1500-mtdf-seed29",
+      "label": "noisy 1500ms MTD(f) seed29",
+      "seed": 29,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-mtdf-seed53",
+      "label": "noisy 1500ms MTD(f) seed53",
+      "seed": 53,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-mtdf-seed107",
+      "label": "noisy 1500ms MTD(f) seed107",
+      "seed": 107,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed71",
+      "label": "noisy 1500ms PVS seed71",
+      "seed": 71,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed89",
+      "label": "noisy 1500ms PVS seed89",
+      "seed": 89,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed131",
+      "label": "noisy 1500ms PVS seed131",
+      "seed": 131,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    }
+  ]
+}

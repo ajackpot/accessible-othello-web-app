@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-04-20T11:02:24.510Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-frontier-zebra-stabilized",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 4,
+    "tier": "safe",
+    "risk": "low",
+    "notes": "logic reinforcement re-entry 후보. frontier-gate의 cheap signal skeleton은 유지하되 TT depth gate + square-parity tie-break + narrow top-K로 160ms 교차축 ambiguity를 낮추려는 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "stage170-frontier-stabilized-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-frontier-gate"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-main"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-reentry-smoke/s170-main-frontier-zebra-stabilized/engine-options/s154-main__s170-main-frontier-zebra-stabilized.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-reentry-smoke/s170-main-frontier-zebra-stabilized/results/s154-main__s170-main-frontier-zebra-stabilized.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 2,
+      "baselinePoints": 1,
+      "candidatePoints": 1,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 14.748094512195122,
+      "candidateNodesPerMs": 16.147341984093764,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    }
+  ]
+}

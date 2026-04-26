@@ -1,0 +1,6 @@
+{
+  "generatedAt": "2026-04-18T06:07:03Z",
+  "configPath": "tools/engine-match/out/stage15x-restart-benchmark-pack/trineutron-match-suite.stage15x-finalist-round3-240ms.json",
+  "outputDir": "tools/engine-match/out/_stage15x_restart_finalist_round3_240ms",
+  "purpose": "Higher-budget 240ms finalist round after the 80ms restart phase 2 shortlist."
+}

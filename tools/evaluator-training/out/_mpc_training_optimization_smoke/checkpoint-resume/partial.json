@@ -1,0 +1,137 @@
+{
+  "version": 2,
+  "name": "calibrated-mpc-profile-v1",
+  "description": "shallow/deep search 상관 기반 MPC/ProbCut 보정 프로필입니다.",
+  "source": {
+    "inputCount": 1,
+    "inputPaths": [
+      "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl"
+    ],
+    "estimatedInputSamples": null,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 4,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "timeLimitMs": 1000,
+    "aspirationWindow": 40,
+    "maxTableEntries": 200000,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "targetHoldoutCoverage": 0.99,
+    "bucketPreset": null,
+    "checkpointJsonPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/checkpoint-resume/calibrate.checkpoint.json",
+    "checkpointEvery": 1,
+    "adaptiveStopEnabled": false,
+    "adaptiveMinSamplesPerBucket": 160,
+    "adaptiveCheckEvery": 20,
+    "evaluationProfileName": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrderingProfileName": "trained-move-ordering-linear-v2"
+  },
+  "diagnostics": {
+    "visitedSamples": 2,
+    "matchedSamples": 2,
+    "acceptedSamples": 2,
+    "usableCalibrationCount": 0,
+    "shallowSearchCost": {
+      "searches": 2,
+      "nodes": 1359,
+      "elapsedMs": 520,
+      "averageNodesPerSearch": 679.5,
+      "averageElapsedMsPerSearch": 260
+    },
+    "deepSearchCost": {
+      "searches": 2,
+      "nodes": 38508,
+      "elapsedMs": 2071,
+      "averageNodesPerSearch": 19254,
+      "averageElapsedMsPerSearch": 1035.5
+    },
+    "resumedFromCheckpoint": false,
+    "lastProcessedInputSampleIndex": 1,
+    "stopReason": "max-accepted-total",
+    "elapsedSeconds": 2.624
+  },
+  "calibrations": [
+    {
+      "key": "mpc-22-25-d4-d8",
+      "label": "22-25 / d4→d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "sampleCount": 2,
+      "trainSampleCount": 1,
+      "holdoutSampleCount": 1,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "usable": false,
+      "regression": null,
+      "trainMetrics": {
+        "count": 0,
+        "mae": null,
+        "rmse": null,
+        "meanResidual": null,
+        "stdDevResidual": null,
+        "maxAbsResidual": null
+      },
+      "holdoutMetrics": {
+        "count": 0,
+        "mae": null,
+        "rmse": null,
+        "meanResidual": null,
+        "stdDevResidual": null,
+        "maxAbsResidual": null
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 1.5,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 1.96,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 2.5,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 3,
+          "coverage": null,
+          "intervalHalfWidth": null
+        }
+      ],
+      "recommendedZ": null,
+      "shallowSearchCost": {
+        "searches": 2,
+        "nodes": 1359,
+        "elapsedMs": 520,
+        "averageNodesPerSearch": 679.5,
+        "averageElapsedMsPerSearch": 260
+      },
+      "deepSearchCost": {
+        "searches": 2,
+        "nodes": 38508,
+        "elapsedMs": 2071,
+        "averageNodesPerSearch": 19254,
+        "averageElapsedMsPerSearch": 1035.5
+      },
+      "closedEarly": false,
+      "closedReason": null
+    }
+  ]
+}

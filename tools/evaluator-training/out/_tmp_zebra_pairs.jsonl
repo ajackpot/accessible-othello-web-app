@@ -1,0 +1,1 @@
+{"sampleIndex":0,"empties":24,"scores":{"3":14875,"5":16818,"9":9058},"passDepths":[],"invalidDepths":[],"searchStats":{"3":{"nodes":300,"elapsedMs":341,"searchCompletion":"complete"},"5":{"nodes":1752,"elapsedMs":206,"searchCompletion":"complete"},"9":{"nodes":14538,"elapsedMs":1035,"searchCompletion":"complete"}},"contributedBucketKeys":["mpc-22-25-d3-d9","mpc-22-25-d5-d9"]}

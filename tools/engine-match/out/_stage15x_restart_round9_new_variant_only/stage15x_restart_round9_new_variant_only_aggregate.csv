@@ -1,0 +1,10 @@
+rowType,variantId,variantLabel,scenarioId,scenarioLabel,family,points,games,wins,losses,draws,averageDiscDiff,averageOurTimeMsPerGame,averageTheirTimeMsPerGame,wallSeconds
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-mtdf-seed29,noisy 1500ms MTD(f) seed29,mtdf,1,2,1,1,0,-9,5535,19527,51.52086091041565
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-mtdf-seed53,noisy 1500ms MTD(f) seed53,mtdf,1,2,1,1,0,9,4552.5,19500.5,49.03532099723816
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-mtdf-seed107,noisy 1500ms MTD(f) seed107,mtdf,1,2,1,1,0,-14,4077.5,19504.5,48.12553691864014
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-pvs-seed71,noisy 1500ms PVS seed71,pvs,2,2,2,0,0,8,4419.5,19539,48.87967848777771
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-pvs-seed89,noisy 1500ms PVS seed89,pvs,1,2,1,1,0,11,4315,19507.5,48.56828761100769
+scenario,s154-both-s158-open,s154-both + s158-stable-zebra-open,noisy1500-pvs-seed131,noisy 1500ms PVS seed131,pvs,2,2,2,0,0,17,4158.5,19503.5,48.30460453033447
+family,s154-both-s158-open,s154-both + s158-stable-zebra-open,MTDF,MTDF,mtdf,3.0,6.0,3.0,3.0,0.0,-4.666666666666667,4721.666666666667,19510.666666666668,148.68171882629395
+family,s154-both-s158-open,s154-both + s158-stable-zebra-open,PVS,PVS,pvs,5.0,6.0,5.0,1.0,0.0,12.0,4297.666666666667,19516.666666666668,145.75257062911987
+total,s154-both-s158-open,s154-both + s158-stable-zebra-open,TOTAL,TOTAL,total,8.0,12.0,8.0,4.0,0.0,3.6666666666666665,4509.666666666667,19513.666666666668,294.4342894554138

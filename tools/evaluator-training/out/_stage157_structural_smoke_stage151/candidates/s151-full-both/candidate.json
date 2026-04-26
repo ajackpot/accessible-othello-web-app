@@ -1,0 +1,63 @@
+{
+  "key": "s151-full-both",
+  "familyKey": "stage151-split-late3",
+  "familyLabel": "stage151 split_late3",
+  "priority": 9,
+  "tier": "aggressive",
+  "risk": "high",
+  "notes": "full PB + guarded both-side MPC. stage151 최고공격 후보.",
+  "modulePath": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+  "moveOrderingStructureProfile": {
+    "key": "stage151-latebank-probe-v1",
+    "label": "stage151 latebank probe ordering",
+    "description": "stage151용. ordering pattern bank가 켜진 late 구간에서만 1개 후보 shallow probe를 추가합니다.",
+    "priority": 91,
+    "ttOrderingMinDepth": 2,
+    "ttOrderingDepthSlack": 2,
+    "allowExactTtOrderingWhenShallow": true,
+    "lightweightEvalTopK": 3,
+    "lightweightEvalMinDepthRemaining": 2,
+    "potentialMobilityWeight": 650,
+    "frontierWeight": 450,
+    "shallowProbeEnabled": true,
+    "shallowProbeTopK": 1,
+    "shallowProbeMinEmpties": 11,
+    "shallowProbeMaxEmpties": 19,
+    "shallowProbeMinDepthRemaining": 7,
+    "shallowProbeDepth": 2,
+    "shallowProbeScoreScale": 26,
+    "exactFastestFirstMode": "square-parity-reply"
+  },
+  "mpcStructureProfile": {
+    "key": "stage151-both-guarded-v1",
+    "label": "stage151 guarded both-side MPC",
+    "description": "stage151용. low-cut도 보되 volatility guard와 verification으로 tactical late nodes를 보수적으로 보호합니다.",
+    "priority": 91,
+    "staticEvalGateEnabled": true,
+    "staticEvalGateMinDepth": 3,
+    "staticEvalGateMinEmpties": 18,
+    "staticEvalGateMaxEmpties": 60,
+    "staticEvalGateScaleHigh": 0.9,
+    "staticEvalGateScaleLow": 0.97,
+    "volatilityGuardEnabled": true,
+    "volatilityMinEmpties": 18,
+    "volatilityMaxEmpties": 42,
+    "volatilityMaxLegalMoves": 9,
+    "volatilitySkipCornerAvailable": true,
+    "verificationEnabled": true,
+    "verificationMinDepth": 5,
+    "verificationBandScale": 0.2,
+    "verificationDepthOffset": 1,
+    "runtimeOverrides": {
+      "enableHighCut": true,
+      "enableLowCut": true,
+      "maxWindow": 2,
+      "maxChecksPerNode": 2
+    }
+  },
+  "engineOptions": {
+    "moveOrderingPatternBankMinEmpties": 0,
+    "moveOrderingPatternBankMaxEmpties": 19,
+    "moveOrderingPatternBankScale": 1
+  }
+}

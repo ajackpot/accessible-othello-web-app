@@ -1,0 +1,487 @@
+{
+  "version": 1,
+  "outputJsonlPath": "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\out\\stage15x-support-stack\\stage151-split-late3\\mpc\\shared-search-pairs.jsonl",
+  "source": {
+    "inputCount": 26,
+    "inputPaths": [
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000000.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000001.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000002.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000003.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000004.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000005.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000006.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000007.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000008.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000009.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000010.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000011.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000012.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000013.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000014.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000015.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000016.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000017.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000018.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000019.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000020.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000021.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000022.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000023.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000024.txt",
+      "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\Egaroucid_Train_Data\\0001_egaroucid_7_5_1_lv17\\0000025.txt"
+    ],
+    "estimatedInputSamples": 25514097,
+    "sampleStride": 200,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 400,
+    "timeLimitMs": 120000,
+    "aspirationWindow": 40,
+    "maxTableEntries": 200000,
+    "bucketPreset": null,
+    "evaluationProfileName": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrderingProfileName": "stage151-split-late3__move-ordering__superset"
+  },
+  "diagnostics": {
+    "visitedSamples": 2952801,
+    "matchedSamples": 6406,
+    "acceptedSamples": 6400,
+    "recordsWritten": 3200,
+    "resumedFromCheckpoint": true,
+    "lastProcessedInputSampleIndex": 2952800,
+    "stopReason": "all-buckets-complete",
+    "shallowSearchCost": {
+      "searches": 6400,
+      "nodes": 31134987,
+      "elapsedMs": 1197852,
+      "averageNodesPerSearch": 4864.84171875,
+      "averageElapsedMsPerSearch": 187.164375
+    },
+    "deepSearchCost": {
+      "searches": 6400,
+      "nodes": 1855590694,
+      "elapsedMs": 43351226,
+      "averageNodesPerSearch": 289936.0459375,
+      "averageElapsedMsPerSearch": 6773.6290625
+    },
+    "elapsedSeconds": 24181.963
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-19-d3-d7",
+      "minEmpties": 18,
+      "maxEmpties": 19,
+      "shallowDepth": 3,
+      "deepDepth": 7,
+      "label": "18-19 / d3→d7",
+      "order": 8,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 115369,
+        "elapsedMs": 8593,
+        "averageNodesPerSearch": 288.4225,
+        "averageElapsedMsPerSearch": 21.4825
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 6034159,
+        "elapsedMs": 258270,
+        "averageNodesPerSearch": 15085.3975,
+        "averageElapsedMsPerSearch": 645.675
+      }
+    },
+    {
+      "key": "mpc-18-21-d3-d7",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 3,
+      "deepDepth": 7,
+      "label": "18-21 / d3→d7",
+      "order": 0,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 121235,
+        "elapsedMs": 8789,
+        "averageNodesPerSearch": 303.0875,
+        "averageElapsedMsPerSearch": 21.9725
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 7108850,
+        "elapsedMs": 289671,
+        "averageNodesPerSearch": 17772.125,
+        "averageElapsedMsPerSearch": 724.1775
+      }
+    },
+    {
+      "key": "mpc-18-21-d4-d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "18-21 / d4→d8",
+      "order": 1,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 426633,
+        "elapsedMs": 29615,
+        "averageNodesPerSearch": 1066.5825,
+        "averageElapsedMsPerSearch": 74.0375
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 21015553,
+        "elapsedMs": 699033,
+        "averageNodesPerSearch": 52538.8825,
+        "averageElapsedMsPerSearch": 1747.5825
+      }
+    },
+    {
+      "key": "mpc-20-21-d4-d8",
+      "minEmpties": 20,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "20-21 / d4→d8",
+      "order": 9,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 522296,
+        "elapsedMs": 33251,
+        "averageNodesPerSearch": 1305.74,
+        "averageElapsedMsPerSearch": 83.1275
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 25187281,
+        "elapsedMs": 826372,
+        "averageNodesPerSearch": 62968.2025,
+        "averageElapsedMsPerSearch": 2065.93
+      }
+    },
+    {
+      "key": "mpc-22-23-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 23,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-23 / d4→d8",
+      "order": 10,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 425556,
+        "elapsedMs": 28307,
+        "averageNodesPerSearch": 1063.89,
+        "averageElapsedMsPerSearch": 70.7675
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 29361044,
+        "elapsedMs": 927712,
+        "averageNodesPerSearch": 73402.61,
+        "averageElapsedMsPerSearch": 2319.28
+      }
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "order": 2,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 479296,
+        "elapsedMs": 30095,
+        "averageNodesPerSearch": 1198.24,
+        "averageElapsedMsPerSearch": 75.2375
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 31157139,
+        "elapsedMs": 924810,
+        "averageNodesPerSearch": 77892.8475,
+        "averageElapsedMsPerSearch": 2312.025
+      }
+    },
+    {
+      "key": "mpc-22-25-d4-d9",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 9,
+      "label": "22-25 / d4→d9",
+      "order": 3,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 479296,
+        "elapsedMs": 30095,
+        "averageNodesPerSearch": 1198.24,
+        "averageElapsedMsPerSearch": 75.2375
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 67240169,
+        "elapsedMs": 1899657,
+        "averageNodesPerSearch": 168100.4225,
+        "averageElapsedMsPerSearch": 4749.1425
+      }
+    },
+    {
+      "key": "mpc-24-25-d4-d9",
+      "minEmpties": 24,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 9,
+      "label": "24-25 / d4→d9",
+      "order": 11,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 512986,
+        "elapsedMs": 30589,
+        "averageNodesPerSearch": 1282.465,
+        "averageElapsedMsPerSearch": 76.4725
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 86336717,
+        "elapsedMs": 2201889,
+        "averageNodesPerSearch": 215841.7925,
+        "averageElapsedMsPerSearch": 5504.7225
+      }
+    },
+    {
+      "key": "mpc-26-27-d5-d10",
+      "minEmpties": 26,
+      "maxEmpties": 27,
+      "shallowDepth": 5,
+      "deepDepth": 10,
+      "label": "26-27 / d5→d10",
+      "order": 12,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 1782583,
+        "elapsedMs": 81598,
+        "averageNodesPerSearch": 4456.4575,
+        "averageElapsedMsPerSearch": 203.995
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 169502305,
+        "elapsedMs": 4097405,
+        "averageNodesPerSearch": 423755.7625,
+        "averageElapsedMsPerSearch": 10243.5125
+      }
+    },
+    {
+      "key": "mpc-26-29-d5-d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 5,
+      "deepDepth": 10,
+      "label": "26-29 / d5→d10",
+      "order": 4,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 1665086,
+        "elapsedMs": 79611,
+        "averageNodesPerSearch": 4162.715,
+        "averageElapsedMsPerSearch": 199.0275
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 173901814,
+        "elapsedMs": 3898167,
+        "averageNodesPerSearch": 434754.535,
+        "averageElapsedMsPerSearch": 9745.4175
+      }
+    },
+    {
+      "key": "mpc-26-29-d6-d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "26-29 / d6→d10",
+      "order": 5,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 4254731,
+        "elapsedMs": 139667,
+        "averageNodesPerSearch": 10636.8275,
+        "averageElapsedMsPerSearch": 349.1675
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 173901814,
+        "elapsedMs": 3898167,
+        "averageNodesPerSearch": 434754.535,
+        "averageElapsedMsPerSearch": 9745.4175
+      }
+    },
+    {
+      "key": "mpc-28-29-d6-d10",
+      "minEmpties": 28,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "28-29 / d6→d10",
+      "order": 13,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 4544465,
+        "elapsedMs": 152212,
+        "averageNodesPerSearch": 11361.1625,
+        "averageElapsedMsPerSearch": 380.53
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 173789319,
+        "elapsedMs": 3847944,
+        "averageNodesPerSearch": 434473.2975,
+        "averageElapsedMsPerSearch": 9619.86
+      }
+    },
+    {
+      "key": "mpc-30-31-d5-d11",
+      "minEmpties": 30,
+      "maxEmpties": 31,
+      "shallowDepth": 5,
+      "deepDepth": 11,
+      "label": "30-31 / d5→d11",
+      "order": 14,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 2,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 1990863,
+        "elapsedMs": 94069,
+        "averageNodesPerSearch": 4977.1575,
+        "averageElapsedMsPerSearch": 235.1725
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 251303687,
+        "elapsedMs": 5571544,
+        "averageNodesPerSearch": 628259.2175,
+        "averageElapsedMsPerSearch": 13928.86
+      }
+    },
+    {
+      "key": "mpc-30-33-d5-d11",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 5,
+      "deepDepth": 11,
+      "label": "30-33 / d5→d11",
+      "order": 6,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 1860465,
+        "elapsedMs": 87624,
+        "averageNodesPerSearch": 4651.1625,
+        "averageElapsedMsPerSearch": 219.06
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 257428895,
+        "elapsedMs": 5535264,
+        "averageNodesPerSearch": 643572.2375,
+        "averageElapsedMsPerSearch": 13838.16
+      }
+    },
+    {
+      "key": "mpc-30-33-d6-d10",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "30-33 / d6→d10",
+      "order": 7,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 5815048,
+        "elapsedMs": 179978,
+        "averageNodesPerSearch": 14537.62,
+        "averageElapsedMsPerSearch": 449.945
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 185963972,
+        "elapsedMs": 4109022,
+        "averageNodesPerSearch": 464909.93,
+        "averageElapsedMsPerSearch": 10272.555
+      }
+    },
+    {
+      "key": "mpc-32-33-d6-d10",
+      "minEmpties": 32,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "32-33 / d6→d10",
+      "order": 15,
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "shallowSearchCost": {
+        "searches": 400,
+        "nodes": 6139079,
+        "elapsedMs": 183759,
+        "averageNodesPerSearch": 15347.6975,
+        "averageElapsedMsPerSearch": 459.3975
+      },
+      "deepSearchCost": {
+        "searches": 400,
+        "nodes": 196357976,
+        "elapsedMs": 4366299,
+        "averageNodesPerSearch": 490894.94,
+        "averageElapsedMsPerSearch": 10915.7475
+      }
+    }
+  ]
+}

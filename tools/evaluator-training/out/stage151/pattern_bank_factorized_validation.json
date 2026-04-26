@@ -1,0 +1,35 @@
+{
+  "compactModulePath": "/mnt/data/stage151_repo/othello_stage144/tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.compact.generated.js",
+  "factorizedModulePath": "/mnt/data/stage151_repo/othello_stage144/tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+  "variants": {
+    "baseline": {
+      "evaluatorChecksumDelta": 0,
+      "moveOrderingChecksumDelta": 0,
+      "sameSearchMoves": true,
+      "sameSearchScores": true,
+      "searchDiffs": []
+    },
+    "main-only": {
+      "evaluatorChecksumDelta": 0,
+      "moveOrderingChecksumDelta": 0,
+      "sameSearchMoves": true,
+      "sameSearchScores": true,
+      "searchDiffs": []
+    },
+    "split-ordering": {
+      "evaluatorChecksumDelta": 0,
+      "moveOrderingChecksumDelta": 0,
+      "sameSearchMoves": true,
+      "sameSearchScores": true,
+      "searchDiffs": []
+    },
+    "reuse-ordering": {
+      "evaluatorChecksumDelta": 0,
+      "moveOrderingChecksumDelta": 0,
+      "sameSearchMoves": true,
+      "sameSearchScores": true,
+      "searchDiffs": []
+    }
+  },
+  "allExactMatches": true
+}

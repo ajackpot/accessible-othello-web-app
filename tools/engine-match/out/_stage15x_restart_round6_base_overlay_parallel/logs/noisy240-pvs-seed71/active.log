@@ -1,0 +1,33 @@
+$ node /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/benchmark-vs-trineutron.mjs --variants active --games 4 --opening-plies 20 --seed 71 --our-time-ms 240 --their-time-ms 240 --our-max-depth 6 --their-max-depth 18 --search-algorithm classic --aspiration-window 60 --max-table-entries 90000 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --solver-adjudication-max-depth 14 --their-noise-scale 4 --variant-seed-mode shared --output-json /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-pvs-seed71/active.json
+
+STDOUT:
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 71..74
+Our search          : classic (Classic PVS), aspiration=60, table=90000
+Our engine time     : 240ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 240ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : active
+Games per variant   : 4 openings x 2 colors = 8
+
+[variant: active-generated+ordering (balanced13-alllate-smoothed stability extras 0.90x / trained-move-ordering-linear-v2 / diagonal-top24-latea-endgame-patched-calibrated / balanced13-alllate-smoothed-stability-090__runtime-mpc / no pattern-bank)]
+opening#01 black win  diff= 10 our 23,661n/6,294ms vs tri 76,391n/3,604ms [exact-adjudication]
+opening#01 white win  diff= 12 our 26,497n/5,025ms vs tri 81,753n/3,517ms [exact-adjudication]
+opening#02 black loss diff=-28 our 27,204n/5,512ms vs tri 85,890n/3,648ms [exact-adjudication]
+opening#02 white win  diff= 50 our 24,630n/4,201ms vs tri 101,454n/3,603ms [exact-adjudication]
+opening#03 black loss diff=-26 our 24,032n/5,718ms vs tri 72,192n/3,683ms [exact-adjudication]
+opening#03 white win  diff= 60 our 27,228n/5,267ms vs tri 88,692n/3,621ms [exact-adjudication]
+opening#04 black win  diff=  8 our 27,809n/4,527ms vs tri 90,987n/3,552ms [exact-adjudication]
+opening#04 white loss diff= -4 our 31,560n/5,117ms vs tri 87,002n/3,594ms [exact-adjudication]
+score: 5/8 (62.5%)
+W-L-D: 5-3-0
+avg disc diff: 10.25
+exact adjudications: 8/8
+
+Saved benchmark summary to /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-pvs-seed71/active.json
+
+
+STDERR:
+

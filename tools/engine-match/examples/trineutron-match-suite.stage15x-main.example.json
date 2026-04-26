@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openingPlies": 20,
+    "ourMaxDepth": 6,
+    "theirMaxDepth": 18,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "solverAdjudicationMaxDepth": 14,
+    "variantSeedMode": "shared"
+  },
+  "referenceVariantId": "active",
+  "variants": [
+    {
+      "id": "active",
+      "variant": "active",
+      "label": "active-installed"
+    },
+    {
+      "id": "stage15x-main",
+      "type": "custom",
+      "label": "stage154-main-recenter-support-stack",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "fast-diagnostic",
+      "label": "fast deterministic pilot",
+      "seed": 17,
+      "games": 2,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 0
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+[run ] stage154-main-recenter: export candidate s154-safe
+Saved generated profile module to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-safe.generated.js
+  evaluation profile            : balanced13-alllate-smoothed stability extras 0.90x
+  move-ordering slot           : stage154-main-recenter__move-ordering__safe
+  tuple residual slot          : diagonal-top24-latea-endgame-patched-calibrated
+  mpc slot                     : stage154-main-recenter__runtime-mpc__safe4High
+  pattern-bank stack           : 1
+  move-ordering pattern-bank   : 0
+  module format                : factorized
+  module size                  : 2336872 bytes
+Saved summary JSON to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-safe.summary.json
+[run ] stage154-main-recenter: export candidate s154-main
+Saved generated profile module to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js
+  evaluation profile            : balanced13-alllate-smoothed stability extras 0.90x
+  move-ordering slot           : stage154-main-recenter__move-ordering__balanced
+  tuple residual slot          : diagonal-top24-latea-endgame-patched-calibrated
+  mpc slot                     : stage154-main-recenter__runtime-mpc__overlapHighTight
+  pattern-bank stack           : 1
+  move-ordering pattern-bank   : 0
+  module format                : factorized
+  module size                  : 2338543 bytes
+Saved summary JSON to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.summary.json
+[run ] stage154-main-recenter: export candidate s154-wide-safe
+Saved generated profile module to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-wide-safe.generated.js
+  evaluation profile            : balanced13-alllate-smoothed stability extras 0.90x
+  move-ordering slot           : stage154-main-recenter__move-ordering__superset
+  tuple residual slot          : diagonal-top24-latea-endgame-patched-calibrated
+  mpc slot                     : stage154-main-recenter__runtime-mpc__overlapHighSafe
+  pattern-bank stack           : 1
+  move-ordering pattern-bank   : 0
+  module format                : factorized
+  module size                  : 2338521 bytes
+Saved summary JSON to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-wide-safe.summary.json
+[run ] stage154-main-recenter: export candidate s154-split
+Saved generated profile module to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.generated.js
+  evaluation profile            : balanced13-alllate-smoothed stability extras 0.90x
+  move-ordering slot           : stage154-main-recenter__move-ordering__balanced
+  tuple residual slot          : diagonal-top24-latea-endgame-patched-calibrated
+  mpc slot                     : stage154-main-recenter__runtime-mpc__splitHighTight
+  pattern-bank stack           : 1
+  move-ordering pattern-bank   : 0
+  module format                : factorized
+  module size                  : 2338535 bytes
+Saved summary JSON to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.summary.json
+[run ] stage154-main-recenter: export candidate s154-both
+Saved generated profile module to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js
+  evaluation profile            : balanced13-alllate-smoothed stability extras 0.90x
+  move-ordering slot           : stage154-main-recenter__move-ordering__superset
+  tuple residual slot          : diagonal-top24-latea-endgame-patched-calibrated
+  mpc slot                     : stage154-main-recenter__runtime-mpc__overlapBothSoftLow
+  pattern-bank stack           : 1
+  move-ordering pattern-bank   : 0
+  module format                : factorized
+  module size                  : 2338525 bytes
+Saved summary JSON to /mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.summary.json
+Done: 1 family(s) processed.

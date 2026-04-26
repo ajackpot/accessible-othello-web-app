@@ -1,0 +1,33 @@
+$ node /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/benchmark-vs-trineutron.mjs --variants active --games 4 --opening-plies 20 --seed 29 --our-time-ms 240 --their-time-ms 240 --our-max-depth 6 --their-max-depth 18 --search-algorithm classic-mtdf-2ply --aspiration-window 60 --max-table-entries 90000 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --solver-adjudication-max-depth 14 --their-noise-scale 4 --variant-seed-mode shared --output-json /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/active.json
+
+STDOUT:
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 29..32
+Our search          : classic-mtdf-2ply (Classic MTD(f)), aspiration=60, table=90000
+Our engine time     : 240ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 240ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : active
+Games per variant   : 4 openings x 2 colors = 8
+
+[variant: active-generated+ordering (balanced13-alllate-smoothed stability extras 0.90x / trained-move-ordering-linear-v2 / diagonal-top24-latea-endgame-patched-calibrated / balanced13-alllate-smoothed-stability-090__runtime-mpc / no pattern-bank)]
+opening#01 black loss diff=-20 our 28,259n/6,993ms vs tri 64,562n/3,705ms [exact-adjudication]
+opening#01 white win  diff= 22 our 29,514n/4,593ms vs tri 91,245n/3,546ms [exact-adjudication]
+opening#02 black win  diff= 30 our 30,380n/4,807ms vs tri 95,754n/3,544ms [exact-adjudication]
+opening#02 white win  diff=  2 our 32,599n/4,710ms vs tri 96,025n/3,562ms [exact-adjudication]
+opening#03 black win  diff= 22 our 31,912n/3,890ms vs tri 120,967n/3,405ms [exact-adjudication]
+opening#03 white loss diff=-50 our 39,278n/5,654ms vs tri 104,345n/3,606ms [exact-adjudication]
+opening#04 black win  diff= 48 our 28,644n/4,730ms vs tri 68,772n/3,592ms [exact-adjudication]
+opening#04 white win  diff= 10 our 32,341n/4,949ms vs tri 81,017n/3,556ms [exact-adjudication]
+score: 6/8 (75.0%)
+W-L-D: 6-2-0
+avg disc diff: 8.00
+exact adjudications: 8/8
+
+Saved benchmark summary to /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/active.json
+
+
+STDERR:
+

@@ -1,0 +1,38 @@
+{
+  "decision": "hold",
+  "matchup": {
+    "first": "s170-main-frontier-zebra-bothlite",
+    "second": "s170-main-wide-zebra"
+  },
+  "patternSecondPerspective": [
+    "승리",
+    "동률",
+    "동률"
+  ],
+  "overall": {
+    "firstPoints": 17,
+    "secondPoints": 19,
+    "totalGames": 36,
+    "pointDiffSecondMinusFirst": 2,
+    "pointGapRate": 0.05555555555555555,
+    "firstNodesPerMs": 8.13775486931533,
+    "secondNodesPerMs": 8.708409517181178
+  },
+  "timeSlices": {
+    "80ms": {
+      "firstPoints": 5,
+      "secondPoints": 7
+    },
+    "160ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    },
+    "240ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    }
+  },
+  "provisionalLeader": "s170-main-wide-zebra",
+  "rationale": "wide-zebra wins the 80ms slice and keeps a slight overall lead, but 160ms and 240ms both finish as draws, so bothlite does not cleanly displace the current provisional leader.",
+  "nextRecommendation": "Run s170-main-frontier-zebra-bothlite vs s157-main-assertive-both direct head-to-head next. If the sole priority is naming a mainline provisional leader first, return instead to s157-main-assertive-both vs s170-main-wide-zebra with a 160ms-focused reinforced retest."
+}

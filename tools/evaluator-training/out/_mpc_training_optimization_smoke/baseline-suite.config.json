@@ -1,0 +1,70 @@
+{
+  "outputDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite",
+  "sharedSearchPairs": {
+    "mode": "off"
+  },
+  "defaults": {
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 4,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "targetHoldoutCoverage": 0.99,
+    "timeLimitMs": 1000,
+    "progressEvery": 1,
+    "maxTableEntries": 50000,
+    "aspirationWindow": 40,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "exportModule": false,
+    "benchmarks": {
+      "depth": {
+        "enabled": false
+      },
+      "exact": {
+        "enabled": false
+      }
+    }
+  },
+  "candidates": [
+    {
+      "key": "candidate-a",
+      "name": "candidate-a",
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "runtimeVariant": {
+        "defaultMode": "high",
+        "maxChecksPerNode": 1
+      }
+    },
+    {
+      "key": "candidate-b",
+      "name": "candidate-b",
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "runtimeVariant": {
+        "defaultMode": "high",
+        "maxChecksPerNode": 2
+      }
+    },
+    {
+      "key": "candidate-c",
+      "name": "candidate-c",
+      "calibrationBuckets": [
+        "22-25:4>8"
+      ],
+      "runtimeVariant": {
+        "defaultMode": "both",
+        "maxChecksPerNode": 2,
+        "lowScale": 0.95
+      }
+    }
+  ]
+}

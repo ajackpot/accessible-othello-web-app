@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-04-18T02:53:01.397Z",
+  "evaluationJsonPath": "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-evaluation-profile.json",
+  "moveOrderingJsonPath": "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/move-ordering/move-ordering.balanced.json",
+  "tupleJsonPath": "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/source-tuple-profile.json",
+  "mpcJsonPath": "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/mpc/runtime.splitHighTight.json",
+  "patternBankJsonPaths": [
+    "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/shared/evaluation-pattern-bank.01.json"
+  ],
+  "moveOrderingPatternBankJsonPaths": null,
+  "outputModulePath": "/mnt/data/stage168_work/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.generated.js",
+  "moduleFormat": "factorized",
+  "outputModuleBytes": 2338535,
+  "evaluationProfile": {
+    "version": 1,
+    "name": "balanced13-alllate-smoothed stability extras 0.90x",
+    "phaseBucketCount": 13,
+    "holdoutMaeInStones": null
+  },
+  "moveOrderingProfile": {
+    "version": 1,
+    "name": "stage154-main-recenter__move-ordering__balanced",
+    "trainedBucketCount": 7,
+    "holdoutTop1Accuracy": 0.49166666666666664,
+    "holdoutTop3Accuracy": 0.80625
+  },
+  "tupleResidualProfile": {
+    "version": 1,
+    "name": "diagonal-top24-latea-endgame-patched-calibrated",
+    "layoutName": "diagonal-adjacent-pairs-full-v1-patched",
+    "tupleCount": 24,
+    "trainedBucketCount": 2,
+    "totalTableSize": 216,
+    "holdoutMaeInStones": null,
+    "holdoutMaeDeltaInStones": null
+  },
+  "mpcProfile": {
+    "version": 1,
+    "name": "stage154-main-recenter__runtime-mpc__splitHighTight",
+    "calibrationCount": 8,
+    "usableCalibrationCount": 8
+  },
+  "patternBankProfiles": [
+    {
+      "version": 1,
+      "name": "pattern-bank-v1 balanced13 patched",
+      "layoutName": "pattern-bank-v1",
+      "basePatternCount": 12,
+      "totalPlacementCount": 64,
+      "totalTableSize": 157464,
+      "trainedBucketCount": 13
+    }
+  ],
+  "moveOrderingPatternBankProfiles": []
+}

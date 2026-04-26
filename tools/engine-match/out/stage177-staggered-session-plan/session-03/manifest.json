@@ -1,0 +1,226 @@
+{
+  "sessionOrdinal": 3,
+  "trialOrdinals": [
+    5,
+    6
+  ],
+  "startingState": [
+    {
+      "slotOrdinal": 1,
+      "laneKey": "wide-zebra",
+      "optionOrdinal": 2,
+      "candidateKey": "s176-main-wide-zebra-midtrim"
+    },
+    {
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "optionOrdinal": 1,
+      "candidateKey": "s176-main-wide-assertive"
+    },
+    {
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "optionOrdinal": 1,
+      "candidateKey": "s176-main-frontier-bothlite-parity"
+    }
+  ],
+  "endingState": [
+    {
+      "slotOrdinal": 1,
+      "laneKey": "wide-zebra",
+      "optionOrdinal": 2,
+      "candidateKey": "s176-main-wide-zebra-midtrim"
+    },
+    {
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "optionOrdinal": 2,
+      "candidateKey": "s176-main-assertive-both-lite"
+    },
+    {
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "optionOrdinal": 2,
+      "candidateKey": "s176-main-frontier-bothlite-topk2"
+    }
+  ],
+  "trials": [
+    {
+      "trialOrdinal": 5,
+      "sessionOrdinal": 3,
+      "slotOrdinal": 2,
+      "laneKey": "assertive-both",
+      "optionOrdinal": 2,
+      "branchLabel": "option2",
+      "mutatedCandidateKey": "s176-main-assertive-both-lite",
+      "baseCandidateKey": "s176-main-wide-assertive",
+      "changeAxis": "mpc",
+      "sourceIdentity": "keep `hybrid-probe-v1`, but moderate `assertive-both` one notch (checks/window/gate tightening custom MPC planned)",
+      "hypothesis": "wide ordering이 과적합되거나 160/240ms를 해치면, MPC aggressiveness를 소폭 낮춰 short-think 손실 없이 균형점을 찾습니다.",
+      "whyNow": "현재는 throughput과 long-think가 이미 좋아, MPC-lite는 backup path로만 보관하는 편이 맞습니다.",
+      "beforeState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-wide-assertive"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        }
+      ],
+      "afterState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-assertive-both-lite"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        }
+      ],
+      "opponents": [
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        },
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        }
+      ],
+      "timeControlsMs": [
+        80,
+        160,
+        240
+      ],
+      "roundsPerCondition": 4,
+      "gamesPerPairing": 12,
+      "gamesPerTrial": 24,
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-frontier-bothlite-parity",
+        "candidateBKey": "s176-main-wide-zebra-midtrim",
+        "slotAOrdinal": 3,
+        "slotBOrdinal": 1,
+        "carryForwardFrom": "trial4 invariant pairing"
+      },
+      "skipStaticFixtureRule": "각 trial은 변경된 후보 1개만 새 logic으로 교체하고, 나머지 invariant pairing은 가장 최근 동일-logic 결과를 carry-forward 합니다."
+    },
+    {
+      "trialOrdinal": 6,
+      "sessionOrdinal": 3,
+      "slotOrdinal": 3,
+      "laneKey": "frontier-bothlite",
+      "optionOrdinal": 2,
+      "branchLabel": "option2",
+      "mutatedCandidateKey": "s176-main-frontier-bothlite-topk2",
+      "baseCandidateKey": "s176-main-frontier-bothlite-parity",
+      "changeAxis": "ordering",
+      "sourceIdentity": "if parity-only is insufficient, add tiny lightweight top-K (2) without probe/TT stabilization",
+      "hypothesis": "parity-only가 무효일 때만 short-think 보조를 한 단계 더 줍니다.",
+      "whyNow": "stabilized branch의 실패를 고려하면, ordering 보강은 반드시 한 단계씩만 늘려야 합니다.",
+      "beforeState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-assertive-both-lite"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 1,
+          "candidateKey": "s176-main-frontier-bothlite-parity"
+        }
+      ],
+      "afterState": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-assertive-both-lite"
+        },
+        {
+          "slotOrdinal": 3,
+          "laneKey": "frontier-bothlite",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-frontier-bothlite-topk2"
+        }
+      ],
+      "opponents": [
+        {
+          "slotOrdinal": 1,
+          "laneKey": "wide-zebra",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-wide-zebra-midtrim"
+        },
+        {
+          "slotOrdinal": 2,
+          "laneKey": "assertive-both",
+          "optionOrdinal": 2,
+          "candidateKey": "s176-main-assertive-both-lite"
+        }
+      ],
+      "timeControlsMs": [
+        80,
+        160,
+        240
+      ],
+      "roundsPerCondition": 4,
+      "gamesPerPairing": 12,
+      "gamesPerTrial": 24,
+      "skippedInvariantPairing": {
+        "candidateAKey": "s176-main-wide-zebra-midtrim",
+        "candidateBKey": "s176-main-assertive-both-lite",
+        "slotAOrdinal": 1,
+        "slotBOrdinal": 2,
+        "carryForwardFrom": "trial5 invariant pairing"
+      },
+      "skipStaticFixtureRule": "각 trial은 변경된 후보 1개만 새 logic으로 교체하고, 나머지 invariant pairing은 가장 최근 동일-logic 결과를 carry-forward 합니다."
+    }
+  ],
+  "perConditionRounds": 4,
+  "timeControlsMs": [
+    80,
+    160,
+    240
+  ],
+  "gamesPerTrial": 24,
+  "totalGames": 48,
+  "omissionRule": "각 trial은 변경된 후보 1개만 새 logic으로 교체하고, 나머지 invariant pairing은 가장 최근 동일-logic 결과를 carry-forward 합니다."
+}

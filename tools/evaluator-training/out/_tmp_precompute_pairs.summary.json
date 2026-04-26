@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "outputJsonlPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_precompute_pairs.jsonl",
+  "source": {
+    "inputCount": 1,
+    "inputPaths": [
+      "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl"
+    ],
+    "estimatedInputSamples": null,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 3,
+    "timeLimitMs": 1000,
+    "aspirationWindow": 40,
+    "maxTableEntries": 200000,
+    "bucketPreset": null,
+    "evaluationProfileName": "trained-phase-linear-v1",
+    "moveOrderingProfileName": "stage44-candidateH2-edgePattern125-cornerPattern125-11-12"
+  },
+  "diagnostics": {
+    "visitedSamples": 40,
+    "matchedSamples": 3,
+    "acceptedSamples": 3,
+    "recordsWritten": 3,
+    "resumedFromCheckpoint": false,
+    "lastProcessedInputSampleIndex": 39,
+    "stopReason": "input-exhausted",
+    "shallowSearchCost": {
+      "searches": 3,
+      "nodes": 7945,
+      "elapsedMs": 781,
+      "averageNodesPerSearch": 2648.3333333333335,
+      "averageElapsedMsPerSearch": 260.3333333333333
+    },
+    "deepSearchCost": {
+      "searches": 3,
+      "nodes": 62899,
+      "elapsedMs": 3103,
+      "averageNodesPerSearch": 20966.333333333332,
+      "averageElapsedMsPerSearch": 1034.3333333333333
+    },
+    "elapsedSeconds": 3.917
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-21-d4-d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "18-21 / d4→d8",
+      "acceptedSamples": 0,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      },
+      "deepSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      }
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "acceptedSamples": 3,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 3,
+        "nodes": 7945,
+        "elapsedMs": 781,
+        "averageNodesPerSearch": 2648.3333333333335,
+        "averageElapsedMsPerSearch": 260.3333333333333
+      },
+      "deepSearchCost": {
+        "searches": 3,
+        "nodes": 62899,
+        "elapsedMs": 3103,
+        "averageNodesPerSearch": 20966.333333333332,
+        "averageElapsedMsPerSearch": 1034.3333333333333
+      }
+    },
+    {
+      "key": "mpc-26-29-d6-d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "26-29 / d6→d10",
+      "acceptedSamples": 0,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      },
+      "deepSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      }
+    },
+    {
+      "key": "mpc-30-33-d6-d10",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "30-33 / d6→d10",
+      "acceptedSamples": 0,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      },
+      "deepSearchCost": {
+        "searches": 0,
+        "nodes": 0,
+        "elapsedMs": 0,
+        "averageNodesPerSearch": null,
+        "averageElapsedMsPerSearch": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+$ node tools/engine-match/benchmark-vs-trineutron.mjs --output-json tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/results/noisy1500-pvs-seed131__active.json --games 1 --opening-plies 20 --opening-source random --seed 131 --our-time-ms 1500 --their-time-ms 1500 --our-max-depth 6 --their-max-depth 18 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --their-noise-scale 4 --variant-seed-mode shared --search-algorithm classic --aspiration-window 60 --max-table-entries 90000 --variants active
+
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 131..131
+Our search          : classic (Classic PVS), aspiration=60, table=90000
+Our engine time     : 1500ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 1500ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : active
+Games per variant   : 1 openings x 2 colors = 2
+
+[variant: active-generated+ordering (balanced13-alllate-smoothed stability extras 0.90x / trained-move-ordering-linear-v2 / diagonal-top24-latea-endgame-patched-calibrated / balanced13-alllate-smoothed-stability-090__runtime-mpc / no pattern-bank)]
+opening#01 black loss diff=-26 our 62,948n/2,424ms vs tri 2,682,538n/19,501ms [exact-adjudication]
+opening#01 white loss diff= -6 our 48,177n/1,745ms vs tri 2,626,420n/19,501ms [exact-adjudication]
+score: 0/2 (0.0%)
+W-L-D: 0-2-0
+avg disc diff: -16.00
+exact adjudications: 2/2
+
+Saved benchmark summary to /mnt/data/round8_stage167/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/results/noisy1500-pvs-seed131__active.json

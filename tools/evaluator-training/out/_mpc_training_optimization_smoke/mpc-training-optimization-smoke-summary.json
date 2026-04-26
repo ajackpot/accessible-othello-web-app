@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-04-16T12:56:02.787Z",
+  "inputPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl",
+  "baseline": {
+    "wallElapsedMs": 16936,
+    "searchCount": 24,
+    "searchElapsedMs": 15063,
+    "outputDir": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite"
+  },
+  "optimized": {
+    "wallElapsedMs": 7168,
+    "searchCount": 8,
+    "searchElapsedMs": 5040,
+    "outputDir": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite",
+    "sharedSummaryPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.summary.json"
+  },
+  "checkpointResume": {
+    "checkpointPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/checkpoint-resume/calibrate.checkpoint.json",
+    "partialAcceptedSamples": 2,
+    "partialStopReason": "max-accepted-total",
+    "resumedAcceptedSamples": 4,
+    "resumedStopReason": "all-buckets-complete",
+    "resumedFromCheckpoint": true
+  },
+  "comparison": {
+    "wallSpeedup": 2.3627232142857144,
+    "searchReductionRatio": 3,
+    "searchElapsedReductionRatio": 2.988690476190476
+  }
+}

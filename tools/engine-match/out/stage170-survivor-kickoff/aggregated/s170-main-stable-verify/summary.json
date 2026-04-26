@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-04-20T06:22:41.975Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-stable-verify",
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 2,
+    "tier": "balanced",
+    "risk": "medium",
+    "notes": "Stage158 stable/quiet ordering에 stage157 verify-tight MPC를 얹어, stage158 ordering 기여와 stage157 보수형 MPC를 분리해서 확인하는 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+    "mpcStructureProfileKey": "verify-tight-v1",
+    "moveOrderingSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    },
+    "mpcSource": {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid"
+    }
+  },
+  "sourceFiles": [
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-80/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-160a/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-160b/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-240a/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-240b/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-both-80/s170-main-stable-verify/results/s154-both__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-both-160a/s170-main-stable-verify/results/s154-both__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-both-160b/s170-main-stable-verify/results/s154-both__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-both-240a/s170-main-stable-verify/results/s154-both__s170-main-stable-verify.json",
+    "tools/engine-match/out/stage170-survivor-kickoff/stableverify-both-240b/s170-main-stable-verify/results/s154-both__s170-main-stable-verify.json"
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 3.5,
+      "candidatePoints": 4.5,
+      "baselineScoreRate": 0.4375,
+      "candidateScoreRate": 0.5625,
+      "pointGap": 0.125,
+      "baselineNodesPerMs": 12.2859233245537,
+      "candidateNodesPerMs": 11.642039850069047,
+      "recommendation": "candidate overlay가 baseline보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 13.35032637427847,
+      "candidateNodesPerMs": 12.769251365534968,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 4,
+      "candidatePoints": 4,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 13.887908902691512,
+      "candidateNodesPerMs": 13.342774430795712,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 6,
+      "candidatePoints": 2,
+      "baselineScoreRate": 0.75,
+      "candidateScoreRate": 0.25,
+      "pointGap": -0.5,
+      "baselineNodesPerMs": 12.075389528694476,
+      "candidateNodesPerMs": 11.335205438959502,
+      "recommendation": "baseline이 candidate overlay보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 160,
+      "totalGames": 8,
+      "baselinePoints": 5,
+      "candidatePoints": 3,
+      "baselineScoreRate": 0.625,
+      "candidateScoreRate": 0.375,
+      "pointGap": -0.25,
+      "baselineNodesPerMs": 13.904099918544665,
+      "candidateNodesPerMs": 13.243691148775895,
+      "recommendation": "baseline이 candidate overlay보다 앞섰습니다."
+    },
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 240,
+      "totalGames": 8,
+      "baselinePoints": 6,
+      "candidatePoints": 2,
+      "baselineScoreRate": 0.75,
+      "candidateScoreRate": 0.25,
+      "pointGap": -0.5,
+      "baselineNodesPerMs": 14.746186854739346,
+      "candidateNodesPerMs": 13.933480322822199,
+      "recommendation": "baseline이 candidate overlay보다 앞섰습니다."
+    }
+  ],
+  "overall": {
+    "baselinePoints": 28.5,
+    "candidatePoints": 19.5,
+    "totalGames": 48,
+    "pointGap": -0.1875
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "scope": "candidate",
+  "key": "candidate-b",
+  "name": "candidate-b",
+  "createdAt": "2026-04-16T12:55:38.207Z",
+  "steps": {
+    "calibrate-mpc-profile": {
+      "status": "success",
+      "description": "candidate-b: calibrate MPC",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/calibrate-mpc-profile.mjs --input /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl --evaluation-profile-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json --move-ordering-profile-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json --sample-stride 1 --sample-residue 0 --time-limit-ms 1000 --progress-every 1 --max-table-entries 50000 --aspiration-window 40 --calibration-buckets 22-25:4>8 --max-samples-per-bucket 4 --holdout-mod 2 --holdout-residue 0 --target-holdout-coverage 0.99 --z-values 1,1.5,1.96,2.5,3 --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.raw.json",
+      "signature": "cefc5ab755d7b7ae6e00d986af3d0996397025723238e146198fb5a17d7936f6",
+      "outputs": [
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.raw.json"
+      ],
+      "startedAt": "2026-04-16T12:55:38.208Z",
+      "finishedAt": "2026-04-16T12:55:43.502Z"
+    },
+    "make-mpc-runtime-variant": {
+      "status": "success",
+      "description": "candidate-b: derive runtime variant",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/make-mpc-runtime-variant.mjs --mpc-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.raw.json --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.json --name trained-mpc-candidate-b --description \"candidate-b runtime-tuned MPC variant\" --default-mode high --max-window 1 --min-depth 2 --min-depth-gap 2 --max-depth-distance 1 --min-ply 1 --max-checks-per-node 2 --interval-scale 1 --high-scale 1 --low-scale 1 --depth-distance-scale 1.25",
+      "signature": "220f0152b1790d44c6618c952a971eb767cf0e6376bdff7061ca41d3c52a69be",
+      "outputs": [
+        "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.json"
+      ],
+      "startedAt": "2026-04-16T12:55:43.505Z",
+      "finishedAt": "2026-04-16T12:55:43.738Z"
+    }
+  }
+}

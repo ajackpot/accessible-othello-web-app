@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2026-04-20T18:24:50.086Z",
+  "first": {
+    "stage": 176,
+    "key": "s176-main-wide-zebra-midtrim",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "stage176-wide-midtrim-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/engine-options/s176-main-wide-zebra-midtrim.json"
+  },
+  "second": {
+    "stage": 176,
+    "key": "s176-main-assertive-both-lite",
+    "familyKey": "stage154-main-recenter",
+    "moveOrderingStructureProfileKey": "hybrid-probe-v1",
+    "mpcStructureProfileKey": "stage176-assertive-both-lite-v1",
+    "engineOptionsJsonPath": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/engine-options/s176-main-assertive-both-lite.json"
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80,
+      160,
+      240
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4
+  },
+  "microResults": [
+    {
+      "timeLimitMs": 80,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/80ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/80ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/80ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 80,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/80ms_seed71.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/160ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/160ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/160ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 160,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/160ms_seed71.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 17,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/240ms_seed17.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 31,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/240ms_seed31.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 53,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/240ms_seed53.json"
+    },
+    {
+      "timeLimitMs": 240,
+      "seed": 71,
+      "outputJson": "tools/engine-match/out/stage177-staggered-session-runs/session-03-revised/trial-05/pairings/s176-main-wide-zebra-midtrim__vs__s176-main-assertive-both-lite/results/micro/240ms_seed71.json"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "noisy3000-mtdf-seed29__s154-both",
+  "variantId": "s154-both",
+  "variantLabel": "s154-both",
+  "scenarioId": "noisy3000-mtdf-seed29",
+  "scenarioLabel": "noisy 3000ms MTD(f) seed29",
+  "startedAt": 1776511266.0466797,
+  "finishedAt": 1776511358.1204333,
+  "wallSeconds": 92.07375359535217,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-mtdf-seed29__s154-both.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/logs/noisy3000-mtdf-seed29__s154-both.log"
+}

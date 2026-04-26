@@ -1,0 +1,67 @@
+{
+  "generatedAt": "2026-04-18T04:32:52.364Z",
+  "evaluationJsonPath": "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-evaluation-profile.json",
+  "moveOrderingJsonPath": "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/move-ordering/move-ordering.balanced.json",
+  "tupleJsonPath": "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/source-tuple-profile.json",
+  "mpcJsonPath": "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/mpc/runtime.overlapHighTight.json",
+  "patternBankJsonPaths": [
+    "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+  ],
+  "moveOrderingPatternBankJsonPaths": [
+    "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/ordering-pattern-bank/ordering-pattern-bank.latea.json"
+  ],
+  "outputModulePath": "/mnt/data/stage167_repo/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-latea-main.generated.js",
+  "moduleFormat": "factorized",
+  "outputModuleBytes": 2459537,
+  "evaluationProfile": {
+    "version": 1,
+    "name": "balanced13-alllate-smoothed stability extras 0.90x",
+    "phaseBucketCount": 13,
+    "holdoutMaeInStones": null
+  },
+  "moveOrderingProfile": {
+    "version": 1,
+    "name": "stage151-split-late3__move-ordering__balanced",
+    "trainedBucketCount": 7,
+    "holdoutTop1Accuracy": 0.4666666666666667,
+    "holdoutTop3Accuracy": 0.7875
+  },
+  "tupleResidualProfile": {
+    "version": 1,
+    "name": "diagonal-top24-latea-endgame-patched-calibrated",
+    "layoutName": "diagonal-adjacent-pairs-full-v1-patched",
+    "tupleCount": 24,
+    "trainedBucketCount": 2,
+    "totalTableSize": 216,
+    "holdoutMaeInStones": null,
+    "holdoutMaeDeltaInStones": null
+  },
+  "mpcProfile": {
+    "version": 1,
+    "name": "stage151-split-late3__runtime-mpc__overlapHighTight",
+    "calibrationCount": 8,
+    "usableCalibrationCount": 8
+  },
+  "patternBankProfiles": [
+    {
+      "version": 1,
+      "name": "pattern-bank-v1 balanced13",
+      "layoutName": "pattern-bank-v1",
+      "basePatternCount": 12,
+      "totalPlacementCount": 64,
+      "totalTableSize": 157464,
+      "trainedBucketCount": 13
+    }
+  ],
+  "moveOrderingPatternBankProfiles": [
+    {
+      "version": 1,
+      "name": "stage151-split-late3__ordering-pattern-bank__latea",
+      "layoutName": "stage151-split-late3__ordering-pattern-bank__latea",
+      "basePatternCount": 3,
+      "totalPlacementCount": 14,
+      "totalTableSize": 85293,
+      "trainedBucketCount": 1
+    }
+  ]
+}

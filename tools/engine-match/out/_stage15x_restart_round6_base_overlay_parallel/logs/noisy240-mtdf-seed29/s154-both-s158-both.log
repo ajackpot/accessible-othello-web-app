@@ -1,0 +1,36 @@
+$ node /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/benchmark-vs-trineutron.mjs --variants custom --games 4 --opening-plies 20 --seed 29 --our-time-ms 240 --their-time-ms 240 --our-max-depth 6 --their-max-depth 18 --search-algorithm classic-mtdf-2ply --aspiration-window 60 --max-table-entries 90000 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --solver-adjudication-max-depth 14 --their-noise-scale 4 --variant-seed-mode shared --output-json /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/s154-both-s158-both.json --variant-label s154-both + s158-zebra-both-probe --generated-module tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js --engine-options-json tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-both-s158-both.json
+
+STDOUT:
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 29..32
+Our search          : classic-mtdf-2ply (Classic MTD(f)), aspiration=60, table=90000
+Our engine time     : 240ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 240ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : custom
+Custom profiles     : eval=balanced13-alllate-smoothed stability extras 0.90x, ordering=stage154-main-recenter__move-ordering__superset, tuple=diagonal-top24-latea-endgame-patched-calibrated, mpc=stage154-main-recenter__runtime-mpc__overlapBothSoftLow, pattern-bank=1, ordering-pattern-bank=0
+Custom engine opts  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/stage15x-restart-benchmark-pack/phase6-base-overlay/engine-options/s154-both-s158-both.json
+Custom module path  : /tmp/stage167_work/stage167_benchmark_reset_repo/tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js
+Games per variant   : 4 openings x 2 colors = 8
+
+[variant: s154-both + s158-zebra-both-probe]
+opening#01 black loss diff=-52 our 15,172n/7,719ms vs tri 70,671n/3,673ms [exact-adjudication]
+opening#01 white win  diff= 26 our 18,365n/6,451ms vs tri 89,261n/3,631ms [exact-adjudication]
+opening#02 black win  diff= 18 our 19,756n/8,298ms vs tri 65,350n/3,533ms [exact-adjudication]
+opening#02 white loss diff=-12 our 18,438n/5,055ms vs tri 88,026n/3,658ms [exact-adjudication]
+opening#03 black win  diff= 24 our 27,994n/11,821ms vs tri 110,829n/3,536ms [exact-adjudication]
+opening#03 white win  diff=  2 our 22,960n/7,944ms vs tri 98,564n/3,633ms [exact-adjudication]
+opening#04 black win  diff= 62 our 19,185n/7,391ms vs tri 76,310n/3,545ms [exact-adjudication]
+opening#04 white win  diff= 30 our 18,816n/5,190ms vs tri 73,021n/3,646ms [exact-adjudication]
+score: 6/8 (75.0%)
+W-L-D: 6-2-0
+avg disc diff: 12.25
+exact adjudications: 8/8
+
+Saved benchmark summary to /tmp/stage167_work/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round6_base_overlay_parallel/results/noisy240-mtdf-seed29/s154-both-s158-both.json
+
+
+STDERR:
+

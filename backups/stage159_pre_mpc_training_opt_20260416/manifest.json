@@ -1,0 +1,8 @@
+{
+  "createdAt": "2026-04-16T21:58:00+09:00",
+  "scope": "pre-mpc-training-optimization",
+  "files": [
+    "tools/evaluator-training/calibrate-mpc-profile.mjs",
+    "tools/evaluator-training/run-mpc-candidate-training-suite.mjs"
+  ]
+}

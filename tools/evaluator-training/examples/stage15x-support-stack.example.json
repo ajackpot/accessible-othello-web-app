@@ -1,0 +1,22 @@
+{
+  "moduleFormat": "factorized",
+  "moveOrdering": {
+    "supersetBuckets": ["7-8", "9-9", "10-10", "11-12", "13-14", "15-16", "17-18", "19-19"],
+    "maxRootsPerBucket": 600,
+    "sampleStride": 200,
+    "progressEvery": 20
+  },
+  "mpc": {
+    "maxSamplesPerBucket": 400,
+    "sampleStride": 200,
+    "progressEvery": 20,
+    "sharedSearchPairs": {
+      "mode": "auto",
+      "checkpointEvery": 50
+    },
+    "checkpoint": {
+      "enabled": true,
+      "every": 50
+    }
+  }
+}

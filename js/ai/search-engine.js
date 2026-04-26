@@ -1,0 +1,9004 @@
+/*
+ * SearchEngine is the browser runtime AI orchestrator.
+ *
+ * Runtime lane order, in broad strokes:
+ * 1) opening-book / opening-prior hybrid at the root
+ * 2) iterative deepening alpha-beta / PVS with TT, LMR, ETC, and conservative MPC
+ * 3) exact endgame search from the preset threshold, with custom-only root WLD +2
+ * 4) specialized few-empties exact solvers and exact fastest-first ordering in the tail window
+ *
+ * Current default/runtime reference lives in docs/runtime-ai-reference.md.
+ */
+import {
+  bitFromIndex,
+  bitsToIndices,
+  connectedRegions,
+  CORNER_INDICES,
+  indexFromBit,
+  neighbors,
+  popcount,
+  POSITIONAL_WEIGHTS,
+} from '../core/bitboard.js';
+import { GameState } from '../core/game-state.js';
+import {
+  applyMoveBitWithFlips,
+  computeFlipCountAtIndex,
+  computeFlips,
+  computeFlipsAtIndex,
+  createPreparedSearchMoveBuffer,
+  DEFAULT_PREPARED_SEARCH_MOVE_CORE_VARIANT,
+  DEFAULT_PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANT,
+  getPreparedSearchMoveBit,
+  getPreparedSearchMoveIndex,
+  hasPreparedSearchMoveTokenCompressedFlips,
+  legalMovesBitboard,
+  listPreparedSearchMoves,
+  prepareSearchMoveAtIndex,
+  listPreparedSearchMovesIntoBuffer,
+  materializePreparedSearchMove,
+  materializePreparedSearchMoveFlipCount,
+  PLAYER_COLORS,
+  PREPARED_SEARCH_MOVE_CORE_VARIANTS,
+  PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANTS,
+  readPreparedSearchMoveFlipCount,
+} from '../core/rules.js';
+import {
+  Evaluator,
+  MoveOrderingEvaluator,
+  describeStableDiscBounds,
+  getPositionalRisk,
+} from './evaluator.js';
+import {
+  lookupOpeningBook,
+  OPENING_BOOK_ADVISORY_MAX_PLY,
+  OPENING_BOOK_DIRECT_USE_MAX_PLY,
+} from './opening-book.js';
+import { lookupOpeningPrior } from './opening-prior.js';
+import {
+  DEFAULT_OPENING_HYBRID_TUNING_KEY,
+  resolveOpeningHybridTuning,
+} from './opening-tuning.js';
+import {
+  CUSTOM_ENGINE_FIELDS,
+  DEFAULT_STYLE_KEY,
+  ENGINE_PRESETS,
+  ENGINE_STYLE_PRESETS,
+  resolveEngineOptions,
+  resolveEngineOptionsWithCustomizations,
+  splitCustomInputGroups,
+} from './presets.js';
+import {
+  RUNTIME_EVALUATION_PROFILE,
+  RUNTIME_MPC_PROFILE,
+  RUNTIME_MOVE_ORDERING_PATTERN_BANK_PROFILES,
+  RUNTIME_MOVE_ORDERING_PROFILE,
+  RUNTIME_PATTERN_BANK_PROFILES,
+  RUNTIME_TUPLE_RESIDUAL_PROFILE,
+  compileMpcProfile,
+} from './evaluation-profiles.js';
+import {
+  DEFAULT_SEARCH_ALGORITHM,
+  isMctsSearchAlgorithm,
+  normalizeSearchAlgorithm,
+} from './search-algorithms.js';
+import {
+  applyClassicEngineVariantOverrides,
+} from './runtime-engine-variants.js';
+import {
+  DEFAULT_MOVE_ORDERING_STRUCTURE_PROFILE_KEY,
+  DEFAULT_MPC_STRUCTURE_PROFILE_KEY,
+  resolveMoveOrderingStructureProfile,
+  resolveMpcStructureProfile,
+} from './search-structure-profiles.js';
+import {
+  analyzeSpecialEndingMove,
+} from './special-endings.js';
+import {
+  runMctsGuidedSearch,
+  runMctsHybridSearch,
+  runMctsLiteSearch,
+} from './mcts.js';
+
+const INFINITY = 10 ** 9;
+const DEFAULT_PRESET_KEY = 'normal';
+const DEFAULT_CLASSIC_SEARCH_DRIVER = 'pvs';
+const CLASSIC_SEARCH_DRIVERS = Object.freeze(['pvs', 'mtdf']);
+const DEFAULT_CLASSIC_MTDF_GUESS_PLY_OFFSET = 1;
+const MAX_CLASSIC_MTDF_GUESS_PLY_OFFSET = 2;
+const DEFAULT_CLASSIC_MTDF_VERIFICATION_PASS_ENABLED = true;
+const MAX_CLASSIC_MTDF_PASSES_PER_DEPTH = 256;
+const DEFAULT_MCTS_EXPLORATION = 1.35;
+const DEFAULT_MCTS_MAX_ITERATIONS = 200000;
+const ZERO_OPENING_RANDOMNESS_TIE_BAND = 40;
+const ZERO_OPENING_RANDOMNESS_MAX_BOOK_SHARE_GAP = 0.05;
+const ORDERING_PROBE_EMPTIES = 18;
+const ORDERING_LIGHTWEIGHT_EVAL_MAX_EMPTIES = 18;
+const REGION_PARITY_EMPTIES = 16;
+const SMALL_EXACT_SOLVER_EMPTIES = 4;
+const DEFAULT_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES = 8;
+const MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES = 8;
+const LIGHTWEIGHT_FEW_EMPTIES_EXACT_MOVE_PATH_MIN_EMPTIES = SMALL_EXACT_SOLVER_EMPTIES + 1;
+const DEFAULT_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES = 8;
+const MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES = 8;
+const LIGHTWEIGHT_FEW_EMPTIES_WLD_MOVE_PATH_MIN_EMPTIES = SMALL_EXACT_SOLVER_EMPTIES + 1;
+export const DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS = Object.freeze({
+  allocationLightSearchMoves: true,
+  reusablePreparedSearchMoveBuffers: true,
+  lazyPreparedSearchMoves: true,
+  tokenizedPreparedSearchMoveCore: DEFAULT_PREPARED_SEARCH_MOVE_CORE_VARIANT === PREPARED_SEARCH_MOVE_CORE_VARIANTS.TOKENIZED,
+  compactPreparedSearchMoveFlips: DEFAULT_PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANT === PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANTS.COMPACT_TOKEN,
+  ttFirstDeferredMoveListBuild: false,
+  lowOverheadSearchChildStateFactory: false,
+});
+export const DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS = Object.freeze({
+  optimizedFewEmptiesExactSolver: true,
+  optimizedFewEmptiesExactSolverEmpties: DEFAULT_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES,
+  specializedFewEmptiesExactSolver: true,
+  lightweightFewEmptiesExactMovePath: true,
+  specializedFewEmptiesLastFlipPath: true,
+  exactFastestFirstOrdering: true,
+  fewEmptiesExactFastestFirstSelectiveGate: true,
+});
+export const DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS = Object.freeze({
+  optimizedFewEmptiesWldSolver: true,
+  optimizedFewEmptiesWldSolverEmpties: DEFAULT_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES,
+  lightweightFewEmptiesWldMovePath: true,
+  specializedFewEmptiesWldLastFlipPath: true,
+  fewEmptiesWldFastestFirstSelectiveGate: true,
+});
+const WLD_RESULT_SCORE = 10000;
+const MAX_WLD_PRE_EXACT_EMPTIES = 2;
+const SPECIAL_ENDING_SCOUT_MAX_EMPTIES = 44;
+const SPECIAL_ENDING_SCOUT_MIN_CANDIDATES = 4;
+const SPECIAL_ENDING_SCOUT_MAX_CANDIDATES = 6;
+const SPECIAL_ENDING_SCOUT_SCORE_BAND = 1200;
+const SPECIAL_ENDING_SCOUT_REQUIRED_CLASSIC_DEPTH = 4;
+const ORDERING_IMMEDIATE_WIPEOUT_BONUS = 50_000_000;
+const LMR_MIN_DEPTH = 4;
+const LMR_MIN_MOVE_INDEX = 2;
+const LMR_DEEP_REDUCTION_DEPTH = 7;
+const LMR_DEEP_REDUCTION_MOVE_INDEX = 6;
+const LMR_MIN_EMPTIES = 10;
+const ETC_MIN_DEPTH = 2;
+const EXACT_FASTEST_FIRST_MIN_EMPTIES = SMALL_EXACT_SOLVER_EMPTIES + 1;
+const EXACT_FASTEST_FIRST_MIN_LEGAL_MOVES = 4;
+const CORNER_MOVE_MASK = CORNER_INDICES.reduce(
+  (mask, index) => mask | bitFromIndex(index),
+  0n,
+);
+const CORNER_INDEX_SET = new Set(CORNER_INDICES);
+const ADJACENT_NEIGHBOR_MASKS = Object.freeze(
+  Array.from({ length: 64 }, (_, index) => neighbors(bitFromIndex(index))),
+);
+const EMPTY_CALIBRATION_LIST = Object.freeze([]);
+let nextSearchEngineInstanceId = 1;
+const TABLE_RELEVANT_OPTION_KEYS = Object.freeze([
+  'exactEndgameEmpties',
+  'wldPreExactEmpties',
+  'mobilityScale',
+  'potentialMobilityScale',
+  'cornerScale',
+  'cornerAdjacencyScale',
+  'stabilityScale',
+  'frontierScale',
+  'positionalScale',
+  'parityScale',
+  'discScale',
+  'riskPenaltyScale',
+  'optimizedFewEmptiesExactSolver',
+  'optimizedFewEmptiesExactSolverEmpties',
+  'specializedFewEmptiesExactSolver',
+  'lightweightFewEmptiesExactMovePath',
+  'specializedFewEmptiesLastFlipPath',
+  'optimizedFewEmptiesWldSolver',
+  'optimizedFewEmptiesWldSolverEmpties',
+  'lightweightFewEmptiesWldMovePath',
+  'specializedFewEmptiesWldLastFlipPath',
+  'fewEmptiesWldFastestFirstSelectiveGate',
+  'evaluationProfile',
+  'moveOrderingProfile',
+  'moveOrderingStructureProfile',
+  'tupleResidualProfile',
+  'patternBankProfiles',
+  'moveOrderingPatternBankProfiles',
+  'patternBankScale',
+  'moveOrderingPatternBankScale',
+  'moveOrderingPatternBankMinEmpties',
+  'moveOrderingPatternBankMaxEmpties',
+  'reusePatternBankForMoveOrdering',
+  'mpcProfile',
+  'mpcStructureProfile',
+  'classicSearchDriver',
+  'classicMtdfGuessPlyOffset',
+  'classicMtdfVerificationPassEnabled',
+]);
+const EXACT_LATE_ORDERING_PROFILE = Object.freeze({
+  killerPrimaryScale: 0.5,
+  killerSecondaryScale: 0.4,
+  historyScale: 0,
+  positionalScale: 0,
+  flipScale: 0,
+  riskScale: 0.25,
+  mobilityPenaltyScale: 1.2,
+  cornerReplyPenaltyScale: 1.25,
+  passBonusScale: 1,
+  parityScale: 1.25,
+  lightweightEvalScale: 4.5,
+});
+const LIGHTWEIGHT_LATE_ORDERING_PROFILE = Object.freeze({
+  killerPrimaryScale: 0.85,
+  killerSecondaryScale: 0.8,
+  historyScale: 0.45,
+  positionalScale: 0.55,
+  flipScale: 0.6,
+  riskScale: 0.75,
+  mobilityPenaltyScale: 1.05,
+  cornerReplyPenaltyScale: 1.1,
+  passBonusScale: 1,
+  parityScale: 1.05,
+  lightweightEvalScale: 1.75,
+});
+const GENERAL_LATE_ORDERING_PROFILE = Object.freeze({
+  killerPrimaryScale: 1,
+  killerSecondaryScale: 1,
+  historyScale: 1,
+  positionalScale: 1,
+  flipScale: 1,
+  riskScale: 1,
+  mobilityPenaltyScale: 1,
+  cornerReplyPenaltyScale: 1,
+  passBonusScale: 1,
+  parityScale: 1,
+  lightweightEvalScale: 1,
+});
+
+function clampTrackedEmptiesForOrdering(empties) {
+  if (!Number.isFinite(empties)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(64, Math.round(empties)));
+}
+
+function orderingActivationThreshold(exactEndgameEmpties) {
+  return Math.max(
+    10,
+    Math.min(ORDERING_LIGHTWEIGHT_EVAL_MAX_EMPTIES, exactEndgameEmpties + 4),
+  );
+}
+
+function buildLateOrderingProfileTable(exactEndgameEmpties) {
+  const threshold = orderingActivationThreshold(exactEndgameEmpties);
+  return Array.from({ length: 65 }, (_, empties) => {
+    if (empties <= exactEndgameEmpties) {
+      return EXACT_LATE_ORDERING_PROFILE;
+    }
+    if (empties <= threshold) {
+      return LIGHTWEIGHT_LATE_ORDERING_PROFILE;
+    }
+    return GENERAL_LATE_ORDERING_PROFILE;
+  });
+}
+
+function buildLightweightOrderingEligibilityTable(exactEndgameEmpties) {
+  const threshold = orderingActivationThreshold(exactEndgameEmpties);
+  return Array.from({ length: 65 }, (_, empties) => empties >= 10 && empties <= threshold);
+}
+
+function buildOrderingScoreTable(lateOrderingProfileTable, options = {}) {
+  const riskPenaltyScale = options.riskPenaltyScale ?? 1;
+  const mobilityScale = options.mobilityScale ?? 1;
+  const cornerAdjacencyScale = options.cornerAdjacencyScale ?? 1;
+  return lateOrderingProfileTable.map((profile, empties) => ({
+    killerPrimaryBonus: Math.round(1_500_000 * profile.killerPrimaryScale),
+    killerSecondaryBonus: Math.round(1_000_000 * profile.killerSecondaryScale),
+    historyWeight: 50 * profile.historyScale,
+    positionalWeight: 1000 * profile.positionalScale,
+    flipWeight: 30 * profile.flipScale,
+    xSquarePenalty: Math.round(150_000 * riskPenaltyScale * profile.riskScale),
+    cSquarePenalty: Math.round(80_000 * riskPenaltyScale * profile.riskScale),
+    mobilityPenaltyPerMove: Math.round(
+      (empties <= 14 ? 1800 : 1200)
+      * mobilityScale
+      * profile.mobilityPenaltyScale,
+    ),
+    cornerReplyPenaltyPerMove: Math.round(
+      (empties <= 14 ? 320_000 : 220_000)
+      * cornerAdjacencyScale
+      * profile.cornerReplyPenaltyScale,
+    ),
+    passBonus: Math.round((empties <= 12 ? 2_500_000 : 1_500_000) * profile.passBonusScale),
+    parityScale: profile.parityScale,
+    lightweightEvalScale: profile.lightweightEvalScale,
+  }));
+}
+
+function moveBitForRecord(move) {
+  return getPreparedSearchMoveBit(move);
+}
+
+function moveIndexForRecord(move) {
+  return getPreparedSearchMoveIndex(move);
+}
+
+function moveFlipCountForRecord(move) {
+  return readPreparedSearchMoveFlipCount(move);
+}
+
+function createFewEmptiesExactMoveSlot() {
+  return {
+    index: -1,
+    nextPlayerBoard: 0n,
+    nextOpponentBoard: 0n,
+    remainingEmptyBits: 0n,
+    orderingScore: 0,
+    opponentMoveCount: null,
+  };
+}
+
+function createFewEmptiesExactMoveBuffer(capacity = MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES) {
+  const normalizedCapacity = Math.max(1, Math.min(MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES, Math.round(Number(capacity) || 0)));
+  return Array.from({ length: normalizedCapacity }, () => createFewEmptiesExactMoveSlot());
+}
+
+const SPECIALIZED_FEW_EMPTIES_ORDERING_SCORES = Int32Array.from(
+  { length: 64 },
+  (_, index) => {
+    let score = 0;
+
+    if (CORNER_INDEX_SET.has(index)) {
+      score += 8_000_000;
+    }
+
+    score += POSITIONAL_WEIGHTS[index] * 12_000;
+
+    const riskType = getPositionalRisk(index);
+    if (riskType === 'x-square') {
+      score -= 1_600_000;
+    } else if (riskType === 'c-square') {
+      score -= 900_000;
+    }
+
+    return score;
+  },
+);
+
+function compareSpecializedFewEmptiesIndices(left, right) {
+  const leftScore = SPECIALIZED_FEW_EMPTIES_ORDERING_SCORES[left] ?? 0;
+  const rightScore = SPECIALIZED_FEW_EMPTIES_ORDERING_SCORES[right] ?? 0;
+  if (leftScore !== rightScore) {
+    return rightScore - leftScore;
+  }
+  return left - right;
+}
+
+function compareFewEmptiesExactMoveSlots(left, right, useFastestFirst) {
+  if (useFastestFirst) {
+    const leftReplyCount = Number.isFinite(left?.opponentMoveCount)
+      ? left.opponentMoveCount
+      : Number.POSITIVE_INFINITY;
+    const rightReplyCount = Number.isFinite(right?.opponentMoveCount)
+      ? right.opponentMoveCount
+      : Number.POSITIVE_INFINITY;
+    if (leftReplyCount !== rightReplyCount) {
+      return leftReplyCount - rightReplyCount;
+    }
+  }
+
+  const leftOrderingScore = Number(left?.orderingScore ?? Number.NEGATIVE_INFINITY);
+  const rightOrderingScore = Number(right?.orderingScore ?? Number.NEGATIVE_INFINITY);
+  if (leftOrderingScore !== rightOrderingScore) {
+    return rightOrderingScore - leftOrderingScore;
+  }
+
+  return Number(left?.index ?? Number.POSITIVE_INFINITY) - Number(right?.index ?? Number.POSITIVE_INFINITY);
+}
+
+export function getSearchRuntimeDefaultConfig() {
+  return {
+    ...DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS,
+    ...DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS,
+    ...DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS,
+    preparedSearchMoveCoreVariant: DEFAULT_PREPARED_SEARCH_MOVE_CORE_VARIANT,
+    preparedSearchMoveFlipStorageVariant: DEFAULT_PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANT,
+  };
+}
+
+export function createEmptySearchStats() {
+  return {
+    nodes: 0,
+    cutoffs: 0,
+    ttHits: 0,
+    ttStores: 0,
+    ttEvictions: 0,
+    completedDepth: 0,
+    elapsedMs: 0,
+    bookHits: 0,
+    bookMoves: 0,
+    openingPriorHits: 0,
+    openingConfidenceSkips: 0,
+    openingPriorContradictionVetoes: 0,
+    openingHybridDirectMoves: 0,
+    smallSolverCalls: 0,
+    smallSolverNodes: 0,
+    specializedFewEmptiesCalls: 0,
+    specializedFewEmpties1Calls: 0,
+    specializedFewEmpties2Calls: 0,
+    specializedFewEmpties3Calls: 0,
+    specializedFewEmpties4Calls: 0,
+    specializedFewEmptiesLastFlipCalls: 0,
+    optimizedFewEmpties5Calls: 0,
+    optimizedFewEmpties6Calls: 0,
+    optimizedFewEmpties7Calls: 0,
+    optimizedFewEmpties8Calls: 0,
+    lightweightFewEmpties5Calls: 0,
+    lightweightFewEmpties6Calls: 0,
+    lightweightFewEmpties7Calls: 0,
+    lightweightFewEmpties8Calls: 0,
+    optimizedFewEmptiesFastestFirstSorts: 0,
+    optimizedFewEmptiesFastestFirstPassCandidates: 0,
+    optimizedFewEmptiesFastestFirstSelectiveSkips: 0,
+    specializedFewEmptiesWldCalls: 0,
+    specializedFewEmptiesWld1Calls: 0,
+    specializedFewEmptiesWld2Calls: 0,
+    specializedFewEmptiesWld3Calls: 0,
+    specializedFewEmptiesWld4Calls: 0,
+    specializedFewEmptiesWldLastFlipCalls: 0,
+    optimizedFewEmptiesWld5Calls: 0,
+    optimizedFewEmptiesWld6Calls: 0,
+    optimizedFewEmptiesWld7Calls: 0,
+    optimizedFewEmptiesWld8Calls: 0,
+    lightweightFewEmptiesWld5Calls: 0,
+    lightweightFewEmptiesWld6Calls: 0,
+    lightweightFewEmptiesWld7Calls: 0,
+    lightweightFewEmptiesWld8Calls: 0,
+    lowOverheadSearchChildStates: 0,
+    lowOverheadSearchPassStates: 0,
+    optimizedFewEmptiesWldFastestFirstSorts: 0,
+    optimizedFewEmptiesWldFastestFirstPassCandidates: 0,
+    optimizedFewEmptiesWldFastestFirstSelectiveSkips: 0,
+    fastestFirstExactSorts: 0,
+    fastestFirstExactPassCandidates: 0,
+    ttFirstSearches: 0,
+    ttFirstCutoffs: 0,
+    ttFirstDeferredMoveListBuildAttempts: 0,
+    ttFirstDeferredMoveListBuildLegalHits: 0,
+    ttFirstDeferredMoveListBuildCutoffs: 0,
+    ttFirstDeferredMoveListBuildSkips: 0,
+    lmrReductions: 0,
+    lmrReSearches: 0,
+    lmrFullReSearches: 0,
+    orderingEvalCalls: 0,
+    orderingTtShallowSkips: 0,
+    orderingTopKRescores: 0,
+    orderingPotentialMobilityBonuses: 0,
+    orderingFrontierBonuses: 0,
+    orderingStabilityBonuses: 0,
+    orderingQuietMoveBonuses: 0,
+    orderingEdgeEndpointBonuses: 0,
+    orderingShallowProbeCalls: 0,
+    orderingShallowProbeNodes: 0,
+    orderingShallowProbeBonuses: 0,
+    etcNodes: 0,
+    etcChildTableHits: 0,
+    etcQualifiedBounds: 0,
+    etcNarrowings: 0,
+    etcCutoffs: 0,
+    etcExactNodes: 0,
+    etcExactChildTableHits: 0,
+    etcExactQualifiedBounds: 0,
+    etcExactNarrowings: 0,
+    etcExactCutoffs: 0,
+    etcWldNodes: 0,
+    etcWldChildTableHits: 0,
+    etcWldQualifiedBounds: 0,
+    etcWldNarrowings: 0,
+    etcWldCutoffs: 0,
+    etcPreparedChildTableReuseLookups: 0,
+    etcPreparedChildTableReuseHits: 0,
+    wldRootSearches: 0,
+    wldNodes: 0,
+    wldTtHits: 0,
+    wldSmallSolverCalls: 0,
+    wldSmallSolverNodes: 0,
+    mpcProbes: 0,
+    mpcHighProbes: 0,
+    mpcHighCutoffs: 0,
+    mpcLowProbes: 0,
+    mpcLowCutoffs: 0,
+    mpcStaticEvalSkips: 0,
+    mpcVolatilitySkips: 0,
+    mpcZebraLadderSelections: 0,
+    mpcZebraLadderFiltered: 0,
+    mpcVerificationProbes: 0,
+    mpcVerificationPasses: 0,
+    mpcVerificationFailures: 0,
+    mtdfPasses: 0,
+    mtdfFailHighs: 0,
+    mtdfFailLows: 0,
+    mtdfConvergences: 0,
+    mtdfVerificationPasses: 0,
+    mtdfVerificationTimeouts: 0,
+    mtdfFullWindowFallbacks: 0,
+    mtdfMaxPassesPerDepth: 0,
+    mtdfRootLightPasses: 0,
+    mtdfRootDetailPasses: 0,
+    mtdfRootOrderingCacheHits: 0,
+    mtdfRootOrderingCacheMisses: 0,
+    mtdfRootOrderingCachePromotions: 0,
+    specialEndingScoutRuns: 0,
+    specialEndingScoutCandidates: 0,
+    specialEndingScoutReplyStates: 0,
+    specialEndingScoutResponseStates: 0,
+    specialEndingScoutOpponentReplyStates: 0,
+    specialEndingScoutPenalties: 0,
+    immediateWipeoutScans: 0,
+    immediateWipeoutHits: 0,
+    wldImmediateWipeoutHits: 0,
+    mctsIterations: 0,
+    mctsRollouts: 0,
+    mctsRolloutPlies: 0,
+    mctsTreeNodes: 0,
+    mctsCutoffEvaluations: 0,
+    mctsGuidedPolicySelections: 0,
+    mctsGuidedPriorUses: 0,
+    mctsImmediateWipeoutSelections: 0,
+    mctsImmediateWipeoutExpansionSelections: 0,
+    mctsImmediateWipeoutRolloutSelections: 0,
+    mctsImmediateWipeoutHybridPriorHits: 0,
+    mctsImmediateWipeoutRootShortcuts: 0,
+    mctsRootThreatScans: 0,
+    mctsRootThreatHits: 0,
+    mctsRootThreatPriorUses: 0,
+    mctsRootThreatRootSafeExpansionSkips: 0,
+    mctsHybridPriorSearches: 0,
+    mctsHybridPriorCacheHits: 0,
+    mctsHybridPriorNodes: 0,
+    mctsHybridPriorUses: 0,
+    mctsSolverStateProbes: 0,
+    mctsSolverCacheHits: 0,
+    mctsSolverExactHits: 0,
+    mctsSolverWldHits: 0,
+    mctsSolverNodeSolves: 0,
+    mctsSolverPropagationUpdates: 0,
+    mctsSolverRootProofs: 0,
+    mctsExactContinuationRuns: 0,
+    mctsExactContinuationCompletions: 0,
+    mctsExactContinuationTimeouts: 0,
+    mctsExactContinuationBestMoveChanges: 0,
+    mctsExactContinuationAdaptiveRuns: 0,
+    mctsExactContinuationAdaptiveCompletions: 0,
+    mctsExactContinuationAdaptiveTimeouts: 0,
+    mctsExactContinuationAdaptiveBestMoveChanges: 0,
+    mctsScoreBoundUpdates: 0,
+    mctsScoreBoundExactSolves: 0,
+    mctsScoreBoundOutcomeSolves: 0,
+    mctsScoreBoundDominatedChildrenSkipped: 0,
+    mctsScoreBoundTraversalFilteredNodes: 0,
+    mctsScoreBoundDominatedTraversalSelections: 0,
+    mctsScoreBoundDrawPrioritySelectionNodes: 0,
+    mctsScoreBoundDrawPriorityRankedChildren: 0,
+    mctsScoreBoundDrawPriorityBlockerChildren: 0,
+    mctsProofNumberUpdates: 0,
+    mctsGeneralizedProofNumberUpdates: 0,
+    mctsProofPrioritySelectionNodes: 0,
+    mctsProofPriorityRankedChildren: 0,
+    mctsProofPriorityRootMaturityGateChecks: 0,
+    mctsProofPriorityRootMaturityGateActivations: 0,
+  };
+}
+
+class SearchTimeoutError extends Error {
+  constructor(message = 'Search timed out.') {
+    super(message);
+    this.name = 'SearchTimeoutError';
+  }
+}
+
+function now() {
+  if (typeof globalThis.performance?.now === 'function') {
+    return globalThis.performance.now();
+  }
+  return Date.now();
+}
+
+function colorIndex(color) {
+  return color === 'black' ? 0 : 1;
+}
+
+function chooseRandomBest(scoredMoves, randomness) {
+  if (!Array.isArray(scoredMoves) || scoredMoves.length === 0 || randomness <= 0) {
+    return scoredMoves[0] ?? null;
+  }
+
+  const bestScore = scoredMoves[0].score;
+  const pool = scoredMoves.filter((entry) => (bestScore - entry.score) <= randomness);
+  if (pool.length <= 1) {
+    return scoredMoves[0];
+  }
+
+  const totalWeight = pool.reduce((sum, entry, index) => sum + (pool.length - index), 0);
+  let threshold = Math.random() * totalWeight;
+  for (let index = 0; index < pool.length; index += 1) {
+    threshold -= (pool.length - index);
+    if (threshold <= 0) {
+      return pool[index];
+    }
+  }
+
+  return pool[0];
+}
+
+function resolveOpeningSelectionRandomness(configuredRandomness, options = null, scoredMoves = null) {
+  if (Number.isFinite(configuredRandomness) && configuredRandomness > 0) {
+    return configuredRandomness;
+  }
+
+  const tieBreakRandomizationEnabled = typeof options?.openingTieBreakRandomization === 'boolean'
+    ? options.openingTieBreakRandomization
+    : (typeof options?.presetKey === 'string' && options.presetKey !== 'custom');
+  if (!tieBreakRandomizationEnabled) {
+    return 0;
+  }
+  if (!Array.isArray(scoredMoves) || scoredMoves.length <= 1) {
+    return 0;
+  }
+
+  const [bestMove, secondMove] = scoredMoves;
+  if (!Number.isFinite(bestMove?.bookShare) || !Number.isFinite(secondMove?.bookShare)) {
+    return 0;
+  }
+
+  // Opening selection scores are only a coarse ordering signal layered on top of the
+  // empirical book/prior hybrid. When the top two book branches are essentially tied,
+  // keep a narrow tie band even on built-in zero-randomness presets so replies like
+  // F5-D6 / F5-F6 do not collapse into a single canned move every game.
+  const bookShareGap = Math.abs(bestMove.bookShare - secondMove.bookShare);
+  if (bookShareGap > ZERO_OPENING_RANDOMNESS_MAX_BOOK_SHARE_GAP) {
+    return 0;
+  }
+
+  return ZERO_OPENING_RANDOMNESS_TIE_BAND;
+}
+
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clamp01(value) {
+  return clamp(value, 0, 1);
+}
+
+function openingEvidenceCoverage(totalEvidence) {
+  if (!Number.isFinite(totalEvidence) || totalEvidence <= 0) {
+    return 0;
+  }
+  return clamp01(Math.log2(totalEvidence + 1) / 16);
+}
+
+function cloneSearchResult(result) {
+  if (!result) {
+    return null;
+  }
+
+  return {
+    ...result,
+    principalVariation: Array.isArray(result.principalVariation)
+      ? [...result.principalVariation]
+      : [],
+    analyzedMoves: Array.isArray(result.analyzedMoves)
+      ? result.analyzedMoves.map((move) => ({
+        ...move,
+        principalVariation: Array.isArray(move.principalVariation)
+          ? [...move.principalVariation]
+          : [],
+      }))
+      : [],
+  };
+}
+
+function sanitizeExperimentalInteger(value, fallback, min, max) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  return Math.max(min, Math.min(max, Math.round(parsed)));
+}
+
+function sanitizeExperimentalBoolean(value, fallback) {
+  return typeof value === 'boolean' ? value : fallback;
+}
+
+function sanitizeExperimentalNumber(value, fallback, min, max, decimals = 2) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  const clamped = Math.max(min, Math.min(max, parsed));
+  return Number(clamped.toFixed(decimals));
+}
+
+function sanitizeExperimentalEnum(value, fallback, allowedValues) {
+  return allowedValues.includes(value) ? value : fallback;
+}
+
+function sanitizeDirectPresetField(field, value, fallback) {
+  if (field?.type === 'select') {
+    const options = Array.isArray(field.options) ? field.options : [];
+    if (options.length === 0) {
+      return fallback;
+    }
+
+    const normalizedValue = value === null || value === undefined ? null : String(value).trim();
+    const normalizedFallback = fallback === null || fallback === undefined ? null : String(fallback).trim();
+
+    if (normalizedValue !== null) {
+      const matchedOption = options.find((option) => String(option.value) === normalizedValue);
+      if (matchedOption) {
+        return matchedOption.value;
+      }
+    }
+
+    if (normalizedFallback !== null) {
+      const matchedFallback = options.find((option) => String(option.value) === normalizedFallback);
+      if (matchedFallback) {
+        return matchedFallback.value;
+      }
+    }
+
+    return options[0].value;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  const clamped = Math.min(field.max, Math.max(field.min, parsed));
+  if (Number.isInteger(field.step)) {
+    return Math.round(clamped);
+  }
+
+  return Number(clamped.toFixed(2));
+}
+
+function applyDirectPresetOverrides(resolvedOptions, engineOptions) {
+  if (!engineOptions || typeof engineOptions !== 'object') {
+    return resolvedOptions;
+  }
+
+  const nextOptions = { ...resolvedOptions };
+  for (const field of CUSTOM_ENGINE_FIELDS) {
+    if (!Object.hasOwn(engineOptions, field.key)) {
+      continue;
+    }
+
+    nextOptions[field.key] = sanitizeDirectPresetField(
+      field,
+      engineOptions[field.key],
+      nextOptions[field.key],
+    );
+  }
+
+  return nextOptions;
+}
+
+function applyLegacyRandomnessOptionOverride(resolvedOptions, engineOptions) {
+  if (!engineOptions || typeof engineOptions !== 'object') {
+    return resolvedOptions;
+  }
+
+  const hasOpeningRandomness = Object.hasOwn(engineOptions, 'openingRandomness');
+  const hasSearchRandomness = Object.hasOwn(engineOptions, 'searchRandomness');
+  if ((hasOpeningRandomness || hasSearchRandomness) || !Object.hasOwn(engineOptions, 'randomness')) {
+    return resolvedOptions;
+  }
+
+  const legacyRandomness = sanitizeExperimentalInteger(
+    engineOptions.randomness,
+    resolvedOptions.searchRandomness ?? resolvedOptions.randomness ?? 0,
+    0,
+    500,
+  );
+  return {
+    ...resolvedOptions,
+    openingRandomness: legacyRandomness,
+    searchRandomness: legacyRandomness,
+    randomness: legacyRandomness,
+  };
+}
+
+const DEFAULT_WLD_PRE_EXACT_EMPTIES = 0;
+const DEFAULT_MCTS_SOLVER_WLD_EMPTIES = 2;
+const MAX_MCTS_SOLVER_WLD_EMPTIES = 8;
+const DEFAULT_MCTS_EXACT_CONTINUATION_EXTRA_EMPTIES = 3;
+const MAX_MCTS_EXACT_CONTINUATION_EXTRA_EMPTIES = 4;
+const DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_ENABLED = true;
+const DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_EXTRA_EMPTIES = 1;
+const MAX_MCTS_EXACT_CONTINUATION_ADAPTIVE_EXTRA_EMPTIES = 2;
+const DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_MAX_LEGAL_MOVES = 0;
+const MAX_MCTS_EXACT_CONTINUATION_ADAPTIVE_MAX_LEGAL_MOVES = 32;
+const DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODE = 'loss-only';
+const MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODES = Object.freeze(['loss-only', 'non-win', 'all']);
+const DEFAULT_MCTS_PROOF_PRIORITY_SCALE = 0;
+const DEFAULT_MCTS_HYBRID_PROOF_PRIORITY_SCALE = 0.15;
+const MAX_MCTS_PROOF_PRIORITY_SCALE = 5;
+const DEFAULT_MCTS_PROOF_PRIORITY_MAX_EMPTIES_PADDING = 2;
+const MAX_MCTS_PROOF_PRIORITY_MAX_EMPTIES = 16;
+const DEFAULT_MCTS_SCORE_BOUNDS_ENABLED = false;
+const DEFAULT_MCTS_SCORE_BOUND_DRAW_PRIORITY_SCALE = 0.35;
+const MAX_MCTS_SCORE_BOUND_DRAW_PRIORITY_SCALE = 5;
+const DEFAULT_MCTS_PROOF_METRIC_MODE = 'legacy-root';
+const MCTS_PROOF_METRIC_MODES = Object.freeze(['legacy-root', 'per-player']);
+const DEFAULT_MCTS_PROOF_PRIORITY_BIAS_MODE = 'rank';
+const MCTS_PROOF_PRIORITY_BIAS_MODES = Object.freeze(['rank', 'pnmax', 'pnsum']);
+const DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODE = 'fixed';
+const MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODES = Object.freeze(['fixed', 'budget-conditioned']);
+const DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS = 240;
+const MAX_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS = 60000;
+const DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_METRIC_MODE = 'per-player';
+const DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_BIAS_MODE = 'pnmax';
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_ENABLED = false;
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODE = 'best-metric-lte-1-or-solved-child';
+const MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODES = Object.freeze([
+  'coverage-gte-0.50',
+  'coverage-gte-0.75',
+  'best-metric-lte-1',
+  'best-metric-lte-1-or-solved-child',
+  'best-metric-threshold',
+  'best-metric-threshold-or-solved-child',
+]);
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_METRIC_MODE = 'per-player';
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BIAS_MODE = 'pnmax';
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_VISITS = 0;
+const MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_VISITS = 2_000_000;
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BEST_FINITE_METRIC_THRESHOLD = 1;
+const MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BEST_FINITE_METRIC_THRESHOLD = 1_000_000_000;
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_REQUIRE_NO_SOLVED_CHILD = false;
+const DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_DISTINCT_FINITE_METRIC_COUNT = 0;
+const MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_DISTINCT_FINITE_METRIC_COUNT = 64;
+
+function resolvePatternBankProfilesOption(engineOptions = {}, resolved = {}, activeProfiles = null) {
+  if (Object.hasOwn(engineOptions, 'patternBankProfiles')) {
+    return engineOptions.patternBankProfiles;
+  }
+  if (Object.hasOwn(engineOptions, 'patternBankProfile')) {
+    return engineOptions.patternBankProfile;
+  }
+  if (Object.hasOwn(resolved, 'patternBankProfiles')) {
+    return resolved.patternBankProfiles;
+  }
+  if (Object.hasOwn(resolved, 'patternBankProfile')) {
+    return resolved.patternBankProfile;
+  }
+  return activeProfiles ?? null;
+}
+
+function resolveMoveOrderingPatternBankProfilesOption(engineOptions = {}, resolved = {}, activeProfiles = null) {
+  if (Object.hasOwn(engineOptions, 'moveOrderingPatternBankProfiles')) {
+    return engineOptions.moveOrderingPatternBankProfiles;
+  }
+  if (Object.hasOwn(engineOptions, 'moveOrderingPatternBankProfile')) {
+    return engineOptions.moveOrderingPatternBankProfile;
+  }
+  if (Object.hasOwn(resolved, 'moveOrderingPatternBankProfiles')) {
+    return resolved.moveOrderingPatternBankProfiles;
+  }
+  if (Object.hasOwn(resolved, 'moveOrderingPatternBankProfile')) {
+    return resolved.moveOrderingPatternBankProfile;
+  }
+  return activeProfiles ?? null;
+}
+
+function resolveOptionsFromInput(
+  engineOptions = {},
+  fallbackPresetKey = DEFAULT_PRESET_KEY,
+  fallbackStyleKey = DEFAULT_STYLE_KEY,
+  fallbackMpcProfile = RUNTIME_MPC_PROFILE ?? null,
+) {
+  const hasExplicitPresetKey = typeof engineOptions.presetKey === 'string';
+  const presetKey = engineOptions.presetKey ?? fallbackPresetKey;
+  const styleKey = engineOptions.styleKey ?? fallbackStyleKey;
+  const nestedCustomInputs = (engineOptions.customInputs && typeof engineOptions.customInputs === 'object')
+    ? engineOptions.customInputs
+    : {};
+  const splitTopLevelInputs = splitCustomInputGroups(hasExplicitPresetKey ? engineOptions : {});
+  const splitNestedInputs = splitCustomInputGroups(nestedCustomInputs);
+  const customDifficultyInputs = {
+    ...splitTopLevelInputs.customDifficultyInputs,
+    ...splitNestedInputs.customDifficultyInputs,
+    ...((engineOptions.customDifficultyInputs && typeof engineOptions.customDifficultyInputs === 'object')
+      ? engineOptions.customDifficultyInputs
+      : {}),
+  };
+  const customStyleInputs = {
+    ...splitTopLevelInputs.customStyleInputs,
+    ...splitNestedInputs.customStyleInputs,
+    ...((engineOptions.customStyleInputs && typeof engineOptions.customStyleInputs === 'object')
+      ? engineOptions.customStyleInputs
+      : {}),
+  };
+  let resolved = hasExplicitPresetKey
+    ? resolveEngineOptionsWithCustomizations({
+      presetKey,
+      customDifficultyInputs,
+      styleKey,
+      customStyleInputs,
+      searchAlgorithm: engineOptions.searchAlgorithm ?? DEFAULT_SEARCH_ALGORITHM,
+      allowStyleWithCustomDifficulty: true,
+    })
+    : resolveEngineOptions(presetKey, {}, styleKey);
+
+  if (!hasExplicitPresetKey) {
+    resolved = applyDirectPresetOverrides(resolved, engineOptions);
+    resolved = applyLegacyRandomnessOptionOverride(resolved, engineOptions);
+  }
+  const resolvedHasOwnMpcProfile = Object.hasOwn(resolved, 'mpcProfile');
+
+  const searchAlgorithm = normalizeSearchAlgorithm(
+    engineOptions.searchAlgorithm ?? resolved.searchAlgorithm ?? DEFAULT_SEARCH_ALGORITHM,
+  );
+  const classicSearchDriverDefault = searchAlgorithm === 'classic-mtdf' || searchAlgorithm === 'classic-mtdf-2ply'
+    ? 'mtdf'
+    : DEFAULT_CLASSIC_SEARCH_DRIVER;
+  const classicMtdfGuessPlyOffsetDefault = searchAlgorithm === 'classic-mtdf-2ply'
+    ? 2
+    : DEFAULT_CLASSIC_MTDF_GUESS_PLY_OFFSET;
+  const classicSearchDriver = sanitizeExperimentalEnum(
+    engineOptions.classicSearchDriver,
+    resolved.classicSearchDriver ?? classicSearchDriverDefault,
+    CLASSIC_SEARCH_DRIVERS,
+  );
+  const classicMtdfGuessPlyOffset = sanitizeExperimentalInteger(
+    engineOptions.classicMtdfGuessPlyOffset,
+    resolved.classicMtdfGuessPlyOffset ?? classicMtdfGuessPlyOffsetDefault,
+    1,
+    MAX_CLASSIC_MTDF_GUESS_PLY_OFFSET,
+  );
+  const classicMtdfVerificationPassEnabled = sanitizeExperimentalBoolean(
+    engineOptions.classicMtdfVerificationPassEnabled,
+    resolved.classicMtdfVerificationPassEnabled ?? DEFAULT_CLASSIC_MTDF_VERIFICATION_PASS_ENABLED,
+  );
+  const mctsExploration = sanitizeExperimentalNumber(
+    engineOptions.mctsExploration,
+    resolved.mctsExploration ?? DEFAULT_MCTS_EXPLORATION,
+    0.1,
+    4,
+    2,
+  );
+  const mctsMaxIterations = sanitizeExperimentalInteger(
+    engineOptions.mctsMaxIterations,
+    resolved.mctsMaxIterations ?? DEFAULT_MCTS_MAX_ITERATIONS,
+    1,
+    2_000_000,
+  );
+  const mctsMaxNodes = sanitizeExperimentalInteger(
+    engineOptions.mctsMaxNodes,
+    resolved.mctsMaxNodes ?? Math.max(2048, Math.min(160000, Math.round((resolved.maxTableEntries ?? 50000) * 0.75))),
+    64,
+    500000,
+  );
+  const enhancedTranspositionCutoff = sanitizeExperimentalBoolean(
+    engineOptions.enhancedTranspositionCutoff,
+    resolved.enhancedTranspositionCutoff ?? true,
+  );
+  const optimizedFewEmptiesExactSolver = sanitizeExperimentalBoolean(
+    engineOptions.optimizedFewEmptiesExactSolver,
+    resolved.optimizedFewEmptiesExactSolver ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.optimizedFewEmptiesExactSolver,
+  );
+  const optimizedFewEmptiesExactSolverEmpties = sanitizeExperimentalInteger(
+    engineOptions.optimizedFewEmptiesExactSolverEmpties,
+    resolved.optimizedFewEmptiesExactSolverEmpties ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.optimizedFewEmptiesExactSolverEmpties,
+    SMALL_EXACT_SOLVER_EMPTIES,
+    MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES,
+  );
+  const specializedFewEmptiesExactSolver = sanitizeExperimentalBoolean(
+    engineOptions.specializedFewEmptiesExactSolver,
+    resolved.specializedFewEmptiesExactSolver ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.specializedFewEmptiesExactSolver,
+  );
+  const lightweightFewEmptiesExactMovePath = sanitizeExperimentalBoolean(
+    engineOptions.lightweightFewEmptiesExactMovePath,
+    resolved.lightweightFewEmptiesExactMovePath ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.lightweightFewEmptiesExactMovePath,
+  );
+  const specializedFewEmptiesLastFlipPath = sanitizeExperimentalBoolean(
+    engineOptions.specializedFewEmptiesLastFlipPath,
+    resolved.specializedFewEmptiesLastFlipPath ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.specializedFewEmptiesLastFlipPath,
+  );
+  const optimizedFewEmptiesWldSolver = sanitizeExperimentalBoolean(
+    engineOptions.optimizedFewEmptiesWldSolver,
+    resolved.optimizedFewEmptiesWldSolver ?? DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS.optimizedFewEmptiesWldSolver,
+  );
+  const optimizedFewEmptiesWldSolverEmpties = sanitizeExperimentalInteger(
+    engineOptions.optimizedFewEmptiesWldSolverEmpties,
+    resolved.optimizedFewEmptiesWldSolverEmpties ?? DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS.optimizedFewEmptiesWldSolverEmpties,
+    SMALL_EXACT_SOLVER_EMPTIES,
+    MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES,
+  );
+  const lightweightFewEmptiesWldMovePath = sanitizeExperimentalBoolean(
+    engineOptions.lightweightFewEmptiesWldMovePath,
+    resolved.lightweightFewEmptiesWldMovePath ?? DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS.lightweightFewEmptiesWldMovePath,
+  );
+  const specializedFewEmptiesWldLastFlipPath = sanitizeExperimentalBoolean(
+    engineOptions.specializedFewEmptiesWldLastFlipPath,
+    resolved.specializedFewEmptiesWldLastFlipPath ?? DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS.specializedFewEmptiesWldLastFlipPath,
+  );
+  const exactFastestFirstOrdering = sanitizeExperimentalBoolean(
+    engineOptions.exactFastestFirstOrdering,
+    resolved.exactFastestFirstOrdering ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.exactFastestFirstOrdering,
+  );
+  const fewEmptiesExactFastestFirstSelectiveGate = sanitizeExperimentalBoolean(
+    engineOptions.fewEmptiesExactFastestFirstSelectiveGate,
+    resolved.fewEmptiesExactFastestFirstSelectiveGate ?? DEFAULT_FEW_EMPTIES_EXACT_RUNTIME_OPTIONS.fewEmptiesExactFastestFirstSelectiveGate,
+  );
+  const fewEmptiesWldFastestFirstSelectiveGate = sanitizeExperimentalBoolean(
+    engineOptions.fewEmptiesWldFastestFirstSelectiveGate,
+    resolved.fewEmptiesWldFastestFirstSelectiveGate ?? DEFAULT_FEW_EMPTIES_WLD_RUNTIME_OPTIONS.fewEmptiesWldFastestFirstSelectiveGate,
+  );
+  const ttFirstInPlaceMoveExtraction = sanitizeExperimentalBoolean(
+    engineOptions.ttFirstInPlaceMoveExtraction,
+    resolved.ttFirstInPlaceMoveExtraction ?? true,
+  );
+  const ttFirstDeferredMoveListBuild = sanitizeExperimentalBoolean(
+    engineOptions.ttFirstDeferredMoveListBuild,
+    resolved.ttFirstDeferredMoveListBuild ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.ttFirstDeferredMoveListBuild,
+  );
+  const etcInPlaceMovePreparation = sanitizeExperimentalBoolean(
+    engineOptions.etcInPlaceMovePreparation,
+    resolved.etcInPlaceMovePreparation ?? true,
+  );
+  const etcReusePreparedChildTableEntryForOrdering = sanitizeExperimentalBoolean(
+    engineOptions.etcReusePreparedChildTableEntryForOrdering,
+    resolved.etcReusePreparedChildTableEntryForOrdering ?? true,
+  );
+  const allocationLightSearchMoves = sanitizeExperimentalBoolean(
+    engineOptions.allocationLightSearchMoves,
+    resolved.allocationLightSearchMoves ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.allocationLightSearchMoves,
+  );
+  const reusablePreparedSearchMoveBuffers = sanitizeExperimentalBoolean(
+    engineOptions.reusablePreparedSearchMoveBuffers,
+    resolved.reusablePreparedSearchMoveBuffers ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.reusablePreparedSearchMoveBuffers,
+  );
+  const lazyPreparedSearchMoves = sanitizeExperimentalBoolean(
+    engineOptions.lazyPreparedSearchMoves,
+    resolved.lazyPreparedSearchMoves ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.lazyPreparedSearchMoves,
+  );
+  const tokenizedPreparedSearchMoveCore = sanitizeExperimentalBoolean(
+    engineOptions.tokenizedPreparedSearchMoveCore,
+    resolved.tokenizedPreparedSearchMoveCore ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.tokenizedPreparedSearchMoveCore,
+  );
+  const compactPreparedSearchMoveFlips = sanitizeExperimentalBoolean(
+    engineOptions.compactPreparedSearchMoveFlips,
+    resolved.compactPreparedSearchMoveFlips ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.compactPreparedSearchMoveFlips,
+  );
+  const lowOverheadSearchChildStateFactory = sanitizeExperimentalBoolean(
+    engineOptions.lowOverheadSearchChildStateFactory,
+    resolved.lowOverheadSearchChildStateFactory ?? DEFAULT_SEARCH_MOVE_PATH_RUNTIME_OPTIONS.lowOverheadSearchChildStateFactory,
+  );
+  const enhancedTranspositionCutoffWld = sanitizeExperimentalBoolean(
+    engineOptions.enhancedTranspositionCutoffWld,
+    engineOptions.enhancedTranspositionCutoff ?? resolved.enhancedTranspositionCutoffWld ?? enhancedTranspositionCutoff,
+  );
+  const mctsSolverEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsSolverEnabled,
+    resolved.mctsSolverEnabled ?? true,
+  );
+  const mctsSolverWldEmpties = sanitizeExperimentalInteger(
+    engineOptions.mctsSolverWldEmpties,
+    resolved.mctsSolverWldEmpties ?? DEFAULT_MCTS_SOLVER_WLD_EMPTIES,
+    0,
+    MAX_MCTS_SOLVER_WLD_EMPTIES,
+  );
+  const mctsExactContinuationEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsExactContinuationEnabled,
+    resolved.mctsExactContinuationEnabled ?? true,
+  );
+  const mctsExactContinuationExtraEmpties = sanitizeExperimentalInteger(
+    engineOptions.mctsExactContinuationExtraEmpties,
+    resolved.mctsExactContinuationExtraEmpties ?? DEFAULT_MCTS_EXACT_CONTINUATION_EXTRA_EMPTIES,
+    0,
+    MAX_MCTS_EXACT_CONTINUATION_EXTRA_EMPTIES,
+  );
+  const mctsExactContinuationAdaptiveEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsExactContinuationAdaptiveEnabled,
+    resolved.mctsExactContinuationAdaptiveEnabled ?? DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_ENABLED,
+  );
+  const mctsExactContinuationAdaptiveExtraEmpties = sanitizeExperimentalInteger(
+    engineOptions.mctsExactContinuationAdaptiveExtraEmpties,
+    resolved.mctsExactContinuationAdaptiveExtraEmpties ?? DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_EXTRA_EMPTIES,
+    0,
+    MAX_MCTS_EXACT_CONTINUATION_ADAPTIVE_EXTRA_EMPTIES,
+  );
+  const mctsExactContinuationAdaptiveMaxLegalMoves = sanitizeExperimentalInteger(
+    engineOptions.mctsExactContinuationAdaptiveMaxLegalMoves,
+    resolved.mctsExactContinuationAdaptiveMaxLegalMoves ?? DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_MAX_LEGAL_MOVES,
+    0,
+    MAX_MCTS_EXACT_CONTINUATION_ADAPTIVE_MAX_LEGAL_MOVES,
+  );
+  const mctsExactContinuationAdaptiveOutcomeMode = sanitizeExperimentalEnum(
+    engineOptions.mctsExactContinuationAdaptiveOutcomeMode,
+    resolved.mctsExactContinuationAdaptiveOutcomeMode ?? DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODE,
+    MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODES,
+  );
+  const hybridProofPriorityDefault = searchAlgorithm === 'mcts-hybrid';
+  const hybridProofPriorityScaleDefault = hybridProofPriorityDefault
+    ? DEFAULT_MCTS_HYBRID_PROOF_PRIORITY_SCALE
+    : DEFAULT_MCTS_PROOF_PRIORITY_SCALE;
+  const resolvedExactEndgameEmpties = Number.isFinite(Number(engineOptions.exactEndgameEmpties))
+    ? Math.max(0, Math.round(Number(engineOptions.exactEndgameEmpties)))
+    : Math.max(0, Math.round(Number(resolved.exactEndgameEmpties ?? 0)));
+  const proofPriorityMaxEmptiesDefault = Math.min(
+    MAX_MCTS_PROOF_PRIORITY_MAX_EMPTIES,
+    Math.max(0, resolvedExactEndgameEmpties + mctsSolverWldEmpties + DEFAULT_MCTS_PROOF_PRIORITY_MAX_EMPTIES_PADDING),
+  );
+  const mctsProofPriorityEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsProofPriorityEnabled,
+    resolved.mctsProofPriorityEnabled ?? hybridProofPriorityDefault,
+  );
+  const mctsProofPriorityScale = sanitizeExperimentalNumber(
+    engineOptions.mctsProofPriorityScale,
+    resolved.mctsProofPriorityScale ?? hybridProofPriorityScaleDefault,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_SCALE,
+    2,
+  );
+  const mctsProofPriorityMaxEmpties = sanitizeExperimentalInteger(
+    engineOptions.mctsProofPriorityMaxEmpties,
+    resolved.mctsProofPriorityMaxEmpties ?? proofPriorityMaxEmptiesDefault,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_MAX_EMPTIES,
+  );
+  const mctsProofPriorityContinuationHandoffEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsProofPriorityContinuationHandoffEnabled,
+    resolved.mctsProofPriorityContinuationHandoffEnabled ?? true,
+  );
+  const mctsScoreBoundsEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsScoreBoundsEnabled,
+    resolved.mctsScoreBoundsEnabled ?? DEFAULT_MCTS_SCORE_BOUNDS_ENABLED,
+  );
+  const mctsScoreBoundDrawPriorityScale = sanitizeExperimentalNumber(
+    engineOptions.mctsScoreBoundDrawPriorityScale,
+    resolved.mctsScoreBoundDrawPriorityScale ?? DEFAULT_MCTS_SCORE_BOUND_DRAW_PRIORITY_SCALE,
+    0,
+    MAX_MCTS_SCORE_BOUND_DRAW_PRIORITY_SCALE,
+    2,
+  );
+  const mctsProofMetricMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofMetricMode,
+    resolved.mctsProofMetricMode ?? DEFAULT_MCTS_PROOF_METRIC_MODE,
+    MCTS_PROOF_METRIC_MODES,
+  );
+  const mctsProofPriorityBiasMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityBiasMode,
+    resolved.mctsProofPriorityBiasMode ?? DEFAULT_MCTS_PROOF_PRIORITY_BIAS_MODE,
+    MCTS_PROOF_PRIORITY_BIAS_MODES,
+  );
+  const mctsProofPriorityLateBiasPackageMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityLateBiasPackageMode,
+    resolved.mctsProofPriorityLateBiasPackageMode ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODE,
+    MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODES,
+  );
+  const mctsProofPriorityLateBiasThresholdMs = sanitizeExperimentalInteger(
+    engineOptions.mctsProofPriorityLateBiasThresholdMs,
+    resolved.mctsProofPriorityLateBiasThresholdMs ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS,
+  );
+  const mctsProofPriorityLateBiasMetricMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityLateBiasMetricMode,
+    resolved.mctsProofPriorityLateBiasMetricMode ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_METRIC_MODE,
+    MCTS_PROOF_METRIC_MODES,
+  );
+  const mctsProofPriorityLateBiasBiasMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityLateBiasBiasMode,
+    resolved.mctsProofPriorityLateBiasBiasMode ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_BIAS_MODE,
+    MCTS_PROOF_PRIORITY_BIAS_MODES,
+  );
+  const mctsProofPriorityRootMaturityGateEnabled = sanitizeExperimentalBoolean(
+    engineOptions.mctsProofPriorityRootMaturityGateEnabled,
+    resolved.mctsProofPriorityRootMaturityGateEnabled ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_ENABLED,
+  );
+  const mctsProofPriorityRootMaturityGateMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityRootMaturityGateMode,
+    resolved.mctsProofPriorityRootMaturityGateMode ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODE,
+    MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODES,
+  );
+  const mctsProofPriorityRootMaturityGateMetricMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityRootMaturityGateMetricMode,
+    resolved.mctsProofPriorityRootMaturityGateMetricMode ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_METRIC_MODE,
+    MCTS_PROOF_METRIC_MODES,
+  );
+  const mctsProofPriorityRootMaturityGateBiasMode = sanitizeExperimentalEnum(
+    engineOptions.mctsProofPriorityRootMaturityGateBiasMode,
+    resolved.mctsProofPriorityRootMaturityGateBiasMode ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BIAS_MODE,
+    MCTS_PROOF_PRIORITY_BIAS_MODES,
+  );
+  const mctsProofPriorityRootMaturityGateMinVisits = sanitizeExperimentalInteger(
+    engineOptions.mctsProofPriorityRootMaturityGateMinVisits,
+    resolved.mctsProofPriorityRootMaturityGateMinVisits ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_VISITS,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_VISITS,
+  );
+  const mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold = sanitizeExperimentalInteger(
+    engineOptions.mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold,
+    resolved.mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BEST_FINITE_METRIC_THRESHOLD,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BEST_FINITE_METRIC_THRESHOLD,
+  );
+  const mctsProofPriorityRootMaturityGateRequireNoSolvedChild = sanitizeExperimentalBoolean(
+    engineOptions.mctsProofPriorityRootMaturityGateRequireNoSolvedChild,
+    resolved.mctsProofPriorityRootMaturityGateRequireNoSolvedChild ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_REQUIRE_NO_SOLVED_CHILD,
+  );
+  const mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount = sanitizeExperimentalInteger(
+    engineOptions.mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount,
+    resolved.mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_DISTINCT_FINITE_METRIC_COUNT,
+    0,
+    MAX_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_DISTINCT_FINITE_METRIC_COUNT,
+  );
+  const mobilityScale = sanitizeExperimentalNumber(engineOptions.mobilityScale, resolved.mobilityScale ?? 1, 0, 100, 3);
+  const potentialMobilityScale = sanitizeExperimentalNumber(engineOptions.potentialMobilityScale, resolved.potentialMobilityScale ?? 1, 0, 100, 3);
+  const cornerScale = sanitizeExperimentalNumber(engineOptions.cornerScale, resolved.cornerScale ?? 1, 0, 100, 3);
+  const cornerAdjacencyScale = sanitizeExperimentalNumber(engineOptions.cornerAdjacencyScale, resolved.cornerAdjacencyScale ?? 1, 0, 100, 3);
+  const stabilityScale = sanitizeExperimentalNumber(engineOptions.stabilityScale, resolved.stabilityScale ?? 1, 0, 100, 3);
+  const frontierScale = sanitizeExperimentalNumber(engineOptions.frontierScale, resolved.frontierScale ?? 1, 0, 100, 3);
+  const positionalScale = sanitizeExperimentalNumber(engineOptions.positionalScale, resolved.positionalScale ?? 1, 0, 100, 3);
+  const parityScale = sanitizeExperimentalNumber(engineOptions.parityScale, resolved.parityScale ?? 1, 0, 100, 3);
+  const discScale = sanitizeExperimentalNumber(engineOptions.discScale, resolved.discScale ?? 1, 0, 100, 3);
+  const riskPenaltyScale = sanitizeExperimentalNumber(engineOptions.riskPenaltyScale, resolved.riskPenaltyScale ?? 1, 0, 100, 3);
+  return applyClassicEngineVariantOverrides({
+    ...resolved,
+    openingRandomness: resolved.openingRandomness ?? resolved.randomness ?? 0,
+    searchRandomness: resolved.searchRandomness ?? resolved.randomness ?? 0,
+    randomness: resolved.searchRandomness ?? resolved.randomness ?? 0,
+    mobilityScale,
+    potentialMobilityScale,
+    cornerScale,
+    cornerAdjacencyScale,
+    stabilityScale,
+    frontierScale,
+    positionalScale,
+    parityScale,
+    discScale,
+    riskPenaltyScale,
+    searchAlgorithm,
+    classicSearchDriver,
+    classicMtdfGuessPlyOffset,
+    classicMtdfVerificationPassEnabled,
+    mctsExploration,
+    mctsMaxIterations,
+    mctsMaxNodes,
+    optimizedFewEmptiesExactSolver,
+    optimizedFewEmptiesExactSolverEmpties,
+    specializedFewEmptiesExactSolver,
+    lightweightFewEmptiesExactMovePath,
+    specializedFewEmptiesLastFlipPath,
+    optimizedFewEmptiesWldSolver,
+    optimizedFewEmptiesWldSolverEmpties,
+    lightweightFewEmptiesWldMovePath,
+    specializedFewEmptiesWldLastFlipPath,
+    exactFastestFirstOrdering,
+    fewEmptiesExactFastestFirstSelectiveGate,
+    fewEmptiesWldFastestFirstSelectiveGate,
+    ttFirstInPlaceMoveExtraction,
+    ttFirstDeferredMoveListBuild,
+    etcInPlaceMovePreparation,
+    etcReusePreparedChildTableEntryForOrdering,
+    allocationLightSearchMoves,
+    reusablePreparedSearchMoveBuffers,
+    lazyPreparedSearchMoves,
+    tokenizedPreparedSearchMoveCore,
+    compactPreparedSearchMoveFlips,
+    lowOverheadSearchChildStateFactory,
+    enhancedTranspositionCutoff,
+    enhancedTranspositionCutoffWld,
+    mctsSolverEnabled,
+    mctsSolverWldEmpties,
+    mctsExactContinuationEnabled,
+    mctsExactContinuationExtraEmpties,
+    mctsExactContinuationAdaptiveEnabled,
+    mctsExactContinuationAdaptiveExtraEmpties,
+    mctsExactContinuationAdaptiveMaxLegalMoves,
+    mctsExactContinuationAdaptiveOutcomeMode,
+    mctsProofPriorityEnabled,
+    mctsProofPriorityScale,
+    mctsProofPriorityMaxEmpties,
+    mctsProofPriorityContinuationHandoffEnabled,
+    mctsScoreBoundsEnabled,
+    mctsScoreBoundDrawPriorityScale,
+    mctsProofMetricMode,
+    mctsProofPriorityBiasMode,
+    mctsProofPriorityLateBiasPackageMode,
+    mctsProofPriorityLateBiasThresholdMs,
+    mctsProofPriorityLateBiasMetricMode,
+    mctsProofPriorityLateBiasBiasMode,
+    mctsProofPriorityRootMaturityGateEnabled,
+    mctsProofPriorityRootMaturityGateMode,
+    mctsProofPriorityRootMaturityGateMetricMode,
+    mctsProofPriorityRootMaturityGateBiasMode,
+    mctsProofPriorityRootMaturityGateMinVisits,
+    mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold,
+    mctsProofPriorityRootMaturityGateRequireNoSolvedChild,
+    mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount,
+    evaluationProfile: Object.hasOwn(engineOptions, 'evaluationProfile')
+      ? engineOptions.evaluationProfile
+      : (resolved.evaluationProfile ?? RUNTIME_EVALUATION_PROFILE ?? null),
+    moveOrderingProfile: Object.hasOwn(engineOptions, 'moveOrderingProfile')
+      ? engineOptions.moveOrderingProfile
+      : (resolved.moveOrderingProfile ?? RUNTIME_MOVE_ORDERING_PROFILE ?? null),
+    tupleResidualProfile: Object.hasOwn(engineOptions, 'tupleResidualProfile')
+      ? engineOptions.tupleResidualProfile
+      : (resolved.tupleResidualProfile ?? RUNTIME_TUPLE_RESIDUAL_PROFILE ?? null),
+    patternBankProfiles: resolvePatternBankProfilesOption(
+      engineOptions,
+      resolved,
+      RUNTIME_PATTERN_BANK_PROFILES ?? null,
+    ),
+    moveOrderingPatternBankProfiles: resolveMoveOrderingPatternBankProfilesOption(
+      engineOptions,
+      resolved,
+      RUNTIME_MOVE_ORDERING_PATTERN_BANK_PROFILES ?? null,
+    ),
+    patternBankScale: sanitizeExperimentalNumber(
+      engineOptions.patternBankScale,
+      resolved.patternBankScale ?? 1,
+      0,
+      100,
+      3,
+    ),
+    moveOrderingPatternBankScale: sanitizeExperimentalNumber(
+      engineOptions.moveOrderingPatternBankScale,
+      resolved.moveOrderingPatternBankScale ?? 1,
+      0,
+      100,
+      3,
+    ),
+    moveOrderingPatternBankMinEmpties: sanitizeExperimentalInteger(
+      engineOptions.moveOrderingPatternBankMinEmpties,
+      resolved.moveOrderingPatternBankMinEmpties ?? 0,
+      0,
+      60,
+    ),
+    moveOrderingPatternBankMaxEmpties: sanitizeExperimentalInteger(
+      engineOptions.moveOrderingPatternBankMaxEmpties,
+      resolved.moveOrderingPatternBankMaxEmpties ?? 18,
+      0,
+      60,
+    ),
+    moveOrderingStructureProfile: resolveMoveOrderingStructureProfile(
+      Object.hasOwn(engineOptions, 'moveOrderingStructureProfile')
+        ? engineOptions.moveOrderingStructureProfile
+        : (resolved.moveOrderingStructureProfile ?? DEFAULT_MOVE_ORDERING_STRUCTURE_PROFILE_KEY)
+    ),
+    reusePatternBankForMoveOrdering: sanitizeExperimentalBoolean(
+      engineOptions.reusePatternBankForMoveOrdering,
+      resolved.reusePatternBankForMoveOrdering ?? false,
+    ),
+    mpcProfile: Object.hasOwn(engineOptions, 'mpcProfile')
+      ? engineOptions.mpcProfile
+      : (resolvedHasOwnMpcProfile ? resolved.mpcProfile : (fallbackMpcProfile ?? null)),
+    mpcStructureProfile: resolveMpcStructureProfile(
+      Object.hasOwn(engineOptions, 'mpcStructureProfile')
+        ? engineOptions.mpcStructureProfile
+        : (resolved.mpcStructureProfile ?? DEFAULT_MPC_STRUCTURE_PROFILE_KEY)
+    ),
+    wldPreExactEmpties: sanitizeExperimentalInteger(
+      engineOptions.wldPreExactEmpties,
+      resolved.wldPreExactEmpties ?? DEFAULT_WLD_PRE_EXACT_EMPTIES,
+      0,
+      MAX_WLD_PRE_EXACT_EMPTIES,
+    ),
+  });
+}
+
+function resolveOpeningTuningFromInput(engineOptions = {}, fallbackTuningKey = DEFAULT_OPENING_HYBRID_TUNING_KEY) {
+  const tuningKey = typeof engineOptions?.openingTuningKey === 'string' && engineOptions.openingTuningKey.trim() !== ''
+    ? engineOptions.openingTuningKey.trim()
+    : fallbackTuningKey;
+  const tuningOverrides = engineOptions?.openingTuningProfile && typeof engineOptions.openingTuningProfile === 'object'
+    ? engineOptions.openingTuningProfile
+    : null;
+  return resolveOpeningHybridTuning(tuningKey, tuningOverrides);
+}
+
+function optionsShallowEqual(left, right) {
+  if (left === right) {
+    return true;
+  }
+  if (!left || !right) {
+    return false;
+  }
+
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+  for (const key of keys) {
+    if (left[key] !== right[key]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function tableSemanticsChanged(left, right) {
+  if (!left || !right) {
+    return true;
+  }
+
+  for (const key of TABLE_RELEVANT_OPTION_KEYS) {
+    if (left[key] !== right[key]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function transpositionReplacementPriority(entry) {
+  const depth = entry.depth ?? 0;
+  let priority = depth * 100;
+
+  if (entry.flag === 'exact') {
+    priority += 250;
+  } else if (entry.flag === 'lower') {
+    priority += 15;
+  }
+
+  return priority;
+}
+
+function shouldKeepExistingTableEntry(existing, incoming) {
+  if (!existing) {
+    return false;
+  }
+
+  const existingPriority = transpositionReplacementPriority(existing);
+  const incomingPriority = transpositionReplacementPriority(incoming);
+
+  if (incomingPriority > existingPriority) {
+    return false;
+  }
+  if (incomingPriority < existingPriority) {
+    return true;
+  }
+
+  return (existing.generation ?? 0) >= (incoming.generation ?? 0);
+}
+
+function bookOrderingBonus(weight) {
+  return Math.round(Math.log2(Math.max(1, weight) + 1) * 90_000);
+}
+
+function bookSelectionBonus(weight) {
+  return Math.round(Math.log2(Math.max(1, weight) + 1) * 120_000);
+}
+
+function openingPriorOrderingBonus(candidate, openingContext, openingTuning = null) {
+  if (!candidate) {
+    return 0;
+  }
+
+  const priorCoverage = openingContext?.priorCoverage ?? 0;
+  const priorCandidateCount = Math.max(1, openingContext?.priorCandidateCount ?? 1);
+  const averageShare = 1 / priorCandidateCount;
+  const count = Math.max(0, Number.isFinite(candidate?.count) ? candidate.count : 0);
+  const share = Number.isFinite(candidate?.share) ? candidate.share : 0;
+  const shareBonus = (share - averageShare) * 180_000;
+  const scoreDelta = clamp((Number.isFinite(candidate?.priorScoreDelta) ? candidate.priorScoreDelta : 0) / 6000, -3, 3);
+  const scoreBonus = scoreDelta * 110_000;
+  const countBonus = Math.log2(count + 1) * 18_000;
+  let scale = Number.isFinite(openingTuning?.orderingPriorScale)
+    ? openingTuning.orderingPriorScale
+    : 1;
+
+  if (openingContext?.bookByMove instanceof Map && openingContext.bookByMove.size > 0 && !openingContext.bookByMove.has(candidate.moveIndex)) {
+    const offBookScale = Number.isFinite(openingTuning?.orderingOffBookPriorScale)
+      ? openingTuning.orderingOffBookPriorScale
+      : 1;
+    scale *= offBookScale;
+  }
+
+  return Math.round(priorCoverage * (shareBonus + scoreBonus + countBonus) * scale);
+}
+
+function countCornerMoves(moveBitboard) {
+  return popcount(moveBitboard & CORNER_MOVE_MASK);
+}
+
+function normalizeDifferenceForOrdering(left, right) {
+  const total = left + right;
+  if (total === 0) {
+    return 0;
+  }
+  return ((left - right) * 100) / total;
+}
+
+function boardsForPerspectiveColor(state, perspectiveColor) {
+  if (!(state instanceof GameState)) {
+    return {
+      player: 0n,
+      opponent: 0n,
+      empty: 0n,
+    };
+  }
+  const { player, opponent } = state.getPlayerBoards(perspectiveColor);
+  return {
+    player,
+    opponent,
+    empty: state.getEmptyBitboard(),
+  };
+}
+
+function potentialMobilityScoreForBoards(player, opponent, empty) {
+  const myPotential = popcount(neighbors(opponent) & empty);
+  const oppPotential = popcount(neighbors(player) & empty);
+  return normalizeDifferenceForOrdering(myPotential, oppPotential);
+}
+
+function frontierScoreForBoards(player, opponent, empty) {
+  const frontierMask = neighbors(empty);
+  const myFrontier = popcount(frontierMask & player);
+  const oppFrontier = popcount(frontierMask & opponent);
+  return normalizeDifferenceForOrdering(oppFrontier, myFrontier);
+}
+
+function countAdjacentEmptiesForMove(emptyBitboard, moveIndex) {
+  if (typeof emptyBitboard !== 'bigint' || !Number.isInteger(moveIndex) || moveIndex < 0 || moveIndex >= 64) {
+    return 0;
+  }
+  return popcount(ADJACENT_NEIGHBOR_MASKS[moveIndex] & emptyBitboard);
+}
+
+function isEdgeEndpointMove(emptyBitboard, moveIndex) {
+  if (typeof emptyBitboard !== 'bigint' || !Number.isInteger(moveIndex) || moveIndex < 0 || moveIndex >= 64) {
+    return false;
+  }
+  if (CORNER_INDEX_SET.has(moveIndex)) {
+    return false;
+  }
+  const row = Math.floor(moveIndex / 8);
+  const col = moveIndex % 8;
+  const isHorizontalEdge = row === 0 || row === 7;
+  const isVerticalEdge = col === 0 || col === 7;
+  if (!isHorizontalEdge && !isVerticalEdge) {
+    return false;
+  }
+
+  if (isHorizontalEdge) {
+    const leftIsEmpty = col > 0 && (emptyBitboard & bitFromIndex(moveIndex - 1)) !== 0n;
+    const rightIsEmpty = col < 7 && (emptyBitboard & bitFromIndex(moveIndex + 1)) !== 0n;
+    return leftIsEmpty !== rightIsEmpty;
+  }
+
+  const upIsEmpty = row > 0 && (emptyBitboard & bitFromIndex(moveIndex - 8)) !== 0n;
+  const downIsEmpty = row < 7 && (emptyBitboard & bitFromIndex(moveIndex + 8)) !== 0n;
+  return upIsEmpty !== downIsEmpty;
+}
+
+function buildOrderingChildFeatureTable(profile = null) {
+  return Array.from({ length: 61 }, (_, empties) => {
+    const childEmpties = Math.max(0, empties - 1);
+    const potentialMobilityWeight = Number.isFinite(profile?.potentialMobilityWeight)
+      && profile.potentialMobilityWeight !== 0
+      ? Math.round(profile.potentialMobilityWeight)
+      : 0;
+    const frontierWeight = Number.isFinite(profile?.frontierWeight)
+      && profile.frontierWeight !== 0
+      ? Math.round(profile.frontierWeight)
+      : 0;
+    const stabilityBoundWeight = Number.isFinite(profile?.stabilityBoundWeight)
+      && profile.stabilityBoundWeight !== 0
+      && childEmpties >= (profile?.stabilityMinEmpties ?? 0)
+      && childEmpties <= (profile?.stabilityMaxEmpties ?? 60)
+      ? Math.round(profile.stabilityBoundWeight)
+      : 0;
+    const quietMoveWeight = Number.isFinite(profile?.quietMoveWeight)
+      && profile.quietMoveWeight !== 0
+      && childEmpties >= (profile?.quietMoveMinEmpties ?? 0)
+      && childEmpties <= (profile?.quietMoveMaxEmpties ?? 60)
+      ? Math.round(profile.quietMoveWeight)
+      : 0;
+    const edgeEndpointWeight = Number.isFinite(profile?.edgeEndpointWeight)
+      && profile.edgeEndpointWeight !== 0
+      && empties >= (profile?.edgeEndpointMinEmpties ?? 0)
+      && empties <= (profile?.edgeEndpointMaxEmpties ?? 60)
+      ? Math.round(profile.edgeEndpointWeight)
+      : 0;
+
+    if (potentialMobilityWeight === 0
+      && frontierWeight === 0
+      && stabilityBoundWeight === 0
+      && quietMoveWeight === 0
+      && edgeEndpointWeight === 0) {
+      return null;
+    }
+
+    return Object.freeze({
+      childEmpties,
+      potentialMobilityWeight,
+      frontierWeight,
+      stabilityBoundWeight,
+      quietMoveWeight,
+      quietMoveMaxAdjacentEmpties: Math.max(0, Math.round(Number(profile?.quietMoveMaxAdjacentEmpties ?? 0))),
+      edgeEndpointWeight,
+      needsChildBoards: potentialMobilityWeight !== 0 || frontierWeight !== 0 || stabilityBoundWeight !== 0,
+      needsChildEmptyBitboard: potentialMobilityWeight !== 0 || frontierWeight !== 0 || quietMoveWeight !== 0,
+    });
+  });
+}
+
+function buildMergedMpcRuntimeConfig(compiledMpcProfile = null, mpcStructureProfile = null) {
+  const baseRuntime = compiledMpcProfile?.runtime ?? null;
+  const runtimeOverrides = mpcStructureProfile?.runtimeOverrides ?? null;
+  if (!baseRuntime && !runtimeOverrides) {
+    return null;
+  }
+  if (!runtimeOverrides) {
+    return baseRuntime;
+  }
+  return Object.freeze({
+    ...(baseRuntime ?? {}),
+    ...runtimeOverrides,
+  });
+}
+
+function zebraLadderShallowDepthCap(empties) {
+  if (!Number.isInteger(empties) || empties < 13 || empties > 60) {
+    return null;
+  }
+  if (empties <= 14) {
+    return 1;
+  }
+  if (empties <= 18) {
+    return 2;
+  }
+  if (empties <= 20) {
+    return 3;
+  }
+  if (empties <= 27) {
+    return 4;
+  }
+  if (empties <= 40) {
+    return 6;
+  }
+  return 8;
+}
+
+function exactSquareClassScore(index) {
+  const riskType = getPositionalRisk(index);
+  if (CORNER_INDEX_SET.has(index)) {
+    return 3;
+  }
+  if (riskType === 'x-square') {
+    return -3;
+  }
+  if (riskType === 'c-square') {
+    return -2;
+  }
+  return 0;
+}
+
+function buildParityRegionInfo(emptyBitboard) {
+  const regionSizeByIndex = Array(64).fill(0);
+  const regions = connectedRegions(emptyBitboard);
+  let oddRegionCount = 0;
+  let evenRegionCount = 0;
+
+  for (const region of regions) {
+    const size = popcount(region);
+    if (size % 2 === 1) {
+      oddRegionCount += 1;
+    } else {
+      evenRegionCount += 1;
+    }
+
+    let cursor = region;
+    while (cursor !== 0n) {
+      const leastSignificantBit = cursor & -cursor;
+      regionSizeByIndex[indexFromBit(leastSignificantBit)] = size;
+      cursor ^= leastSignificantBit;
+    }
+  }
+
+  return {
+    regionCount: regions.length,
+    regionSizeByIndex,
+    oddRegionCount,
+    evenRegionCount,
+  };
+}
+
+export class SearchEngine {
+  constructor(engineOptions = {}) {
+    this.instanceId = nextSearchEngineInstanceId;
+    nextSearchEngineInstanceId += 1;
+    this.options = resolveOptionsFromInput(
+      engineOptions,
+      DEFAULT_PRESET_KEY,
+      DEFAULT_STYLE_KEY,
+      RUNTIME_MPC_PROFILE ?? null,
+    );
+    this.openingTuning = resolveOpeningTuningFromInput(engineOptions);
+    this.evaluator = new Evaluator(this.options);
+    this.moveOrderingEvaluator = new MoveOrderingEvaluator(this.options);
+    this.compiledMpcProfile = compileMpcProfile(this.options.mpcProfile);
+    this.refreshDerivedCaches();
+    this.mpcSuppressionDepth = 0;
+    this.orderingProbeSuppressionDepth = 0;
+    this.transpositionTable = new Map();
+    this.killerMoves = [];
+    this.historyHeuristic = Array.from({ length: 2 }, () => Array(64).fill(0));
+    this.preparedSearchMoveBuffersByPly = [];
+    this.deferredPreparedSearchMovesByPly = [];
+    this.fewEmptiesExactMoveBuffersByEmpties = [];
+    this.searchGeneration = 0;
+    this.resetStats();
+  }
+
+  updateOptions(engineOptions = {}) {
+    const fallbackMpcProfile = Object.hasOwn(engineOptions, 'mpcProfile')
+      ? (RUNTIME_MPC_PROFILE ?? null)
+      : (Object.hasOwn(this.options ?? {}, 'mpcProfile')
+        ? this.options.mpcProfile
+        : (RUNTIME_MPC_PROFILE ?? null));
+    const nextOptions = resolveOptionsFromInput(
+      engineOptions,
+      this.options?.presetKey ?? DEFAULT_PRESET_KEY,
+      this.options?.styleKey ?? DEFAULT_STYLE_KEY,
+      fallbackMpcProfile,
+    );
+    const nextOpeningTuning = resolveOpeningTuningFromInput(
+      engineOptions,
+      this.openingTuning?.key ?? DEFAULT_OPENING_HYBRID_TUNING_KEY,
+    );
+
+    const optionsChanged = !optionsShallowEqual(this.options, nextOptions);
+    const shouldResetTable = tableSemanticsChanged(this.options, nextOptions);
+
+    this.options = nextOptions;
+    this.openingTuning = nextOpeningTuning;
+    this.compiledMpcProfile = compileMpcProfile(this.options.mpcProfile);
+    if (optionsChanged) {
+      this.evaluator = new Evaluator(this.options);
+      this.moveOrderingEvaluator = new MoveOrderingEvaluator(this.options);
+    }
+    if (optionsChanged) {
+      this.refreshDerivedCaches();
+    }
+    if (shouldResetTable) {
+      this.transpositionTable.clear();
+    }
+    this.trimTranspositionTable();
+  }
+
+  refreshDerivedCaches() {
+    const exactEndgameEmpties = Math.max(0, Math.round(Number(this.options?.exactEndgameEmpties ?? 10)));
+    this.moveOrderingStructureProfile = resolveMoveOrderingStructureProfile(
+      this.options?.moveOrderingStructureProfile ?? DEFAULT_MOVE_ORDERING_STRUCTURE_PROFILE_KEY,
+    );
+    this.mpcStructureProfile = resolveMpcStructureProfile(
+      this.options?.mpcStructureProfile ?? DEFAULT_MPC_STRUCTURE_PROFILE_KEY,
+    );
+    this.lateOrderingProfilesByEmptyCount = buildLateOrderingProfileTable(exactEndgameEmpties);
+    this.useLightweightOrderingEvaluatorByEmptyCount = buildLightweightOrderingEligibilityTable(exactEndgameEmpties);
+    this.orderingScoreTableByEmptyCount = buildOrderingScoreTable(
+      this.lateOrderingProfilesByEmptyCount,
+      this.options,
+    );
+    this.orderingChildFeatureTableByEmptyCount = buildOrderingChildFeatureTable(this.moveOrderingStructureProfile);
+    this.compiledMpcRuntimeConfig = buildMergedMpcRuntimeConfig(this.compiledMpcProfile, this.mpcStructureProfile);
+    this.mpcCalibrationSelectionCache = Array.from({ length: 61 }, () => Array(65).fill(undefined));
+  }
+
+  resetStats() {
+    this.stats = createEmptySearchStats();
+    this.rootProgressSnapshot = null;
+    this.activeRootSearchContext = null;
+  }
+
+  shouldUseReusablePreparedSearchMoveBuffers() {
+    return this.options.reusablePreparedSearchMoveBuffers !== false;
+  }
+
+  shouldUseLazyPreparedSearchMoves() {
+    return this.options.lazyPreparedSearchMoves !== false;
+  }
+
+  getPreparedSearchMoveCoreVariant() {
+    return this.options.tokenizedPreparedSearchMoveCore === false
+      ? PREPARED_SEARCH_MOVE_CORE_VARIANTS.LEGACY
+      : PREPARED_SEARCH_MOVE_CORE_VARIANTS.TOKENIZED;
+  }
+
+  shouldUseCompactPreparedSearchMoveFlips() {
+    return this.getPreparedSearchMoveCoreVariant() === PREPARED_SEARCH_MOVE_CORE_VARIANTS.TOKENIZED
+      && this.options.compactPreparedSearchMoveFlips !== false;
+  }
+
+  getPreparedSearchMoveFlipStorageVariant() {
+    return this.shouldUseCompactPreparedSearchMoveFlips()
+      ? PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANTS.COMPACT_TOKEN
+      : PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANTS.BIGINT;
+  }
+
+  shouldUseLowOverheadSearchChildStateFactory() {
+    return this.options.lowOverheadSearchChildStateFactory !== false;
+  }
+
+  canReusePreparedSearchMoveBuffers() {
+    return this.shouldUseReusablePreparedSearchMoveBuffers()
+      && !this.isMpcSuppressed()
+      && !this.isOrderingProbeSuppressed();
+  }
+
+  getPreparedSearchMoveBufferForPly(ply = 0) {
+    const normalizedPly = Number.isInteger(ply) && ply >= 0 ? ply : 0;
+    let buffer = this.preparedSearchMoveBuffersByPly[normalizedPly];
+    if (!Array.isArray(buffer)) {
+      buffer = createPreparedSearchMoveBuffer();
+      this.preparedSearchMoveBuffersByPly[normalizedPly] = buffer;
+    }
+    return buffer;
+  }
+
+  shouldUseTtFirstDeferredMoveListBuild(empties, ply, depthRemaining, exactEndgame = false) {
+    return this.options.ttFirstDeferredMoveListBuild !== false
+      && !exactEndgame
+      && Number.isFinite(depthRemaining)
+      && depthRemaining > 0
+      && !this.shouldPrecomputeOrderingOutcome(empties, ply);
+  }
+
+  prepareDeferredTtFirstSearchMove(state, moveIndex, { ply = 0 } = {}) {
+    if (!(state instanceof GameState) || !Number.isInteger(moveIndex)) {
+      return null;
+    }
+
+    if (this.stats) {
+      this.stats.ttFirstDeferredMoveListBuildAttempts += 1;
+    }
+
+    const normalizedPly = Number.isInteger(ply) && ply >= 0 ? ply : 0;
+    const { player, opponent } = state.getPlayerBoards();
+    const coreVariant = this.getPreparedSearchMoveCoreVariant();
+    const flipStorageVariant = this.getPreparedSearchMoveFlipStorageVariant();
+    const existingRecord = this.deferredPreparedSearchMovesByPly[normalizedPly] ?? null;
+    const preparedMove = prepareSearchMoveAtIndex(
+      moveIndex,
+      player,
+      opponent,
+      existingRecord,
+      {
+        eager: false,
+        coreVariant,
+        flipStorageVariant,
+      },
+    );
+
+    if (preparedMove && this.stats) {
+      this.stats.ttFirstDeferredMoveListBuildLegalHits += 1;
+    }
+    this.deferredPreparedSearchMovesByPly[normalizedPly] = preparedMove ?? existingRecord ?? null;
+    return preparedMove;
+  }
+
+  shouldUseLazyPreparedSearchMovePath(empties, ply) {
+    return this.shouldUseLazyPreparedSearchMoves()
+      && !this.shouldPrecomputeOrderingOutcome(empties, ply);
+  }
+
+  resolvePreparedMoveFlipCount(move, player, opponent) {
+    if (!move || typeof move !== 'object') {
+      return 0;
+    }
+
+    const cachedFlipCount = moveFlipCountForRecord(move);
+    if (Number.isInteger(cachedFlipCount)) {
+      return cachedFlipCount;
+    }
+    if (typeof player !== 'bigint' || typeof opponent !== 'bigint') {
+      return 0;
+    }
+    return materializePreparedSearchMoveFlipCount(move, player, opponent);
+  }
+
+  isPreparedMoveImmediateWipeout(move, player, opponent, opponentDiscCount = null) {
+    if (!move || typeof move !== 'object') {
+      return false;
+    }
+
+    const resolvedOpponentDiscCount = Number.isInteger(opponentDiscCount)
+      ? opponentDiscCount
+      : (typeof opponent === 'bigint' ? popcount(opponent) : 0);
+    if (resolvedOpponentDiscCount <= 0) {
+      return false;
+    }
+
+    return this.resolvePreparedMoveFlipCount(move, player, opponent) === resolvedOpponentDiscCount;
+  }
+
+  createLowOverheadSearchChildState(state, move, player, opponent) {
+    if (!(state instanceof GameState) || !move || typeof move !== 'object') {
+      return null;
+    }
+    if (typeof move.flips !== 'bigint' || typeof player !== 'bigint' || typeof opponent !== 'bigint') {
+      return null;
+    }
+
+    const moveBit = moveBitForRecord(move);
+    if (moveBit === 0n || move.flips === 0n || (moveBit & (player | opponent)) !== 0n) {
+      return null;
+    }
+
+    if (this.stats) {
+      this.stats.lowOverheadSearchChildStates += 1;
+    }
+    const flipCount = moveFlipCountForRecord(move);
+    return state.createSearchChildStateFromPlayerBoards(
+      player | moveBit | move.flips,
+      opponent & ~move.flips,
+      null,
+      Number.isInteger(flipCount) ? flipCount : null,
+      moveBit,
+    );
+  }
+
+  passSearchStateFast(state) {
+    if (!(state instanceof GameState)) {
+      return null;
+    }
+    if (!this.shouldUseLowOverheadSearchChildStateFactory()) {
+      return state.passTurnFast();
+    }
+    if (this.stats) {
+      this.stats.lowOverheadSearchPassStates += 1;
+    }
+    return state.createPassedSearchState();
+  }
+
+  applyPreparedMoveFast(state, move, player = null, opponent = null) {
+    if (!(state instanceof GameState) || !move || typeof move !== 'object') {
+      return null;
+    }
+
+    if (move.orderingOutcome) {
+      return move.orderingOutcome;
+    }
+
+    const moveIndex = moveIndexForRecord(move);
+    const flipStorageVariant = this.getPreparedSearchMoveFlipStorageVariant();
+    const shouldUseCompactFlipToken = Number.isInteger(move.token)
+      && flipStorageVariant === PREPARED_SEARCH_MOVE_FLIP_STORAGE_VARIANTS.COMPACT_TOKEN;
+    let resolvedPlayer = player;
+    let resolvedOpponent = opponent;
+    if (typeof resolvedPlayer !== 'bigint' || typeof resolvedOpponent !== 'bigint') {
+      if (state.currentPlayer === PLAYER_COLORS.BLACK) {
+        resolvedPlayer = state.black;
+        resolvedOpponent = state.white;
+      } else {
+        resolvedPlayer = state.white;
+        resolvedOpponent = state.black;
+      }
+    }
+
+    if (typeof move.flips !== 'bigint') {
+      materializePreparedSearchMove(move, resolvedPlayer, resolvedOpponent, { flipStorageVariant });
+
+      if (shouldUseCompactFlipToken && hasPreparedSearchMoveTokenCompressedFlips(move.token)) {
+        return state.applyMoveFast(moveIndex, move.token);
+      }
+    }
+
+    if (this.shouldUseLowOverheadSearchChildStateFactory() && !shouldUseCompactFlipToken) {
+      const childState = this.createLowOverheadSearchChildState(state, move, resolvedPlayer, resolvedOpponent);
+      if (childState) {
+        return childState;
+      }
+    }
+
+    if (shouldUseCompactFlipToken && hasPreparedSearchMoveTokenCompressedFlips(move.token)) {
+      return state.applyMoveFast(moveIndex, move.token);
+    }
+
+    return state.applyMoveFast(moveIndex, move.flips ?? null);
+  }
+
+  listSearchMoves(state, { ply = 0 } = {}) {
+    if (!(state instanceof GameState)) {
+      return [];
+    }
+
+    if (this.options.allocationLightSearchMoves === false) {
+      return state.getSearchMoves();
+    }
+
+    const empties = state.getEmptyCount();
+    const eager = !this.shouldUseLazyPreparedSearchMovePath(empties, ply);
+    const { player, opponent } = state.getPlayerBoards();
+    const coreVariant = this.getPreparedSearchMoveCoreVariant();
+    const flipStorageVariant = this.getPreparedSearchMoveFlipStorageVariant();
+
+    if (!this.canReusePreparedSearchMoveBuffers()) {
+      return listPreparedSearchMoves(player, opponent, { eager, coreVariant, flipStorageVariant });
+    }
+
+    return listPreparedSearchMovesIntoBuffer(
+      player,
+      opponent,
+      this.getPreparedSearchMoveBufferForPly(ply),
+      { eager, coreVariant, flipStorageVariant },
+    );
+  }
+
+  evaluateImmediateWipeoutPreparedMove(
+    state,
+    move,
+    bucket = 'exact',
+    player = null,
+    opponent = null,
+    opponentDiscCount = null,
+  ) {
+    if (!(state instanceof GameState) || !move || typeof move !== 'object') {
+      return null;
+    }
+
+    const resolvedBoards = (typeof player === 'bigint' && typeof opponent === 'bigint')
+      ? { player, opponent }
+      : state.getPlayerBoards();
+    const resolvedOpponentDiscCount = Number.isInteger(opponentDiscCount)
+      ? opponentDiscCount
+      : popcount(resolvedBoards.opponent);
+    if (!this.isPreparedMoveImmediateWipeout(
+      move,
+      resolvedBoards.player,
+      resolvedBoards.opponent,
+      resolvedOpponentDiscCount,
+    )) {
+      return null;
+    }
+
+    const moveBit = moveBitForRecord(move);
+    if (moveBit === 0n) {
+      return null;
+    }
+
+    const nextPlayer = resolvedBoards.player | moveBit | resolvedBoards.opponent;
+    return {
+      index: move.index,
+      score: bucket === 'wld'
+        ? this.wldTerminalScoreFromBoards(nextPlayer, 0n)
+        : this.exactTerminalScoreFromBoards(nextPlayer, 0n),
+    };
+  }
+
+  shouldReusePreparedChildTableEntryForOrdering() {
+    return this.options.etcReusePreparedChildTableEntryForOrdering !== false;
+  }
+
+  getPreparedChildTableEntryForOrdering(move) {
+    if (!this.shouldReusePreparedChildTableEntryForOrdering() || !move || typeof move !== 'object') {
+      return undefined;
+    }
+    if (move.etcPreparedChildTableEntryReady !== true) {
+      return undefined;
+    }
+    if (move.etcPreparedChildTableEntryOwnerId !== this.instanceId) {
+      return undefined;
+    }
+    if (move.etcPreparedChildTableEntryGeneration !== this.searchGeneration) {
+      return undefined;
+    }
+    if (move.etcPreparedChildTableEntryTtStores !== this.stats.ttStores) {
+      return undefined;
+    }
+    return move.etcPreparedChildTableEntry ?? null;
+  }
+
+  cachePreparedChildTableEntryForOrdering(move, childTableEntry) {
+    if (!this.shouldReusePreparedChildTableEntryForOrdering() || !move || typeof move !== 'object') {
+      return;
+    }
+    move.etcPreparedChildTableEntryReady = true;
+    move.etcPreparedChildTableEntry = childTableEntry ?? null;
+    move.etcPreparedChildTableEntryOwnerId = this.instanceId;
+    move.etcPreparedChildTableEntryGeneration = this.searchGeneration;
+    move.etcPreparedChildTableEntryTtStores = this.stats.ttStores;
+  }
+
+  createResultOptionsSnapshot() {
+    return {
+      ...this.options,
+      openingTuningKey: this.openingTuning?.key ?? DEFAULT_OPENING_HYBRID_TUNING_KEY,
+    };
+  }
+
+  createMctsProofTelemetry(result) {
+    const searchMode = result?.searchMode ?? result?.options?.searchAlgorithm ?? this.options?.searchAlgorithm;
+    if (!isMctsSearchAlgorithm(searchMode) || !result || result.error) {
+      return null;
+    }
+
+    const analyzedMoves = Array.isArray(result.analyzedMoves)
+      ? result.analyzedMoves
+      : [];
+    const analyzedMoveCount = Number.isInteger(result.rootAnalyzedMoveCount)
+      ? result.rootAnalyzedMoveCount
+      : analyzedMoves.length;
+    const legalMoveCount = Number.isInteger(result.rootLegalMoveCount)
+      ? result.rootLegalMoveCount
+      : analyzedMoveCount;
+    const candidateMoveCount = Math.max(0, legalMoveCount || analyzedMoveCount);
+    const rootEmptyCount = Number.isInteger(result.rootEmptyCount)
+      ? result.rootEmptyCount
+      : null;
+    const exactThreshold = Math.max(0, Math.round(Number(this.options?.exactEndgameEmpties ?? 0)));
+    const solverWldEmpties = Math.max(0, Math.round(Number(this.options?.mctsSolverWldEmpties ?? 0)));
+    const continuationExtraEmpties = Math.max(0, Math.round(Number(this.options?.mctsExactContinuationExtraEmpties ?? 0)));
+    const adaptiveContinuationEnabled = this.options?.mctsExactContinuationAdaptiveEnabled === true;
+    const adaptiveContinuationExtraEmpties = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsExactContinuationAdaptiveExtraEmpties ?? 0)),
+    );
+    const adaptiveContinuationMaxLegalMoves = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsExactContinuationAdaptiveMaxLegalMoves ?? 0)),
+    );
+    const adaptiveContinuationOutcomeMode = sanitizeExperimentalEnum(
+      this.options?.mctsExactContinuationAdaptiveOutcomeMode,
+      DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODE,
+      MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODES,
+    );
+    const scoreBoundsEnabled = result?.mctsScoreBoundsEnabled === true || this.options?.mctsScoreBoundsEnabled === true;
+    const scoreBoundDrawPriorityEnabled = scoreBoundsEnabled
+      && (Number.isFinite(Number(result?.mctsScoreBoundDrawPriorityScale))
+        ? Number(result.mctsScoreBoundDrawPriorityScale) > 0
+        : Number(this.options?.mctsScoreBoundDrawPriorityScale ?? 0) > 0);
+    const scoreBoundDrawPriorityScale = Number.isFinite(Number(result?.mctsScoreBoundDrawPriorityScale))
+      ? Number(result.mctsScoreBoundDrawPriorityScale)
+      : (Number.isFinite(Number(this.options?.mctsScoreBoundDrawPriorityScale))
+        ? Number(this.options.mctsScoreBoundDrawPriorityScale)
+        : 0);
+    const configuredProofPriorityEnabled = this.options?.mctsProofPriorityEnabled !== false
+      && Number(this.options?.mctsProofPriorityScale ?? 0) > 0;
+    const proofPriorityEnabled = typeof result?.mctsProofPriorityRuntimeEnabled === 'boolean'
+      ? result.mctsProofPriorityRuntimeEnabled
+      : configuredProofPriorityEnabled;
+    const proofPriorityScale = Number.isFinite(Number(result?.mctsProofPriorityRuntimeScale))
+      ? Number(result.mctsProofPriorityRuntimeScale)
+      : (Number.isFinite(Number(this.options?.mctsProofPriorityScale))
+        ? Number(this.options.mctsProofPriorityScale)
+        : 0);
+    const proofPriorityMaxEmpties = Number.isFinite(Number(result?.mctsProofPriorityRuntimeMaxEmpties))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRuntimeMaxEmpties)))
+      : Math.max(0, Math.round(Number(this.options?.mctsProofPriorityMaxEmpties ?? 0)));
+    const proofMetricMode = typeof result?.mctsProofMetricMode === 'string'
+      ? result.mctsProofMetricMode
+      : (this.options?.mctsProofMetricMode === 'per-player' ? 'per-player' : 'legacy-root');
+    const proofPriorityMetricMode = typeof result?.mctsProofPriorityMetricMode === 'string'
+      ? result.mctsProofPriorityMetricMode
+      : proofMetricMode;
+    const proofPriorityMetricPlayer = typeof result?.mctsProofPriorityMetricPlayer === 'string'
+      ? result.mctsProofPriorityMetricPlayer
+      : null;
+    const proofPriorityBiasMode = typeof result?.mctsProofPriorityBiasMode === 'string'
+      ? result.mctsProofPriorityBiasMode
+      : (typeof this.options?.mctsProofPriorityBiasMode === 'string'
+        ? this.options.mctsProofPriorityBiasMode
+        : DEFAULT_MCTS_PROOF_PRIORITY_BIAS_MODE);
+    const proofPriorityLateBiasPackageMode = typeof result?.mctsProofPriorityLateBiasPackageMode === 'string'
+      ? result.mctsProofPriorityLateBiasPackageMode
+      : (typeof this.options?.mctsProofPriorityLateBiasPackageMode === 'string'
+        ? this.options.mctsProofPriorityLateBiasPackageMode
+        : DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODE);
+    const proofPriorityLateBiasThresholdMs = Number.isFinite(Number(result?.mctsProofPriorityLateBiasThresholdMs))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityLateBiasThresholdMs)))
+      : Math.max(0, Math.round(Number(this.options?.mctsProofPriorityLateBiasThresholdMs ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS)));
+    const proofPriorityLateBiasMetricMode = typeof result?.mctsProofPriorityLateBiasMetricMode === 'string'
+      ? result.mctsProofPriorityLateBiasMetricMode
+      : sanitizeExperimentalEnum(
+        this.options?.mctsProofPriorityLateBiasMetricMode,
+        DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_METRIC_MODE,
+        MCTS_PROOF_METRIC_MODES,
+      );
+    const proofPriorityLateBiasBiasMode = typeof result?.mctsProofPriorityLateBiasBiasMode === 'string'
+      ? result.mctsProofPriorityLateBiasBiasMode
+      : (typeof this.options?.mctsProofPriorityLateBiasBiasMode === 'string'
+        ? this.options.mctsProofPriorityLateBiasBiasMode
+        : DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_BIAS_MODE);
+    const proofPriorityLateBiasEligibleByBudget = Boolean(result?.mctsProofPriorityLateBiasEligibleByBudget);
+    const proofPriorityLateBiasEligibleByDepth = Boolean(result?.mctsProofPriorityLateBiasEligibleByDepth);
+    const proofPriorityLateBiasActivated = Boolean(result?.mctsProofPriorityLateBiasActivated);
+    const proofPriorityRootMaturityGateEnabled = result?.mctsProofPriorityRootMaturityGateEnabled === true
+      || this.options?.mctsProofPriorityRootMaturityGateEnabled === true;
+    const proofPriorityRootMaturityGateMode = typeof result?.mctsProofPriorityRootMaturityGateMode === 'string'
+      ? result.mctsProofPriorityRootMaturityGateMode
+      : sanitizeExperimentalEnum(
+        this.options?.mctsProofPriorityRootMaturityGateMode,
+        DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODE,
+        MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MODES,
+      );
+    const proofPriorityRootMaturityGateMetricMode = typeof result?.mctsProofPriorityRootMaturityGateMetricMode === 'string'
+      ? result.mctsProofPriorityRootMaturityGateMetricMode
+      : sanitizeExperimentalEnum(
+        this.options?.mctsProofPriorityRootMaturityGateMetricMode,
+        DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_METRIC_MODE,
+        MCTS_PROOF_METRIC_MODES,
+      );
+    const proofPriorityRootMaturityGateBiasMode = typeof result?.mctsProofPriorityRootMaturityGateBiasMode === 'string'
+      ? result.mctsProofPriorityRootMaturityGateBiasMode
+      : sanitizeExperimentalEnum(
+        this.options?.mctsProofPriorityRootMaturityGateBiasMode,
+        DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BIAS_MODE,
+        MCTS_PROOF_PRIORITY_BIAS_MODES,
+      );
+    const proofPriorityRootMaturityGateMinVisits = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateMinVisits))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateMinVisits)))
+      : Math.max(0, Math.round(Number(this.options?.mctsProofPriorityRootMaturityGateMinVisits ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_VISITS)));
+    const proofPriorityRootMaturityGateBestFiniteMetricThreshold = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold)))
+      : Math.max(0, Math.round(Number(this.options?.mctsProofPriorityRootMaturityGateBestFiniteMetricThreshold ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_BEST_FINITE_METRIC_THRESHOLD)));
+    const proofPriorityRootMaturityGateRequireNoSolvedChild = result?.mctsProofPriorityRootMaturityGateRequireNoSolvedChild === true
+      || this.options?.mctsProofPriorityRootMaturityGateRequireNoSolvedChild === true;
+    const proofPriorityRootMaturityGateMinDistinctFiniteMetricCount = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount)))
+      : Math.max(0, Math.round(Number(this.options?.mctsProofPriorityRootMaturityGateMinDistinctFiniteMetricCount ?? DEFAULT_MCTS_PROOF_PRIORITY_ROOT_MATURITY_GATE_MIN_DISTINCT_FINITE_METRIC_COUNT)));
+    const proofPriorityRootMaturityGateActivated = Boolean(result?.mctsProofPriorityRootMaturityGateActivated);
+    const proofPriorityRootMaturityGateActivationCount = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateActivationCount))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateActivationCount)))
+      : 0;
+    const proofPriorityRootMaturityGateActivationIteration = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateActivationIteration))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateActivationIteration)))
+      : null;
+    const proofPriorityRootMaturityGateActivationReason = typeof result?.mctsProofPriorityRootMaturityGateActivationReason === 'string'
+      ? result.mctsProofPriorityRootMaturityGateActivationReason
+      : null;
+    const proofPriorityRootMaturityGateLastEvaluationReason = typeof result?.mctsProofPriorityRootMaturityGateLastEvaluationReason === 'string'
+      ? result.mctsProofPriorityRootMaturityGateLastEvaluationReason
+      : null;
+    const proofPriorityRootMaturityGateLastBlockReason = typeof result?.mctsProofPriorityRootMaturityGateLastBlockReason === 'string'
+      ? result.mctsProofPriorityRootMaturityGateLastBlockReason
+      : null;
+    const proofPriorityRootMaturityGateFinalEligible = Boolean(result?.mctsProofPriorityRootMaturityGateFinalEligible);
+    const proofPriorityRootMaturityGateSolvedCoverageRate = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateSolvedCoverageRate))
+      ? Number(result.mctsProofPriorityRootMaturityGateSolvedCoverageRate)
+      : null;
+    const proofPriorityRootMaturityGateSolvedMoveCount = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateSolvedMoveCount))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateSolvedMoveCount)))
+      : 0;
+    const proofPriorityRootMaturityGateBestFiniteMetric = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateBestFiniteMetric))
+      ? Number(result.mctsProofPriorityRootMaturityGateBestFiniteMetric)
+      : null;
+    const proofPriorityRootMaturityGateSecondFiniteMetric = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateSecondFiniteMetric))
+      ? Number(result.mctsProofPriorityRootMaturityGateSecondFiniteMetric)
+      : null;
+    const proofPriorityRootMaturityGateDistinctFiniteMetricCount = Number.isFinite(Number(result?.mctsProofPriorityRootMaturityGateDistinctFiniteMetricCount))
+      ? Math.max(0, Math.round(Number(result.mctsProofPriorityRootMaturityGateDistinctFiniteMetricCount)))
+      : 0;
+    const proofPriorityRootMaturityGateChecks = Number.isFinite(Number(result?.stats?.mctsProofPriorityRootMaturityGateChecks))
+      ? Math.max(0, Math.round(Number(result.stats.mctsProofPriorityRootMaturityGateChecks)))
+      : 0;
+    const proofPriorityRootMaturityGateActivations = Number.isFinite(Number(result?.stats?.mctsProofPriorityRootMaturityGateActivations))
+      ? Math.max(0, Math.round(Number(result.stats.mctsProofPriorityRootMaturityGateActivations)))
+      : proofPriorityRootMaturityGateActivationCount;
+    const proofPriorityContinuationHandoffEnabled = this.options?.mctsProofPriorityContinuationHandoffEnabled !== false;
+    const proofPrioritySuppressedByContinuationWindow = Boolean(
+      result?.mctsProofPrioritySuppressedByContinuationWindow,
+    );
+    const rootInLateSolverWindow = Number.isInteger(rootEmptyCount)
+      ? rootEmptyCount <= (exactThreshold + solverWldEmpties)
+      : false;
+    const continuationDepthEligible = Number.isInteger(rootEmptyCount)
+      ? rootEmptyCount <= (exactThreshold + continuationExtraEmpties)
+      : false;
+    const proofPriorityDepthEligible = proofPriorityEnabled && Number.isInteger(rootEmptyCount)
+      ? rootEmptyCount <= proofPriorityMaxEmpties
+      : false;
+
+    let solvedMoveCount = 0;
+    let exactSolvedMoveCount = 0;
+    let winningSolvedMoveCount = 0;
+    let drawSolvedMoveCount = 0;
+    let losingSolvedMoveCount = 0;
+    for (const move of analyzedMoves) {
+      if (typeof move?.solvedOutcome !== 'string') {
+        continue;
+      }
+      solvedMoveCount += 1;
+      if (move.solvedExact && Number.isFinite(move.solvedScore)) {
+        exactSolvedMoveCount += 1;
+      }
+      if (move.solvedOutcome === 'win') {
+        winningSolvedMoveCount += 1;
+      } else if (move.solvedOutcome === 'draw') {
+        drawSolvedMoveCount += 1;
+      } else if (move.solvedOutcome === 'loss') {
+        losingSolvedMoveCount += 1;
+      }
+    }
+
+    const unresolvedMoveCount = Math.max(0, candidateMoveCount - solvedMoveCount);
+    const wldSolvedMoveCount = Math.max(0, solvedMoveCount - exactSolvedMoveCount);
+    const rootSolvedOutcome = typeof result.mctsRootSolvedOutcome === 'string'
+      ? result.mctsRootSolvedOutcome
+      : null;
+    const rootSolvedExact = Boolean(result.mctsRootSolvedExact);
+    const adaptiveContinuationState = this.getMctsExactContinuationAdaptiveState(
+      rootEmptyCount,
+      legalMoveCount,
+      result,
+    );
+    const adaptiveContinuationThreshold = adaptiveContinuationEnabled
+      ? this.getMctsExactContinuationAdaptiveThreshold()
+      : null;
+    let proofStatus = 'unsolved';
+    if (rootSolvedExact) {
+      proofStatus = 'exact-root';
+    } else if (rootSolvedOutcome !== null) {
+      proofStatus = 'wld-root';
+    } else if (solvedMoveCount > 0) {
+      proofStatus = 'partial-subtree-proof';
+    }
+
+    const bestMove = analyzedMoves.find((move) => move?.index === result.bestMoveIndex)
+      ?? analyzedMoves[0]
+      ?? null;
+    const rootScoreLowerBound = Number.isFinite(result?.mctsRootScoreLowerBound)
+      ? result.mctsRootScoreLowerBound
+      : null;
+    const rootScoreUpperBound = Number.isFinite(result?.mctsRootScoreUpperBound)
+      ? result.mctsRootScoreUpperBound
+      : null;
+
+    return {
+      rootSolved: rootSolvedOutcome !== null,
+      rootSolvedOutcome,
+      rootSolvedExact,
+      rootSolvedSource: typeof result.mctsRootSolvedSource === 'string'
+        ? result.mctsRootSolvedSource
+        : null,
+      rootSolvedScore: Number.isFinite(result.mctsRootSolvedScore)
+        ? result.mctsRootSolvedScore
+        : null,
+      rootScoreLowerBound,
+      rootScoreUpperBound,
+      rootScoreBoundWidth: Number.isFinite(rootScoreLowerBound) && Number.isFinite(rootScoreUpperBound)
+        ? (rootScoreUpperBound - rootScoreLowerBound)
+        : null,
+      proofStatus,
+      analyzedMoveCount,
+      legalMoveCount,
+      candidateMoveCount,
+      solvedMoveCount,
+      exactSolvedMoveCount,
+      wldSolvedMoveCount,
+      unresolvedMoveCount,
+      solvedCoverageRate: candidateMoveCount > 0 ? solvedMoveCount / candidateMoveCount : null,
+      exactCoverageRate: candidateMoveCount > 0 ? exactSolvedMoveCount / candidateMoveCount : null,
+      winningSolvedMoveCount,
+      drawSolvedMoveCount,
+      losingSolvedMoveCount,
+      bestMoveSolved: typeof bestMove?.solvedOutcome === 'string',
+      bestMoveSolvedOutcome: typeof bestMove?.solvedOutcome === 'string'
+        ? bestMove.solvedOutcome
+        : null,
+      bestMoveSolvedExact: Boolean(bestMove?.solvedExact),
+      bestMoveSolvedSource: typeof bestMove?.solvedSource === 'string'
+        ? bestMove.solvedSource
+        : null,
+      bestMoveSolvedScore: Number.isFinite(bestMove?.solvedScore)
+        ? bestMove.solvedScore
+        : null,
+      bestMoveScoreLowerBound: Number.isFinite(bestMove?.scoreLowerBound) ? bestMove.scoreLowerBound : null,
+      bestMoveScoreUpperBound: Number.isFinite(bestMove?.scoreUpperBound) ? bestMove.scoreUpperBound : null,
+      bestMoveScoreBoundWidth: Number.isFinite(bestMove?.scoreBoundWidth) ? bestMove.scoreBoundWidth : null,
+      rootEmptyCount,
+      exactThreshold,
+      solverWldEmpties,
+      continuationExtraEmpties,
+      adaptiveContinuationEnabled,
+      adaptiveContinuationExtraEmpties,
+      adaptiveContinuationThreshold,
+      adaptiveContinuationMaxLegalMoves,
+      adaptiveContinuationOutcomeMode,
+      rootInLateSolverWindow,
+      continuationEnabled: this.options?.mctsExactContinuationEnabled !== false,
+      continuationDepthEligible,
+      continuationAttempted: Boolean(result.mctsExactContinuationAttempted),
+      continuationCompleted: Boolean(result.mctsExactContinuationCompleted),
+      continuationApplied: Boolean(result.mctsExactContinuationApplied),
+      continuationBestMoveChanged: Boolean(result.mctsExactContinuationBestMoveChanged),
+      adaptiveContinuationDepthEligible: adaptiveContinuationState.adaptiveDepthEligible,
+      adaptiveContinuationLegalMoveEligible: adaptiveContinuationState.adaptiveLegalMoveEligible,
+      adaptiveContinuationOutcomeEligible: adaptiveContinuationState.adaptiveOutcomeEligible,
+      adaptiveContinuationEligible: adaptiveContinuationState.adaptiveEligible,
+      adaptiveContinuationTriggered: Boolean(result.mctsExactContinuationAdaptiveTriggered),
+      scoreBoundsEnabled,
+      scoreBoundDrawPriorityEnabled,
+      scoreBoundDrawPriorityScale,
+      scoreBoundDrawPriorityMode: typeof result?.mctsScoreBoundDrawPriorityMode === 'string'
+        ? result.mctsScoreBoundDrawPriorityMode
+        : null,
+      scoreBoundDrawPriorityBlockerCount: Number.isFinite(result?.mctsScoreBoundDrawPriorityBlockerCount)
+        ? result.mctsScoreBoundDrawPriorityBlockerCount
+        : 0,
+      proofPriorityEnabled,
+      proofPriorityScale,
+      proofPriorityMaxEmpties,
+      proofPriorityDepthEligible,
+      proofMetricMode,
+      proofPriorityMetricMode,
+      proofPriorityMetricPlayer,
+      proofPriorityBiasMode,
+      proofPriorityLateBiasPackageMode,
+      proofPriorityLateBiasThresholdMs,
+      proofPriorityLateBiasMetricMode,
+      proofPriorityLateBiasBiasMode,
+      proofPriorityLateBiasEligibleByBudget,
+      proofPriorityLateBiasEligibleByDepth,
+      proofPriorityLateBiasActivated,
+      proofPriorityRootMaturityGateEnabled,
+      proofPriorityRootMaturityGateMode,
+      proofPriorityRootMaturityGateMetricMode,
+      proofPriorityRootMaturityGateBiasMode,
+      proofPriorityRootMaturityGateMinVisits,
+      proofPriorityRootMaturityGateBestFiniteMetricThreshold,
+      proofPriorityRootMaturityGateRequireNoSolvedChild,
+      proofPriorityRootMaturityGateMinDistinctFiniteMetricCount,
+      proofPriorityRootMaturityGateActivated,
+      proofPriorityRootMaturityGateActivationCount,
+      proofPriorityRootMaturityGateActivationIteration,
+      proofPriorityRootMaturityGateActivationReason,
+      proofPriorityRootMaturityGateLastEvaluationReason,
+      proofPriorityRootMaturityGateLastBlockReason,
+      proofPriorityRootMaturityGateFinalEligible,
+      proofPriorityRootMaturityGateSolvedCoverageRate,
+      proofPriorityRootMaturityGateSolvedMoveCount,
+      proofPriorityRootMaturityGateBestFiniteMetric,
+      proofPriorityRootMaturityGateSecondFiniteMetric,
+      proofPriorityRootMaturityGateDistinctFiniteMetricCount,
+      proofPriorityRootMaturityGateChecks,
+      proofPriorityRootMaturityGateActivations,
+      proofPriorityContinuationHandoffEnabled,
+      proofPrioritySuppressedByContinuationWindow,
+      rootProofNumber: Number.isFinite(result?.mctsRootProofNumber) ? result.mctsRootProofNumber : null,
+      rootDisproofNumber: Number.isFinite(result?.mctsRootDisproofNumber) ? result.mctsRootDisproofNumber : null,
+      rootBlackProofNumber: Number.isFinite(result?.mctsRootBlackProofNumber) ? result.mctsRootBlackProofNumber : null,
+      rootWhiteProofNumber: Number.isFinite(result?.mctsRootWhiteProofNumber) ? result.mctsRootWhiteProofNumber : null,
+      proofPriorityMetric: typeof result?.mctsProofPriorityMetric === 'string' ? result.mctsProofPriorityMetric : null,
+      bestMoveProofNumber: Number.isFinite(bestMove?.pnProofNumber) ? bestMove.pnProofNumber : null,
+      bestMoveDisproofNumber: Number.isFinite(bestMove?.pnDisproofNumber) ? bestMove.pnDisproofNumber : null,
+      bestMoveBlackProofNumber: Number.isFinite(bestMove?.pnBlackProofNumber) ? bestMove.pnBlackProofNumber : null,
+      bestMoveWhiteProofNumber: Number.isFinite(bestMove?.pnWhiteProofNumber) ? bestMove.pnWhiteProofNumber : null,
+      bestMoveMetricProofNumber: Number.isFinite(bestMove?.pnMetricProofNumber) ? bestMove.pnMetricProofNumber : null,
+      bestMoveMetricMode: typeof bestMove?.pnMetricMode === 'string' ? bestMove.pnMetricMode : proofPriorityMetricMode,
+      bestMoveMetricPlayer: typeof bestMove?.pnMetricPlayer === 'string' ? bestMove.pnMetricPlayer : proofPriorityMetricPlayer,
+      bestMoveProofRank: Number.isFinite(bestMove?.pnRootRank) ? bestMove.pnRootRank : null,
+      bestMoveProofBonus: Number.isFinite(bestMove?.pnRootSelectionBonus) ? bestMove.pnRootSelectionBonus : null,
+      solverEnabled: this.options?.mctsSolverEnabled !== false,
+      solverStateProbes: Number.isFinite(result?.stats?.mctsSolverStateProbes) ? result.stats.mctsSolverStateProbes : 0,
+      solverCacheHits: Number.isFinite(result?.stats?.mctsSolverCacheHits) ? result.stats.mctsSolverCacheHits : 0,
+      solverExactHits: Number.isFinite(result?.stats?.mctsSolverExactHits) ? result.stats.mctsSolverExactHits : 0,
+      solverWldHits: Number.isFinite(result?.stats?.mctsSolverWldHits) ? result.stats.mctsSolverWldHits : 0,
+      solverNodeSolves: Number.isFinite(result?.stats?.mctsSolverNodeSolves) ? result.stats.mctsSolverNodeSolves : 0,
+      solverPropagationUpdates: Number.isFinite(result?.stats?.mctsSolverPropagationUpdates) ? result.stats.mctsSolverPropagationUpdates : 0,
+      solverRootProofs: Number.isFinite(result?.stats?.mctsSolverRootProofs) ? result.stats.mctsSolverRootProofs : 0,
+      exactContinuationAdaptiveRuns: Number.isFinite(result?.stats?.mctsExactContinuationAdaptiveRuns)
+        ? result.stats.mctsExactContinuationAdaptiveRuns
+        : 0,
+      exactContinuationAdaptiveCompletions: Number.isFinite(result?.stats?.mctsExactContinuationAdaptiveCompletions)
+        ? result.stats.mctsExactContinuationAdaptiveCompletions
+        : 0,
+      exactContinuationAdaptiveTimeouts: Number.isFinite(result?.stats?.mctsExactContinuationAdaptiveTimeouts)
+        ? result.stats.mctsExactContinuationAdaptiveTimeouts
+        : 0,
+      exactContinuationAdaptiveBestMoveChanges: Number.isFinite(result?.stats?.mctsExactContinuationAdaptiveBestMoveChanges)
+        ? result.stats.mctsExactContinuationAdaptiveBestMoveChanges
+        : 0,
+      scoreBoundUpdates: Number.isFinite(result?.stats?.mctsScoreBoundUpdates) ? result.stats.mctsScoreBoundUpdates : 0,
+      scoreBoundExactSolves: Number.isFinite(result?.stats?.mctsScoreBoundExactSolves) ? result.stats.mctsScoreBoundExactSolves : 0,
+      scoreBoundOutcomeSolves: Number.isFinite(result?.stats?.mctsScoreBoundOutcomeSolves) ? result.stats.mctsScoreBoundOutcomeSolves : 0,
+      scoreBoundDominatedChildrenSkipped: Number.isFinite(result?.stats?.mctsScoreBoundDominatedChildrenSkipped) ? result.stats.mctsScoreBoundDominatedChildrenSkipped : 0,
+      scoreBoundTraversalFilteredNodes: Number.isFinite(result?.stats?.mctsScoreBoundTraversalFilteredNodes) ? result.stats.mctsScoreBoundTraversalFilteredNodes : 0,
+      scoreBoundDominatedTraversalSelections: Number.isFinite(result?.stats?.mctsScoreBoundDominatedTraversalSelections) ? result.stats.mctsScoreBoundDominatedTraversalSelections : 0,
+      scoreBoundDrawPrioritySelectionNodes: Number.isFinite(result?.stats?.mctsScoreBoundDrawPrioritySelectionNodes)
+        ? result.stats.mctsScoreBoundDrawPrioritySelectionNodes
+        : 0,
+      scoreBoundDrawPriorityRankedChildren: Number.isFinite(result?.stats?.mctsScoreBoundDrawPriorityRankedChildren)
+        ? result.stats.mctsScoreBoundDrawPriorityRankedChildren
+        : 0,
+      scoreBoundDrawPriorityBlockerChildren: Number.isFinite(result?.stats?.mctsScoreBoundDrawPriorityBlockerChildren)
+        ? result.stats.mctsScoreBoundDrawPriorityBlockerChildren
+        : 0,
+      proofNumberUpdates: Number.isFinite(result?.stats?.mctsProofNumberUpdates) ? result.stats.mctsProofNumberUpdates : 0,
+      generalizedProofNumberUpdates: Number.isFinite(result?.stats?.mctsGeneralizedProofNumberUpdates)
+        ? result.stats.mctsGeneralizedProofNumberUpdates
+        : 0,
+      proofPrioritySelectionNodes: Number.isFinite(result?.stats?.mctsProofPrioritySelectionNodes) ? result.stats.mctsProofPrioritySelectionNodes : 0,
+      proofPriorityRankedChildren: Number.isFinite(result?.stats?.mctsProofPriorityRankedChildren) ? result.stats.mctsProofPriorityRankedChildren : 0,
+    };
+  }
+
+  attachMctsProofTelemetry(result) {
+    const telemetry = this.createMctsProofTelemetry(result);
+    if (!telemetry) {
+      return result;
+    }
+    return {
+      ...result,
+      mctsProofTelemetry: telemetry,
+    };
+  }
+
+  shouldRunSpecialEndingScout(rootEmptyCount, analyzedMoves) {
+    if (!Number.isInteger(rootEmptyCount) || rootEmptyCount <= 0) {
+      return false;
+    }
+    if (!isMctsSearchAlgorithm(this.options?.searchAlgorithm)) {
+      const configuredDepth = Math.max(1, Math.round(Number(this.options?.maxDepth ?? 1)));
+      if (configuredDepth < SPECIAL_ENDING_SCOUT_REQUIRED_CLASSIC_DEPTH) {
+        return false;
+      }
+    }
+    if (rootEmptyCount > SPECIAL_ENDING_SCOUT_MAX_EMPTIES) {
+      return false;
+    }
+    return Array.isArray(analyzedMoves) && analyzedMoves.length >= 2;
+  }
+
+  selectSpecialEndingScoutCandidates(analyzedMoves) {
+    if (!Array.isArray(analyzedMoves) || analyzedMoves.length === 0) {
+      return [];
+    }
+
+    const sortedMoves = [...analyzedMoves].sort((left, right) => right.score - left.score);
+    const maxCandidates = Math.min(
+      SPECIAL_ENDING_SCOUT_MAX_CANDIDATES,
+      Math.max(SPECIAL_ENDING_SCOUT_MIN_CANDIDATES, sortedMoves.length),
+    );
+    return sortedMoves.slice(0, maxCandidates);
+  }
+
+  analyzeSpecialEndingScoutMove(state, move) {
+    return analyzeSpecialEndingMove(state, move, {
+      listMoves: (position) => position.getLegalMoves(),
+      onReplyState: () => {
+        this.stats.specialEndingScoutReplyStates += 1;
+      },
+      onResponseState: () => {
+        this.stats.specialEndingScoutResponseStates += 1;
+      },
+      onOpponentReplyState: () => {
+        this.stats.specialEndingScoutOpponentReplyStates += 1;
+      },
+    });
+  }
+
+  applySpecialEndingScoutToRootResult(state, legalMoves, rootResult, rootEmptyCount) {
+    if (rootResult?.mctsRootSolvedOutcome !== null && rootResult?.mctsRootSolvedOutcome !== undefined) {
+      return rootResult;
+    }
+    if (!this.shouldRunSpecialEndingScout(rootEmptyCount, rootResult?.analyzedMoves)) {
+      return rootResult;
+    }
+
+    const legalMoveByIndex = new Map(legalMoves.map((move) => [move.index, move]));
+    const candidateMoves = this.selectSpecialEndingScoutCandidates(rootResult.analyzedMoves);
+    if (candidateMoves.length === 0) {
+      return rootResult;
+    }
+
+    this.stats.specialEndingScoutRuns += 1;
+    const updatedMoves = rootResult.analyzedMoves.map((move) => ({ ...move }));
+    const moveByIndex = new Map(updatedMoves.map((move) => [move.index, move]));
+    let anyPenaltyApplied = false;
+
+    for (const candidate of candidateMoves) {
+      if (candidate?.solvedOutcome !== null && candidate?.solvedOutcome !== undefined) {
+        continue;
+      }
+
+      const rootMove = legalMoveByIndex.get(candidate.index);
+      if (!rootMove) {
+        continue;
+      }
+
+      this.stats.specialEndingScoutCandidates += 1;
+      const scoutSummary = this.analyzeSpecialEndingScoutMove(state, rootMove);
+      const penalty = scoutSummary?.penalty ?? 0;
+      const analyzedMove = moveByIndex.get(candidate.index);
+      if (!analyzedMove) {
+        continue;
+      }
+
+      analyzedMove.specialEndingScout = scoutSummary;
+      analyzedMove.specialEndingScoutPenalty = penalty;
+      analyzedMove.rawScore = Number.isFinite(analyzedMove.rawScore) ? analyzedMove.rawScore : analyzedMove.score;
+      if (penalty > 0) {
+        analyzedMove.score = analyzedMove.rawScore - penalty;
+        anyPenaltyApplied = true;
+        this.stats.specialEndingScoutPenalties += 1;
+      }
+    }
+
+    if (!anyPenaltyApplied) {
+      return {
+        ...rootResult,
+        analyzedMoves: updatedMoves.sort((left, right) => right.score - left.score),
+      };
+    }
+
+    updatedMoves.sort((left, right) => right.score - left.score);
+    const bestMove = updatedMoves[0] ?? null;
+    return {
+      ...rootResult,
+      bestMoveIndex: bestMove?.index ?? rootResult.bestMoveIndex,
+      bestMoveCoord: bestMove?.coord ?? rootResult.bestMoveCoord,
+      score: Number.isFinite(bestMove?.score) ? bestMove.score : rootResult.score,
+      principalVariation: Array.isArray(bestMove?.principalVariation)
+        ? [...bestMove.principalVariation]
+        : rootResult.principalVariation,
+      analyzedMoves: updatedMoves,
+      specialEndingScoutApplied: true,
+    };
+  }
+
+  shouldRunMctsExactContinuation(rootEmptyCount, legalMoveCount, rootResult) {
+    if (this.options?.mctsExactContinuationEnabled === false) {
+      return false;
+    }
+    if (!Number.isInteger(rootEmptyCount) || rootEmptyCount <= 0) {
+      return false;
+    }
+    if (rootResult?.mctsRootSolvedOutcome === null || rootResult?.mctsRootSolvedOutcome === undefined) {
+      return false;
+    }
+    if (rootResult?.mctsRootSolvedExact) {
+      return false;
+    }
+
+    if (this.isMctsExactContinuationDepthEligible(rootEmptyCount)) {
+      return true;
+    }
+
+    return this.getMctsExactContinuationAdaptiveState(rootEmptyCount, legalMoveCount, rootResult).adaptiveEligible;
+  }
+
+  getMctsExactContinuationThreshold() {
+    const exactThreshold = Math.max(0, Math.round(Number(this.options?.exactEndgameEmpties ?? 0)));
+    const extraEmpties = Math.max(0, Math.round(Number(this.options?.mctsExactContinuationExtraEmpties ?? 0)));
+    return exactThreshold + extraEmpties;
+  }
+
+  isMctsExactContinuationDepthEligible(rootEmptyCount) {
+    if (this.options?.mctsExactContinuationEnabled === false) {
+      return false;
+    }
+    if (!Number.isInteger(rootEmptyCount) || rootEmptyCount <= 0) {
+      return false;
+    }
+    return rootEmptyCount <= this.getMctsExactContinuationThreshold();
+  }
+
+  getMctsExactContinuationAdaptiveThreshold() {
+    const baseThreshold = this.getMctsExactContinuationThreshold();
+    const extraEmpties = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsExactContinuationAdaptiveExtraEmpties ?? 0)),
+    );
+    return baseThreshold + extraEmpties;
+  }
+
+  isMctsExactContinuationAdaptiveDepthEligible(rootEmptyCount) {
+    if (this.options?.mctsExactContinuationEnabled === false || this.options?.mctsExactContinuationAdaptiveEnabled !== true) {
+      return false;
+    }
+    if (!Number.isInteger(rootEmptyCount) || rootEmptyCount <= 0) {
+      return false;
+    }
+
+    const baseThreshold = this.getMctsExactContinuationThreshold();
+    const adaptiveThreshold = this.getMctsExactContinuationAdaptiveThreshold();
+    return rootEmptyCount > baseThreshold && rootEmptyCount <= adaptiveThreshold;
+  }
+
+  isMctsExactContinuationAdaptiveLegalMoveEligible(legalMoveCount) {
+    const maxLegalMoves = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsExactContinuationAdaptiveMaxLegalMoves ?? 0)),
+    );
+    if (maxLegalMoves <= 0) {
+      return true;
+    }
+    if (!Number.isInteger(legalMoveCount) || legalMoveCount <= 0) {
+      return false;
+    }
+    return legalMoveCount <= maxLegalMoves;
+  }
+
+  isMctsExactContinuationAdaptiveOutcomeEligible(rootSolvedOutcome) {
+    if (typeof rootSolvedOutcome !== 'string') {
+      return false;
+    }
+
+    const mode = this.options?.mctsExactContinuationAdaptiveOutcomeMode ?? DEFAULT_MCTS_EXACT_CONTINUATION_ADAPTIVE_OUTCOME_MODE;
+    if (mode === 'all') {
+      return true;
+    }
+    if (mode === 'non-win') {
+      return rootSolvedOutcome !== 'win';
+    }
+    return rootSolvedOutcome === 'loss';
+  }
+
+  getMctsExactContinuationAdaptiveState(rootEmptyCount, legalMoveCount, rootResult) {
+    const baseDepthEligible = this.isMctsExactContinuationDepthEligible(rootEmptyCount);
+    const adaptiveEnabled = this.options?.mctsExactContinuationAdaptiveEnabled === true;
+    const adaptiveDepthEligible = adaptiveEnabled
+      && !baseDepthEligible
+      && this.isMctsExactContinuationAdaptiveDepthEligible(rootEmptyCount);
+    const adaptiveLegalMoveEligible = adaptiveDepthEligible
+      && this.isMctsExactContinuationAdaptiveLegalMoveEligible(legalMoveCount);
+    const adaptiveOutcomeEligible = adaptiveLegalMoveEligible
+      && this.isMctsExactContinuationAdaptiveOutcomeEligible(rootResult?.mctsRootSolvedOutcome);
+    const adaptiveEligible = adaptiveDepthEligible && adaptiveLegalMoveEligible && adaptiveOutcomeEligible;
+
+    return {
+      adaptiveEnabled,
+      adaptiveDepthEligible,
+      adaptiveLegalMoveEligible,
+      adaptiveOutcomeEligible,
+      adaptiveEligible,
+      adaptiveTriggered: adaptiveEligible && !baseDepthEligible,
+    };
+  }
+
+  resolveMctsRootRuntimeConfig(rootEmptyCount) {
+    const proofPriorityConfiguredEnabled = this.options?.mctsProofPriorityEnabled !== false
+      && Number(this.options?.mctsProofPriorityScale ?? 0) > 0;
+    const proofPriorityContinuationHandoffEnabled = this.options?.mctsProofPriorityContinuationHandoffEnabled !== false;
+    const proofPriorityScale = Number.isFinite(Number(this.options?.mctsProofPriorityScale))
+      ? Number(this.options.mctsProofPriorityScale)
+      : 0;
+    const proofPriorityMaxEmpties = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsProofPriorityMaxEmpties ?? 0)),
+    );
+    const configuredProofMetricMode = this.options?.mctsProofMetricMode === 'per-player'
+      ? 'per-player'
+      : DEFAULT_MCTS_PROOF_METRIC_MODE;
+    const configuredProofPriorityBiasMode = sanitizeExperimentalEnum(
+      this.options?.mctsProofPriorityBiasMode,
+      DEFAULT_MCTS_PROOF_PRIORITY_BIAS_MODE,
+      MCTS_PROOF_PRIORITY_BIAS_MODES,
+    );
+    const lateBiasPackageMode = sanitizeExperimentalEnum(
+      this.options?.mctsProofPriorityLateBiasPackageMode,
+      DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODE,
+      MCTS_PROOF_PRIORITY_LATE_BIAS_PACKAGE_MODES,
+    );
+    const lateBiasThresholdMs = Math.max(
+      0,
+      Math.round(Number(this.options?.mctsProofPriorityLateBiasThresholdMs ?? DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_THRESHOLD_MS)),
+    );
+    const lateBiasMetricMode = sanitizeExperimentalEnum(
+      this.options?.mctsProofPriorityLateBiasMetricMode,
+      DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_METRIC_MODE,
+      MCTS_PROOF_METRIC_MODES,
+    );
+    const lateBiasBiasMode = sanitizeExperimentalEnum(
+      this.options?.mctsProofPriorityLateBiasBiasMode,
+      DEFAULT_MCTS_PROOF_PRIORITY_LATE_BIAS_BIAS_MODE,
+      MCTS_PROOF_PRIORITY_BIAS_MODES,
+    );
+    const timeLimitMs = Math.max(0, Math.round(Number(this.options?.timeLimitMs ?? 0)));
+    const continuationDepthEligible = this.isMctsExactContinuationDepthEligible(rootEmptyCount);
+    const proofPrioritySuppressedByContinuationWindow = proofPriorityConfiguredEnabled
+      && proofPriorityContinuationHandoffEnabled
+      && continuationDepthEligible;
+    const proofPriorityDepthEligible = proofPriorityConfiguredEnabled && Number.isInteger(rootEmptyCount)
+      ? rootEmptyCount <= proofPriorityMaxEmpties
+      : false;
+    const proofPriorityLateBiasEligibleByBudget = lateBiasPackageMode === 'budget-conditioned'
+      && timeLimitMs >= lateBiasThresholdMs;
+    const proofPriorityLateBiasEligibleByDepth = proofPriorityDepthEligible;
+    const proofPriorityLateBiasActivated = proofPriorityLateBiasEligibleByBudget
+      && proofPriorityLateBiasEligibleByDepth
+      && !proofPrioritySuppressedByContinuationWindow;
+    const runtimeProofMetricMode = proofPriorityLateBiasActivated
+      ? lateBiasMetricMode
+      : configuredProofMetricMode;
+    const runtimeProofPriorityBiasMode = proofPriorityLateBiasActivated
+      ? lateBiasBiasMode
+      : configuredProofPriorityBiasMode;
+    const proofPriorityEnabled = proofPriorityConfiguredEnabled && !proofPrioritySuppressedByContinuationWindow;
+
+    const optionOverrides = {};
+    if (proofPrioritySuppressedByContinuationWindow) {
+      optionOverrides.mctsProofPriorityEnabled = false;
+      optionOverrides.mctsProofPriorityScale = 0;
+      optionOverrides.mctsProofPriorityMaxEmpties = 0;
+    }
+    if (proofPriorityLateBiasActivated) {
+      optionOverrides.mctsProofMetricMode = runtimeProofMetricMode;
+      optionOverrides.mctsProofPriorityBiasMode = runtimeProofPriorityBiasMode;
+    }
+
+    return {
+      optionOverrides: Object.keys(optionOverrides).length > 0 ? optionOverrides : null,
+      proofPriorityEnabled,
+      proofPriorityScale: proofPriorityEnabled ? proofPriorityScale : 0,
+      proofPriorityMaxEmpties: proofPriorityEnabled ? proofPriorityMaxEmpties : 0,
+      proofMetricMode: runtimeProofMetricMode,
+      proofPriorityBiasMode: runtimeProofPriorityBiasMode,
+      proofPriorityContinuationHandoffEnabled,
+      proofPrioritySuppressedByContinuationWindow,
+      proofPriorityLateBiasPackageMode: lateBiasPackageMode,
+      proofPriorityLateBiasThresholdMs: lateBiasThresholdMs,
+      proofPriorityLateBiasMetricMode: lateBiasMetricMode,
+      proofPriorityLateBiasBiasMode: lateBiasBiasMode,
+      proofPriorityLateBiasEligibleByBudget,
+      proofPriorityLateBiasEligibleByDepth,
+      proofPriorityLateBiasActivated,
+    };
+  }
+
+  applyMctsExactContinuationToRootResult(state, legalMoves, rootResult, rootEmptyCount) {
+    if (!(state instanceof GameState) || !Array.isArray(legalMoves) || legalMoves.length === 0) {
+      return rootResult;
+    }
+    const adaptiveContinuationState = this.getMctsExactContinuationAdaptiveState(
+      rootEmptyCount,
+      legalMoves.length,
+      rootResult,
+    );
+    if (!this.shouldRunMctsExactContinuation(rootEmptyCount, legalMoves.length, rootResult)) {
+      return rootResult;
+    }
+
+    this.stats.mctsExactContinuationRuns += 1;
+    if (adaptiveContinuationState.adaptiveTriggered) {
+      this.stats.mctsExactContinuationAdaptiveRuns += 1;
+    }
+    this.rootProgressSnapshot = null;
+
+    const exactDepth = rootEmptyCount + 1;
+    const continuationResult = this.runSingleDepthSearch(exactDepth, (depth, alpha, beta) => (
+      this.searchRoot(state, legalMoves, depth, alpha, beta, null, true)
+    ));
+    if (!continuationResult || continuationResult.searchCompletion !== 'complete') {
+      this.stats.mctsExactContinuationTimeouts += 1;
+      if (adaptiveContinuationState.adaptiveTriggered) {
+        this.stats.mctsExactContinuationAdaptiveTimeouts += 1;
+      }
+      return {
+        ...rootResult,
+        mctsExactContinuationAttempted: true,
+        mctsExactContinuationCompleted: false,
+        mctsExactContinuationApplied: false,
+        mctsExactContinuationBestMoveChanged: false,
+        mctsExactContinuationAdaptiveTriggered: adaptiveContinuationState.adaptiveTriggered,
+      };
+    }
+
+    const exactMoves = Array.isArray(continuationResult.analyzedMoves)
+      ? continuationResult.analyzedMoves
+      : [];
+    if (exactMoves.length !== legalMoves.length) {
+      this.stats.mctsExactContinuationTimeouts += 1;
+      if (adaptiveContinuationState.adaptiveTriggered) {
+        this.stats.mctsExactContinuationAdaptiveTimeouts += 1;
+      }
+      return {
+        ...rootResult,
+        mctsExactContinuationAttempted: true,
+        mctsExactContinuationCompleted: false,
+        mctsExactContinuationApplied: false,
+        mctsExactContinuationBestMoveChanged: false,
+        mctsExactContinuationAdaptiveTriggered: adaptiveContinuationState.adaptiveTriggered,
+      };
+    }
+
+    const existingMoves = Array.isArray(rootResult?.analyzedMoves)
+      ? rootResult.analyzedMoves.map((move) => ({
+        ...move,
+        principalVariation: Array.isArray(move?.principalVariation)
+          ? [...move.principalVariation]
+          : [],
+      }))
+      : [];
+    const existingByIndex = new Map(existingMoves.map((move) => [move.index, move]));
+    const legalMoveByIndex = new Map(legalMoves.map((move) => [move.index, move]));
+    const mergedMoves = exactMoves.map((exactMove) => {
+      const baseMove = existingByIndex.get(exactMove.index) ?? null;
+      const legalMove = legalMoveByIndex.get(exactMove.index) ?? null;
+      const exactScore = Number.isFinite(exactMove?.score) ? exactMove.score : 0;
+      return {
+        ...(baseMove ?? {}),
+        index: exactMove.index,
+        coord: exactMove.coord ?? baseMove?.coord ?? legalMove?.coord ?? null,
+        score: exactScore,
+        rawScore: exactScore,
+        principalVariation: Array.isArray(exactMove.principalVariation)
+          ? [...exactMove.principalVariation]
+          : (Array.isArray(baseMove?.principalVariation) ? [...baseMove.principalVariation] : []),
+        flipCount: exactMove.flipCount ?? baseMove?.flipCount ?? legalMove?.flipCount ?? null,
+        visits: Number.isInteger(baseMove?.visits) ? baseMove.visits : 0,
+        meanReward: Number.isFinite(baseMove?.meanReward) ? baseMove.meanReward : null,
+        effectiveMeanReward: Number.isFinite(baseMove?.effectiveMeanReward) ? baseMove.effectiveMeanReward : null,
+        forcedPasses: Number.isInteger(baseMove?.forcedPasses) ? baseMove.forcedPasses : 0,
+        priorPolicy: Number.isFinite(baseMove?.priorPolicy) ? baseMove.priorPolicy : null,
+        priorReward: Number.isFinite(baseMove?.priorReward) ? baseMove.priorReward : null,
+        hybridPriorReward: Number.isFinite(baseMove?.hybridPriorReward) ? baseMove.hybridPriorReward : null,
+        hybridPriorScore: Number.isFinite(baseMove?.hybridPriorScore) ? baseMove.hybridPriorScore : null,
+        solvedOutcome: this.describeWldOutcome(exactScore),
+        solvedSource: 'exact-continuation',
+        solvedExact: true,
+        solvedScore: exactScore,
+        solvedReward: clamp(exactScore / (64 * 10000), -1, 1),
+        mctsRootThreatPenaltyScore: 0,
+        mctsRootThreatPenaltyReward: 0,
+        mctsRootThreatPenaltyRaw: 0,
+        mctsRootThreatWorstReply: null,
+      };
+    }).sort((left, right) => {
+      const scoreGap = (right.score ?? 0) - (left.score ?? 0);
+      if (scoreGap !== 0) {
+        return scoreGap;
+      }
+      return String(left?.coord ?? '').localeCompare(String(right?.coord ?? ''));
+    });
+
+    const exactBestMove = Number.isInteger(continuationResult.bestMoveIndex)
+      ? (mergedMoves.find((move) => move.index === continuationResult.bestMoveIndex) ?? null)
+      : null;
+    const bestMove = exactBestMove ?? (mergedMoves[0] ?? null);
+    if (bestMove && mergedMoves.length > 1) {
+      mergedMoves.sort((left, right) => {
+        if (left.index === bestMove.index) {
+          return -1;
+        }
+        if (right.index === bestMove.index) {
+          return 1;
+        }
+        const scoreGap = (right.score ?? 0) - (left.score ?? 0);
+        if (scoreGap !== 0) {
+          return scoreGap;
+        }
+        return String(left?.coord ?? '').localeCompare(String(right?.coord ?? ''));
+      });
+    }
+    const bestMoveChanged = Number.isInteger(bestMove?.index) && bestMove.index !== rootResult.bestMoveIndex;
+    this.stats.mctsExactContinuationCompletions += 1;
+    if (adaptiveContinuationState.adaptiveTriggered) {
+      this.stats.mctsExactContinuationAdaptiveCompletions += 1;
+    }
+    if (bestMoveChanged) {
+      this.stats.mctsExactContinuationBestMoveChanges += 1;
+      if (adaptiveContinuationState.adaptiveTriggered) {
+        this.stats.mctsExactContinuationAdaptiveBestMoveChanges += 1;
+      }
+    }
+
+    const exactScore = Number.isFinite(continuationResult.score)
+      ? continuationResult.score
+      : (Number.isFinite(bestMove?.score) ? bestMove.score : rootResult.score);
+    return {
+      ...rootResult,
+      bestMoveIndex: continuationResult.bestMoveIndex ?? bestMove?.index ?? rootResult.bestMoveIndex,
+      bestMoveCoord: bestMove?.coord ?? rootResult.bestMoveCoord,
+      score: exactScore,
+      principalVariation: Array.isArray(continuationResult.principalVariation)
+        ? [...continuationResult.principalVariation]
+        : (Array.isArray(bestMove?.principalVariation) ? [...bestMove.principalVariation] : [...(rootResult.principalVariation ?? [])]),
+      analyzedMoves: mergedMoves,
+      rootAnalyzedMoveCount: mergedMoves.length,
+      rootLegalMoveCount: legalMoves.length,
+      mctsRootSolvedOutcome: this.describeWldOutcome(exactScore),
+      mctsRootSolvedSource: 'exact-continuation',
+      mctsRootSolvedExact: true,
+      mctsRootSolvedScore: exactScore,
+      mctsExactContinuationAttempted: true,
+      mctsExactContinuationCompleted: true,
+      mctsExactContinuationApplied: true,
+      mctsExactContinuationBestMoveChanged: bestMoveChanged,
+      mctsExactContinuationAdaptiveTriggered: adaptiveContinuationState.adaptiveTriggered,
+    };
+  }
+
+  findImmediateWipeoutMove(state, legalMoves, bucket = 'exact') {
+    if (!(state instanceof GameState) || !Array.isArray(legalMoves) || legalMoves.length === 0) {
+      return null;
+    }
+
+    this.stats.immediateWipeoutScans += 1;
+    const { player, opponent } = state.getPlayerBoards();
+    const opponentDiscCount = popcount(opponent);
+    let best = null;
+
+    for (const move of legalMoves) {
+      const candidate = this.evaluateImmediateWipeoutPreparedMove(
+        state,
+        move,
+        bucket,
+        player,
+        opponent,
+        opponentDiscCount,
+      );
+      if (candidate && (!best || candidate.score > best.score)) {
+        best = candidate;
+      }
+    }
+
+    if (best) {
+      if (bucket === 'wld') {
+        this.stats.wldImmediateWipeoutHits += 1;
+      } else {
+        this.stats.immediateWipeoutHits += 1;
+      }
+    }
+
+    return best;
+  }
+
+  runWithMpcSuppressed(callback) {
+    this.mpcSuppressionDepth = (this.mpcSuppressionDepth ?? 0) + 1;
+    try {
+      return callback();
+    } finally {
+      this.mpcSuppressionDepth = Math.max(0, (this.mpcSuppressionDepth ?? 1) - 1);
+    }
+  }
+
+  runWithOrderingProbeSuppressed(callback) {
+    this.orderingProbeSuppressionDepth = (this.orderingProbeSuppressionDepth ?? 0) + 1;
+    try {
+      return callback();
+    } finally {
+      this.orderingProbeSuppressionDepth = Math.max(0, (this.orderingProbeSuppressionDepth ?? 1) - 1);
+    }
+  }
+
+  isMpcSuppressed() {
+    return (this.mpcSuppressionDepth ?? 0) > 0;
+  }
+
+  isOrderingProbeSuppressed() {
+    return (this.orderingProbeSuppressionDepth ?? 0) > 0;
+  }
+
+  getMpcRuntimeConfig() {
+    return this.compiledMpcRuntimeConfig ?? null;
+  }
+
+  getOrderingPotentialMobilityBonus(state, perspectiveColor) {
+    const profile = this.moveOrderingStructureProfile;
+    if (!(state instanceof GameState) || !Number.isFinite(profile?.potentialMobilityWeight) || profile.potentialMobilityWeight === 0) {
+      return 0;
+    }
+    const { player, opponent, empty } = boardsForPerspectiveColor(state, perspectiveColor);
+    return Math.round(
+      potentialMobilityScoreForBoards(player, opponent, empty)
+      * profile.potentialMobilityWeight,
+    );
+  }
+
+  getOrderingFrontierBonus(state, perspectiveColor) {
+    const profile = this.moveOrderingStructureProfile;
+    if (!(state instanceof GameState) || !Number.isFinite(profile?.frontierWeight) || profile.frontierWeight === 0) {
+      return 0;
+    }
+    const { player, opponent, empty } = boardsForPerspectiveColor(state, perspectiveColor);
+    return Math.round(
+      frontierScoreForBoards(player, opponent, empty)
+      * profile.frontierWeight,
+    );
+  }
+
+  getOrderingStabilityBonus(state, perspectiveColor) {
+    const profile = this.moveOrderingStructureProfile;
+    if (!(state instanceof GameState) || !Number.isFinite(profile?.stabilityBoundWeight) || profile.stabilityBoundWeight === 0) {
+      return 0;
+    }
+    const empties = state.getEmptyCount();
+    if (!Number.isInteger(empties) || empties < profile.stabilityMinEmpties || empties > profile.stabilityMaxEmpties) {
+      return 0;
+    }
+    const { player, opponent } = boardsForPerspectiveColor(state, perspectiveColor);
+    const bounds = describeStableDiscBounds(player, opponent, empties);
+    const stableDiff = Number(bounds?.playerStableDiscs ?? 0) - Number(bounds?.opponentStableDiscs ?? 0);
+    if (!Number.isFinite(stableDiff) || stableDiff === 0) {
+      return 0;
+    }
+    return Math.round(stableDiff * profile.stabilityBoundWeight);
+  }
+
+  getOrderingQuietMoveBonus(state, moveIndex) {
+    const profile = this.moveOrderingStructureProfile;
+    if (!(state instanceof GameState) || !Number.isFinite(profile?.quietMoveWeight) || profile.quietMoveWeight === 0) {
+      return 0;
+    }
+    const empties = state.getEmptyCount();
+    if (!Number.isInteger(empties) || empties < profile.quietMoveMinEmpties || empties > profile.quietMoveMaxEmpties) {
+      return 0;
+    }
+    const adjacentEmpties = countAdjacentEmptiesForMove(state.getEmptyBitboard(), moveIndex);
+    if (adjacentEmpties > (profile?.quietMoveMaxAdjacentEmpties ?? 0)) {
+      return 0;
+    }
+    return Math.round(profile.quietMoveWeight);
+  }
+
+  getOrderingEdgeEndpointBonus(emptyBitboard, empties, moveIndex) {
+    const profile = this.moveOrderingStructureProfile;
+    if (typeof emptyBitboard !== 'bigint' || !Number.isFinite(profile?.edgeEndpointWeight) || profile.edgeEndpointWeight === 0) {
+      return 0;
+    }
+    if (!Number.isInteger(empties) || empties < profile.edgeEndpointMinEmpties || empties > profile.edgeEndpointMaxEmpties) {
+      return 0;
+    }
+    return isEdgeEndpointMove(emptyBitboard, moveIndex)
+      ? Math.round(profile.edgeEndpointWeight)
+      : 0;
+  }
+
+  scoreOrderingChildStructureBonuses(childState, perspectiveColor, moveIndex, featureConfig, nodeEmptyBitboard) {
+    if (!(childState instanceof GameState) || !featureConfig) {
+      return 0;
+    }
+
+    let score = 0;
+    let childPlayerBoard = 0n;
+    let childOpponentBoard = 0n;
+    let childEmptyBitboard = 0n;
+
+    if (featureConfig.needsChildBoards || featureConfig.needsChildEmptyBitboard) {
+      const childBoards = childState.getPlayerBoards(perspectiveColor);
+      childPlayerBoard = childBoards.player;
+      childOpponentBoard = childBoards.opponent;
+      if (featureConfig.needsChildEmptyBitboard) {
+        childEmptyBitboard = childState.getEmptyBitboard();
+      }
+    }
+
+    if (featureConfig.potentialMobilityWeight !== 0) {
+      const potentialMobilityBonus = Math.round(potentialMobilityScoreForBoards(
+        childPlayerBoard,
+        childOpponentBoard,
+        childEmptyBitboard,
+      ) * featureConfig.potentialMobilityWeight);
+      if (potentialMobilityBonus !== 0) {
+        this.stats.orderingPotentialMobilityBonuses += 1;
+        score += potentialMobilityBonus;
+      }
+    }
+
+    if (featureConfig.frontierWeight !== 0) {
+      const frontierBonus = Math.round(frontierScoreForBoards(
+        childPlayerBoard,
+        childOpponentBoard,
+        childEmptyBitboard,
+      ) * featureConfig.frontierWeight);
+      if (frontierBonus !== 0) {
+        this.stats.orderingFrontierBonuses += 1;
+        score += frontierBonus;
+      }
+    }
+
+    if (featureConfig.stabilityBoundWeight !== 0) {
+      const bounds = describeStableDiscBounds(childPlayerBoard, childOpponentBoard, featureConfig.childEmpties);
+      const stableDiff = Number(bounds?.playerStableDiscs ?? 0) - Number(bounds?.opponentStableDiscs ?? 0);
+      if (Number.isFinite(stableDiff) && stableDiff !== 0) {
+        const stabilityBonus = stableDiff * featureConfig.stabilityBoundWeight;
+        if (stabilityBonus !== 0) {
+          this.stats.orderingStabilityBonuses += 1;
+          score += stabilityBonus;
+        }
+      }
+    }
+
+    if (featureConfig.quietMoveWeight !== 0) {
+      const adjacentEmpties = countAdjacentEmptiesForMove(childEmptyBitboard, moveIndex);
+      if (adjacentEmpties <= featureConfig.quietMoveMaxAdjacentEmpties) {
+        this.stats.orderingQuietMoveBonuses += 1;
+        score += featureConfig.quietMoveWeight;
+      }
+    }
+
+    if (featureConfig.edgeEndpointWeight !== 0 && isEdgeEndpointMove(nodeEmptyBitboard, moveIndex)) {
+      this.stats.orderingEdgeEndpointBonuses += 1;
+      score += featureConfig.edgeEndpointWeight;
+    }
+
+    return score;
+  }
+
+  shouldRunOrderingShallowProbe(empties, depthRemaining) {
+    const profile = this.moveOrderingStructureProfile;
+    if (!profile?.shallowProbeEnabled || this.isOrderingProbeSuppressed()) {
+      return false;
+    }
+    if (!Number.isInteger(depthRemaining) || depthRemaining < profile.shallowProbeMinDepthRemaining) {
+      return false;
+    }
+    if (!Number.isInteger(empties)) {
+      return false;
+    }
+    return empties >= profile.shallowProbeMinEmpties && empties <= profile.shallowProbeMaxEmpties;
+  }
+
+  runOrderingShallowProbe(state, depthRemaining, ply) {
+    const profile = this.moveOrderingStructureProfile;
+    const probeDepth = Math.max(1, Math.min(
+      profile?.shallowProbeDepth ?? 0,
+      Math.max(1, depthRemaining - 2),
+    ));
+    if (!(state instanceof GameState) || probeDepth <= 0) {
+      return 0;
+    }
+
+    const nodesBefore = this.stats.nodes;
+    this.stats.orderingShallowProbeCalls += 1;
+    const probeResult = this.runWithOrderingProbeSuppressed(() => this.runWithMpcSuppressed(() => (
+      this.negamax(state, probeDepth, -INFINITY, INFINITY, ply, false)
+    )));
+    this.stats.orderingShallowProbeNodes += Math.max(0, this.stats.nodes - nodesBefore);
+    if (!Number.isFinite(probeResult?.score)) {
+      return 0;
+    }
+    const bonus = Math.round(probeResult.score * (profile?.shallowProbeScoreScale ?? 0));
+    if (bonus !== 0) {
+      this.stats.orderingShallowProbeBonuses += 1;
+    }
+    return bonus;
+  }
+
+  shouldSkipMpcByStaticEval(state, alpha, beta, adjustedHalfWidth, side, depth) {
+    const profile = this.mpcStructureProfile;
+    if (!profile?.staticEvalGateEnabled || !(state instanceof GameState)) {
+      return false;
+    }
+    const empties = state.getEmptyCount();
+    if (depth < profile.staticEvalGateMinDepth || empties < profile.staticEvalGateMinEmpties || empties > profile.staticEvalGateMaxEmpties) {
+      return false;
+    }
+
+    const staticScore = this.evaluator.evaluate(state, state.currentPlayer);
+    if (!Number.isFinite(staticScore) || !Number.isFinite(adjustedHalfWidth)) {
+      return false;
+    }
+    if (side === 'low') {
+      const margin = adjustedHalfWidth * profile.staticEvalGateScaleLow;
+      return staticScore > (alpha - margin);
+    }
+    const margin = adjustedHalfWidth * profile.staticEvalGateScaleHigh;
+    return staticScore < (beta + margin);
+  }
+
+  shouldSkipMpcByVolatility(state) {
+    const profile = this.mpcStructureProfile;
+    if (!profile?.volatilityGuardEnabled || !(state instanceof GameState)) {
+      return false;
+    }
+    const empties = state.getEmptyCount();
+    if (empties < profile.volatilityMinEmpties || empties > profile.volatilityMaxEmpties) {
+      return false;
+    }
+
+    const childBoards = state.getPlayerBoards();
+    const legalMovesBitMask = legalMovesBitboard(childBoards.player, childBoards.opponent);
+    if (Number.isFinite(profile.volatilityMaxLegalMoves) && popcount(legalMovesBitMask) > profile.volatilityMaxLegalMoves) {
+      return true;
+    }
+    if (profile.volatilitySkipCornerAvailable && (legalMovesBitMask & CORNER_MOVE_MASK) !== 0n) {
+      return true;
+    }
+    return false;
+  }
+
+  verifyMpcCut(state, depth, threshold, side, calibration, ply) {
+    const profile = this.mpcStructureProfile;
+    if (!(state instanceof GameState) || !profile?.verificationEnabled || depth < profile.verificationMinDepth) {
+      return true;
+    }
+
+    const verificationDepth = Math.max(1, Math.min(
+      depth - 1,
+      (calibration?.shallowDepth ?? 1) + profile.verificationDepthOffset,
+    ));
+    if (verificationDepth <= (calibration?.shallowDepth ?? 0)) {
+      return true;
+    }
+
+    this.stats.mpcVerificationProbes += 1;
+    const result = this.runWithMpcSuppressed(() => (
+      side === 'low'
+        ? this.negamax(state, verificationDepth, threshold, threshold + 1, ply, false)
+        : this.negamax(state, verificationDepth, threshold - 1, threshold, ply, false)
+    ));
+
+    const passed = side === 'low'
+      ? result.score <= threshold
+      : result.score >= threshold;
+    if (passed) {
+      this.stats.mpcVerificationPasses += 1;
+    } else {
+      this.stats.mpcVerificationFailures += 1;
+    }
+    return passed;
+  }
+
+  shouldVerifyMpcCut(shallowScore, threshold, adjustedHalfWidth) {
+    const profile = this.mpcStructureProfile;
+    if (!profile?.verificationEnabled || !Number.isFinite(shallowScore) || !Number.isFinite(threshold) || !Number.isFinite(adjustedHalfWidth)) {
+      return false;
+    }
+    return Math.abs(shallowScore - threshold) <= (adjustedHalfWidth * profile.verificationBandScale);
+  }
+
+  isMpcEnabled() {
+    if (this.isMpcSuppressed()) {
+      return false;
+    }
+
+    const runtime = this.getMpcRuntimeConfig();
+    const canTryHighCut = runtime?.enableHighCut !== false;
+    const canTryLowCut = runtime?.enableLowCut === true;
+    return Boolean(this.compiledMpcProfile?.usableCalibrations?.length) && (canTryHighCut || canTryLowCut);
+  }
+
+  adjustedMpcHalfWidth(calibration, depth, side = 'high') {
+    const runtime = this.getMpcRuntimeConfig();
+    const sideKey = side === 'low' ? 'lowIntervalHalfWidth' : 'highIntervalHalfWidth';
+    const sideScale = side === 'low'
+      ? Math.max(0, Number(runtime?.lowScale ?? 1))
+      : Math.max(0, Number(runtime?.highScale ?? 1));
+    const baseHalfWidth = Number(calibration?.[sideKey] ?? calibration?.intervalHalfWidth ?? NaN);
+    if (!Number.isFinite(baseHalfWidth) || baseHalfWidth < 0) {
+      return null;
+    }
+
+    const depthDistance = Math.abs((calibration?.deepDepth ?? depth) - depth);
+    const distanceScale = Math.max(1, Number(runtime?.depthDistanceScale ?? 1.25));
+    return baseHalfWidth * sideScale * (depthDistance === 0 ? 1 : Math.pow(distanceScale, depthDistance));
+  }
+
+  compareMpcCalibrationsDefault(left, right, depth, canTryHighCut, canTryLowCut) {
+    const leftDistance = Math.abs(depth - (left?.deepDepth ?? depth));
+    const rightDistance = Math.abs(depth - (right?.deepDepth ?? depth));
+    if (leftDistance !== rightDistance) {
+      return leftDistance - rightDistance;
+    }
+    if ((right.deepDepth ?? 0) !== (left.deepDepth ?? 0)) {
+      return (right.deepDepth ?? 0) - (left.deepDepth ?? 0);
+    }
+    if ((right.shallowDepth ?? 0) !== (left.shallowDepth ?? 0)) {
+      return (right.shallowDepth ?? 0) - (left.shallowDepth ?? 0);
+    }
+
+    const leftHalfWidth = Math.min(
+      canTryHighCut ? (this.adjustedMpcHalfWidth(left, depth, 'high') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+      canTryLowCut ? (this.adjustedMpcHalfWidth(left, depth, 'low') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+    );
+    const rightHalfWidth = Math.min(
+      canTryHighCut ? (this.adjustedMpcHalfWidth(right, depth, 'high') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+      canTryLowCut ? (this.adjustedMpcHalfWidth(right, depth, 'low') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+    );
+    return leftHalfWidth - rightHalfWidth;
+  }
+
+  compareMpcCalibrationsZebra(left, right, depth, empties, canTryHighCut, canTryLowCut) {
+    const cap = zebraLadderShallowDepthCap(empties) ?? Math.max(1, depth - 1);
+    const leftCapGap = Math.abs((left?.shallowDepth ?? cap) - cap);
+    const rightCapGap = Math.abs((right?.shallowDepth ?? cap) - cap);
+    if (leftCapGap !== rightCapGap) {
+      return leftCapGap - rightCapGap;
+    }
+    if ((right.shallowDepth ?? 0) !== (left.shallowDepth ?? 0)) {
+      return (right.shallowDepth ?? 0) - (left.shallowDepth ?? 0);
+    }
+    const leftDistance = Math.abs(depth - (left?.deepDepth ?? depth));
+    const rightDistance = Math.abs(depth - (right?.deepDepth ?? depth));
+    if (leftDistance !== rightDistance) {
+      return leftDistance - rightDistance;
+    }
+
+    const leftHalfWidth = Math.min(
+      canTryHighCut ? (this.adjustedMpcHalfWidth(left, depth, 'high') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+      canTryLowCut ? (this.adjustedMpcHalfWidth(left, depth, 'low') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+    );
+    const rightHalfWidth = Math.min(
+      canTryHighCut ? (this.adjustedMpcHalfWidth(right, depth, 'high') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+      canTryLowCut ? (this.adjustedMpcHalfWidth(right, depth, 'low') ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY,
+    );
+    if (leftHalfWidth !== rightHalfWidth) {
+      return leftHalfWidth - rightHalfWidth;
+    }
+    return (right.deepDepth ?? 0) - (left.deepDepth ?? 0);
+  }
+
+  selectMpcCalibrations(empties, depth) {
+    if (!this.isMpcEnabled() || !Number.isInteger(empties) || empties < 0 || empties > 60) {
+      return EMPTY_CALIBRATION_LIST;
+    }
+
+    const runtime = this.getMpcRuntimeConfig();
+    if (!Number.isInteger(depth) || depth < Math.max(1, runtime?.minDepth ?? 2)) {
+      return EMPTY_CALIBRATION_LIST;
+    }
+
+    const cachedSelection = this.mpcCalibrationSelectionCache?.[empties]?.[depth];
+    if (cachedSelection !== undefined) {
+      return cachedSelection;
+    }
+
+    const candidates = this.compiledMpcProfile?.calibrationsByEmptyCount?.[empties];
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      this.mpcCalibrationSelectionCache[empties][depth] = EMPTY_CALIBRATION_LIST;
+      return EMPTY_CALIBRATION_LIST;
+    }
+
+    const maxChecksPerNode = Math.max(1, Math.round(Number(runtime?.maxChecksPerNode ?? 1)));
+    const minDepthGap = Math.max(1, Math.round(Number(runtime?.minDepthGap ?? 2)));
+    const maxDepthDistance = Math.max(0, Math.round(Number(runtime?.maxDepthDistance ?? 1)));
+    const configuredDepthCap = Math.max(1, Math.round(Number(this.options?.maxDepth ?? depth)));
+    const canTryHighCut = runtime?.enableHighCut !== false;
+    const canTryLowCut = runtime?.enableLowCut === true;
+
+    const filteredCandidates = candidates.filter((calibration) => {
+      if (!calibration?.usable) {
+        return false;
+      }
+      if (!Number.isFinite(calibration.intercept) || !Number.isFinite(calibration.slope) || calibration.slope <= 0) {
+        return false;
+      }
+      if (!Number.isInteger(calibration.shallowDepth) || calibration.shallowDepth >= depth) {
+        return false;
+      }
+      if (!Number.isInteger(calibration.deepDepth) || calibration.deepDepth > configuredDepthCap) {
+        return false;
+      }
+      if ((depth - calibration.shallowDepth) < minDepthGap) {
+        return false;
+      }
+
+      const distance = Math.abs(depth - calibration.deepDepth);
+      if (distance > maxDepthDistance) {
+        return false;
+      }
+
+      if (canTryHighCut && Number.isFinite(this.adjustedMpcHalfWidth(calibration, depth, 'high'))) {
+        return true;
+      }
+      if (canTryLowCut && Number.isFinite(this.adjustedMpcHalfWidth(calibration, depth, 'low'))) {
+        return true;
+      }
+      return false;
+    });
+
+    if (filteredCandidates.length === 0) {
+      this.mpcCalibrationSelectionCache[empties][depth] = EMPTY_CALIBRATION_LIST;
+      return EMPTY_CALIBRATION_LIST;
+    }
+
+    const selectionMode = this.mpcStructureProfile?.selectionMode ?? 'default';
+    let sortableCandidates = filteredCandidates;
+    let usedZebraSelection = false;
+    let zebraFiltered = false;
+    if (selectionMode === 'zebra-ladder') {
+      usedZebraSelection = true;
+      const cap = zebraLadderShallowDepthCap(empties);
+      if (Number.isInteger(cap)) {
+        const cappedCandidates = filteredCandidates.filter((calibration) => calibration.shallowDepth <= cap);
+        if (cappedCandidates.length > 0) {
+          zebraFiltered = cappedCandidates.length !== filteredCandidates.length;
+          sortableCandidates = cappedCandidates;
+        }
+      }
+    }
+
+    const selected = (usedZebraSelection
+      ? sortableCandidates
+        .sort((left, right) => this.compareMpcCalibrationsZebra(left, right, depth, empties, canTryHighCut, canTryLowCut))
+      : sortableCandidates
+        .sort((left, right) => this.compareMpcCalibrationsDefault(left, right, depth, canTryHighCut, canTryLowCut))
+    ).slice(0, maxChecksPerNode);
+
+    this.mpcCalibrationSelectionCache[empties][depth] = selected.length > 0
+      ? selected
+      : EMPTY_CALIBRATION_LIST;
+    if (usedZebraSelection) {
+      this.stats.mpcZebraLadderSelections += 1;
+      if (zebraFiltered) {
+        this.stats.mpcZebraLadderFiltered += 1;
+      }
+    }
+    return this.mpcCalibrationSelectionCache[empties][depth];
+  }
+
+  tryMpcCut(state, depth, alpha, beta, ply, exactEndgame = false) {
+    if (exactEndgame || !this.isMpcEnabled()) {
+      return null;
+    }
+    if (!(state instanceof GameState)) {
+      return null;
+    }
+    if (!Number.isFinite(alpha) || !Number.isFinite(beta) || alpha <= -INFINITY || beta >= INFINITY) {
+      return null;
+    }
+
+    const runtime = this.getMpcRuntimeConfig();
+    const maxWindow = Math.max(1, Math.round(Number(runtime?.maxWindow ?? 1)));
+    if ((beta - alpha) > maxWindow) {
+      return null;
+    }
+
+    const minPly = Math.max(0, Math.round(Number(runtime?.minPly ?? 1)));
+    if (!Number.isInteger(ply) || ply < minPly) {
+      return null;
+    }
+
+    if (this.shouldSkipMpcByVolatility(state)) {
+      this.stats.mpcVolatilitySkips += 1;
+      return null;
+    }
+
+    const calibrations = this.selectMpcCalibrations(state.getEmptyCount(), depth);
+    if (!Array.isArray(calibrations) || calibrations.length === 0) {
+      return null;
+    }
+
+    const canTryHighCut = runtime?.enableHighCut !== false;
+    const canTryLowCut = runtime?.enableLowCut === true;
+
+    for (const calibration of calibrations) {
+      if (canTryHighCut) {
+        const adjustedHalfWidth = this.adjustedMpcHalfWidth(calibration, depth, 'high');
+        if (Number.isFinite(adjustedHalfWidth)) {
+          if (this.shouldSkipMpcByStaticEval(state, alpha, beta, adjustedHalfWidth, 'high', depth)) {
+            this.stats.mpcStaticEvalSkips += 1;
+          } else {
+            const rawThreshold = (beta - calibration.intercept + adjustedHalfWidth) / calibration.slope;
+            if (Number.isFinite(rawThreshold)) {
+              const threshold = clamp(Math.round(rawThreshold), -INFINITY + 2, INFINITY - 1);
+              this.stats.mpcProbes += 1;
+              this.stats.mpcHighProbes += 1;
+
+              const probeResult = this.runWithMpcSuppressed(() => (
+                this.negamax(state, calibration.shallowDepth, threshold - 1, threshold, ply, false)
+              ));
+
+              if (probeResult.score >= threshold) {
+                if (this.shouldVerifyMpcCut(probeResult.score, threshold, adjustedHalfWidth)
+                  && !this.verifyMpcCut(state, depth, threshold, 'high', calibration, ply)) {
+                  continue;
+                }
+                this.stats.mpcHighCutoffs += 1;
+                return {
+                  score: beta,
+                  flag: 'lower',
+                  shallowScore: probeResult.score,
+                  threshold,
+                  calibration,
+                  side: 'high',
+                };
+              }
+            }
+          }
+        }
+      }
+
+      if (canTryLowCut) {
+        const adjustedHalfWidth = this.adjustedMpcHalfWidth(calibration, depth, 'low');
+        if (Number.isFinite(adjustedHalfWidth)) {
+          if (this.shouldSkipMpcByStaticEval(state, alpha, beta, adjustedHalfWidth, 'low', depth)) {
+            this.stats.mpcStaticEvalSkips += 1;
+          } else {
+            const rawThreshold = (alpha - calibration.intercept - adjustedHalfWidth) / calibration.slope;
+            if (Number.isFinite(rawThreshold)) {
+              const threshold = clamp(Math.round(rawThreshold), -INFINITY + 1, INFINITY - 2);
+              this.stats.mpcProbes += 1;
+              this.stats.mpcLowProbes += 1;
+
+              const probeResult = this.runWithMpcSuppressed(() => (
+                this.negamax(state, calibration.shallowDepth, threshold, threshold + 1, ply, false)
+              ));
+
+              if (probeResult.score <= threshold) {
+                if (this.shouldVerifyMpcCut(probeResult.score, threshold, adjustedHalfWidth)
+                  && !this.verifyMpcCut(state, depth, threshold, 'low', calibration, ply)) {
+                  continue;
+                }
+                this.stats.mpcLowCutoffs += 1;
+                return {
+                  score: alpha,
+                  flag: 'upper',
+                  shallowScore: probeResult.score,
+                  threshold,
+                  calibration,
+                  side: 'low',
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  recordEtcActivity(bucket, metric) {
+    const aggregateKey = `etc${metric}`;
+    const bucketKey = `${bucket === 'wld' ? 'etcWld' : 'etcExact'}${metric}`;
+    this.stats[aggregateKey] += 1;
+    this.stats[bucketKey] += 1;
+  }
+
+  isOptimizedFewEmptiesExactSolverEnabled() {
+    return this.options.optimizedFewEmptiesExactSolver !== false;
+  }
+
+  getOptimizedFewEmptiesExactSolverThreshold() {
+    return Math.max(
+      SMALL_EXACT_SOLVER_EMPTIES,
+      Math.min(
+        MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES,
+        Math.round(Number(
+          this.options.optimizedFewEmptiesExactSolverEmpties
+            ?? DEFAULT_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES
+        )),
+      ),
+    );
+  }
+
+  recordOptimizedFewEmptiesCall(empties) {
+    const clampedEmpties = Math.max(5, Math.min(
+      MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES,
+      Math.round(empties),
+    ));
+    const stageKey = `optimizedFewEmpties${clampedEmpties}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  isLightweightFewEmptiesExactMovePathEnabled() {
+    return this.isOptimizedFewEmptiesExactSolverEnabled()
+      && this.options.lightweightFewEmptiesExactMovePath !== false;
+  }
+
+  shouldUseLightweightFewEmptiesExactMovePath(empties) {
+    return this.isLightweightFewEmptiesExactMovePathEnabled()
+      && Number.isFinite(empties)
+      && empties >= LIGHTWEIGHT_FEW_EMPTIES_EXACT_MOVE_PATH_MIN_EMPTIES
+      && empties <= MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES;
+  }
+
+  recordLightweightFewEmptiesCall(empties) {
+    const clampedEmpties = Math.max(
+      LIGHTWEIGHT_FEW_EMPTIES_EXACT_MOVE_PATH_MIN_EMPTIES,
+      Math.min(MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES, Math.round(empties)),
+    );
+    const stageKey = `lightweightFewEmpties${clampedEmpties}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  isOptimizedFewEmptiesWldSolverEnabled() {
+    return this.options.optimizedFewEmptiesWldSolver !== false;
+  }
+
+  getOptimizedFewEmptiesWldSolverThreshold() {
+    return Math.max(
+      SMALL_EXACT_SOLVER_EMPTIES,
+      Math.min(
+        MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES,
+        Math.round(Number(
+          this.options.optimizedFewEmptiesWldSolverEmpties
+            ?? DEFAULT_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES
+        )),
+      ),
+    );
+  }
+
+  recordOptimizedFewEmptiesWldCall(empties) {
+    const clampedEmpties = Math.max(5, Math.min(
+      MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES,
+      Math.round(empties),
+    ));
+    const stageKey = `optimizedFewEmptiesWld${clampedEmpties}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  isLightweightFewEmptiesWldMovePathEnabled() {
+    return this.isOptimizedFewEmptiesWldSolverEnabled()
+      && this.options.lightweightFewEmptiesWldMovePath !== false;
+  }
+
+  shouldUseLightweightFewEmptiesWldMovePath(empties) {
+    return this.isLightweightFewEmptiesWldMovePathEnabled()
+      && Number.isFinite(empties)
+      && empties >= LIGHTWEIGHT_FEW_EMPTIES_WLD_MOVE_PATH_MIN_EMPTIES
+      && empties <= MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES;
+  }
+
+  isSpecializedFewEmptiesWldLastFlipPathEnabled() {
+    return this.isOptimizedFewEmptiesWldSolverEnabled()
+      && this.options.specializedFewEmptiesWldLastFlipPath !== false;
+  }
+
+  recordLightweightFewEmptiesWldCall(empties) {
+    const clampedEmpties = Math.max(
+      LIGHTWEIGHT_FEW_EMPTIES_WLD_MOVE_PATH_MIN_EMPTIES,
+      Math.min(MAX_OPTIMIZED_FEW_EMPTIES_WLD_SOLVER_EMPTIES, Math.round(empties)),
+    );
+    const stageKey = `lightweightFewEmptiesWld${clampedEmpties}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  getFewEmptiesExactMoveBufferForEmpties(empties) {
+    const normalizedEmpties = Math.max(
+      LIGHTWEIGHT_FEW_EMPTIES_EXACT_MOVE_PATH_MIN_EMPTIES,
+      Math.min(MAX_OPTIMIZED_FEW_EMPTIES_EXACT_SOLVER_EMPTIES, Math.round(Number(empties) || 0)),
+    );
+    let buffer = this.fewEmptiesExactMoveBuffersByEmpties[normalizedEmpties];
+    if (!Array.isArray(buffer) || buffer.length < normalizedEmpties) {
+      buffer = createFewEmptiesExactMoveBuffer(normalizedEmpties);
+      this.fewEmptiesExactMoveBuffersByEmpties[normalizedEmpties] = buffer;
+    }
+    return buffer;
+  }
+
+  populateFewEmptiesMoveBuffer(player, opponent, emptyBits, empties, {
+    targetBuffer = null,
+    shouldSkipFastestFirstForMoveCount = null,
+    fastestFirstSortsStatKey = null,
+    fastestFirstPassCandidatesStatKey = null,
+    fastestFirstSelectiveSkipsStatKey = null,
+  } = {}) {
+    const buffer = Array.isArray(targetBuffer)
+      ? targetBuffer
+      : this.getFewEmptiesExactMoveBufferForEmpties(empties);
+    const exactFastestFirstEligible = this.isExactFastestFirstOrderingEnabled()
+      && empties >= EXACT_FASTEST_FIRST_MIN_EMPTIES;
+    let moveCount = 0;
+    let cursor = emptyBits;
+
+    while (cursor !== 0n) {
+      const moveBit = cursor & -cursor;
+      cursor ^= moveBit;
+
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      const index = indexFromBit(moveBit);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+
+      const slot = buffer[moveCount] ?? createFewEmptiesExactMoveSlot();
+      buffer[moveCount] = slot;
+      slot.index = index;
+      slot.nextPlayerBoard = nextPlayerBoard;
+      slot.nextOpponentBoard = nextOpponentBoard;
+      slot.remainingEmptyBits = emptyBits & ~moveBit;
+      slot.orderingScore = this.scoreFewEmptiesExactMove(index);
+      slot.opponentMoveCount = null;
+
+      moveCount += 1;
+    }
+
+    const useFastestFirst = exactFastestFirstEligible
+      && !(typeof shouldSkipFastestFirstForMoveCount === 'function'
+        && shouldSkipFastestFirstForMoveCount(moveCount));
+    let sawPassCandidate = false;
+
+    if (useFastestFirst) {
+      if (typeof fastestFirstSortsStatKey === 'string' && Object.hasOwn(this.stats, fastestFirstSortsStatKey)) {
+        this.stats[fastestFirstSortsStatKey] += 1;
+      }
+      for (let index = 0; index < moveCount; index += 1) {
+        const slot = buffer[index];
+        const opponentMoveCount = popcount(legalMovesBitboard(slot.nextOpponentBoard, slot.nextPlayerBoard));
+        slot.opponentMoveCount = opponentMoveCount;
+        if (opponentMoveCount === 0) {
+          sawPassCandidate = true;
+        }
+      }
+      if (sawPassCandidate
+        && typeof fastestFirstPassCandidatesStatKey === 'string'
+        && Object.hasOwn(this.stats, fastestFirstPassCandidatesStatKey)) {
+        this.stats[fastestFirstPassCandidatesStatKey] += 1;
+      }
+    } else if (exactFastestFirstEligible
+      && moveCount > 0
+      && typeof fastestFirstSelectiveSkipsStatKey === 'string'
+      && Object.hasOwn(this.stats, fastestFirstSelectiveSkipsStatKey)) {
+      this.stats[fastestFirstSelectiveSkipsStatKey] += 1;
+    }
+
+    for (let index = 1; index < moveCount; index += 1) {
+      let insertIndex = index;
+      while (insertIndex > 0
+        && compareFewEmptiesExactMoveSlots(buffer[insertIndex], buffer[insertIndex - 1], useFastestFirst) < 0) {
+        const previous = buffer[insertIndex - 1];
+        buffer[insertIndex - 1] = buffer[insertIndex];
+        buffer[insertIndex] = previous;
+        insertIndex -= 1;
+      }
+    }
+
+    return moveCount;
+  }
+
+  populateFewEmptiesExactMoveBuffer(player, opponent, emptyBits, empties, targetBuffer = null) {
+    return this.populateFewEmptiesMoveBuffer(player, opponent, emptyBits, empties, {
+      targetBuffer,
+      shouldSkipFastestFirstForMoveCount: (moveCount) => this.shouldSkipFewEmptiesExactFastestFirstForMoveCount(moveCount),
+      fastestFirstSortsStatKey: 'optimizedFewEmptiesFastestFirstSorts',
+      fastestFirstPassCandidatesStatKey: 'optimizedFewEmptiesFastestFirstPassCandidates',
+      fastestFirstSelectiveSkipsStatKey: 'optimizedFewEmptiesFastestFirstSelectiveSkips',
+    });
+  }
+
+  solveLightweightFewEmptiesExactBoards(player, opponent, emptyBits, empties, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.recordLightweightFewEmptiesCall(empties);
+
+    if (emptyBits === 0n) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    const buffer = this.getFewEmptiesExactMoveBufferForEmpties(empties);
+    const moveCount = this.populateFewEmptiesExactMoveBuffer(player, opponent, emptyBits, empties, buffer);
+    let bestScore = -INFINITY;
+    let localAlpha = alpha;
+
+    for (let index = 0; index < moveCount; index += 1) {
+      const move = buffer[index];
+      const score = -this.solveSmallExactBoards(
+        move.nextOpponentBoard,
+        move.nextPlayerBoard,
+        move.remainingEmptyBits,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (moveCount > 0) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallExactBoards(opponent, player, emptyBits, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  populateFewEmptiesWldMoveBuffer(player, opponent, emptyBits, empties, targetBuffer = null) {
+    return this.populateFewEmptiesMoveBuffer(player, opponent, emptyBits, empties, {
+      targetBuffer,
+      shouldSkipFastestFirstForMoveCount: (moveCount) => this.shouldSkipFewEmptiesWldFastestFirstForMoveCount(moveCount),
+      fastestFirstSortsStatKey: 'optimizedFewEmptiesWldFastestFirstSorts',
+      fastestFirstPassCandidatesStatKey: 'optimizedFewEmptiesWldFastestFirstPassCandidates',
+      fastestFirstSelectiveSkipsStatKey: 'optimizedFewEmptiesWldFastestFirstSelectiveSkips',
+    });
+  }
+
+  solveLightweightFewEmptiesWldBoards(player, opponent, emptyBits, empties, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.recordLightweightFewEmptiesWldCall(empties);
+
+    if (emptyBits === 0n) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    const buffer = this.getFewEmptiesExactMoveBufferForEmpties(empties);
+    const moveCount = this.populateFewEmptiesWldMoveBuffer(player, opponent, emptyBits, empties, buffer);
+    let bestScore = -INFINITY;
+    let localAlpha = alpha;
+
+    for (let index = 0; index < moveCount; index += 1) {
+      const move = buffer[index];
+      const score = -this.solveSmallWldBoards(
+        move.nextOpponentBoard,
+        move.nextPlayerBoard,
+        move.remainingEmptyBits,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (moveCount > 0) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallWldBoards(opponent, player, emptyBits, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  isSpecializedFewEmptiesExactSolverEnabled() {
+    return this.isOptimizedFewEmptiesExactSolverEnabled()
+      && this.options.specializedFewEmptiesExactSolver !== false;
+  }
+
+  isSpecializedFewEmptiesLastFlipPathEnabled() {
+    return this.isSpecializedFewEmptiesExactSolverEnabled()
+      && this.options.specializedFewEmptiesLastFlipPath !== false;
+  }
+
+  isExactFastestFirstOrderingEnabled() {
+    return this.options.exactFastestFirstOrdering !== false;
+  }
+
+  isFewEmptiesExactFastestFirstSelectiveGateEnabled() {
+    return this.options.fewEmptiesExactFastestFirstSelectiveGate !== false;
+  }
+
+  shouldSkipFewEmptiesExactFastestFirstForMoveCount(moveCount) {
+    return this.isFewEmptiesExactFastestFirstSelectiveGateEnabled()
+      && Number.isInteger(moveCount)
+      && moveCount > 0
+      && moveCount < EXACT_FASTEST_FIRST_MIN_LEGAL_MOVES;
+  }
+
+  isFewEmptiesWldFastestFirstSelectiveGateEnabled() {
+    return this.options.fewEmptiesWldFastestFirstSelectiveGate !== false;
+  }
+
+  shouldSkipFewEmptiesWldFastestFirstForMoveCount(moveCount) {
+    return this.isFewEmptiesWldFastestFirstSelectiveGateEnabled()
+      && Number.isInteger(moveCount)
+      && moveCount > 0
+      && moveCount < EXACT_FASTEST_FIRST_MIN_LEGAL_MOVES;
+  }
+
+  recordSpecializedFewEmptiesCall(empties) {
+    this.stats.specializedFewEmptiesCalls += 1;
+    const stageKey = `specializedFewEmpties${Math.max(1, Math.min(4, empties))}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  recordSpecializedFewEmptiesLastFlipCall() {
+    this.stats.specializedFewEmptiesLastFlipCalls += 1;
+  }
+
+  isMtdfSelectiveSuppressionContextActive() {
+    const mode = this.activeRootSearchContext?.mode ?? null;
+    return mode === 'mtdf-zero-window'
+      || mode === 'mtdf-verification'
+      || mode === 'mtdf-full-window-fallback';
+  }
+
+  isEnhancedTranspositionCutoffEnabled(bucket = 'exact') {
+    if (this.isMtdfSelectiveSuppressionContextActive()) {
+      return false;
+    }
+
+    return bucket === 'wld'
+      ? this.options.enhancedTranspositionCutoffWld !== false
+      : this.options.enhancedTranspositionCutoff !== false;
+  }
+
+  storeRootProgressSnapshot(rootMoves, bestMoveIndex, bestScore, bestPv, analyzedMoves) {
+    if (!Number.isInteger(bestMoveIndex) || !Number.isFinite(bestScore) || analyzedMoves.length === 0) {
+      return;
+    }
+
+    const sortedAnalyzedMoves = analyzedMoves
+      .map((move) => ({
+        ...move,
+        principalVariation: Array.isArray(move.principalVariation)
+          ? [...move.principalVariation]
+          : [],
+      }))
+      .sort((left, right) => right.score - left.score);
+    const bestAnalyzedMove = sortedAnalyzedMoves.find((move) => move.index === bestMoveIndex) ?? sortedAnalyzedMoves[0] ?? null;
+    if (!bestAnalyzedMove) {
+      return;
+    }
+
+    this.rootProgressSnapshot = {
+      bestMoveIndex,
+      bestMoveCoord: bestAnalyzedMove.coord ?? null,
+      score: bestScore,
+      principalVariation: [...bestPv],
+      analyzedMoves: sortedAnalyzedMoves,
+      didPass: false,
+      searchCompletion: 'partial-timeout',
+      rootAnalyzedMoveCount: analyzedMoves.length,
+      rootLegalMoveCount: rootMoves.length,
+    };
+  }
+
+  getRootProgressSnapshot() {
+    return cloneSearchResult(this.rootProgressSnapshot);
+  }
+
+  withActiveRootSearchContext(rootSearchContext, callback) {
+    const previousRootSearchContext = this.activeRootSearchContext ?? null;
+    this.activeRootSearchContext = rootSearchContext ?? null;
+    try {
+      return callback();
+    } finally {
+      this.activeRootSearchContext = previousRootSearchContext;
+    }
+  }
+
+  resolveReusableRootMoveOrdering(rootSearchContext, ttMoveIndex) {
+    const orderingCache = rootSearchContext?.rootOrderingCache ?? null;
+    const cachedMoves = Array.isArray(orderingCache?.orderedMoves)
+      ? orderingCache.orderedMoves
+      : null;
+    if (!cachedMoves || cachedMoves.length === 0) {
+      if (orderingCache) {
+        this.stats.mtdfRootOrderingCacheMisses += 1;
+      }
+      return null;
+    }
+
+    this.stats.mtdfRootOrderingCacheHits += 1;
+    if (!Number.isInteger(ttMoveIndex)) {
+      return {
+        preferredMove: null,
+        remainingMoves: cachedMoves,
+      };
+    }
+
+    const headMove = cachedMoves[0] ?? null;
+    if (headMove?.index === ttMoveIndex) {
+      return {
+        preferredMove: headMove,
+        remainingMoves: cachedMoves.length > 1 ? cachedMoves.slice(1) : [],
+      };
+    }
+
+    const preferredIndex = cachedMoves.findIndex((move) => move?.index === ttMoveIndex);
+    if (preferredIndex < 0) {
+      return {
+        preferredMove: null,
+        remainingMoves: cachedMoves,
+      };
+    }
+
+    const [preferredMove] = cachedMoves.splice(preferredIndex, 1);
+    cachedMoves.unshift(preferredMove);
+    this.stats.mtdfRootOrderingCachePromotions += 1;
+    return {
+      preferredMove,
+      remainingMoves: cachedMoves.length > 1 ? cachedMoves.slice(1) : [],
+    };
+  }
+
+  storeReusableRootMoveOrdering(rootSearchContext, preferredMove, orderedMoves) {
+    const orderingCache = rootSearchContext?.rootOrderingCache ?? null;
+    if (!orderingCache) {
+      return;
+    }
+
+    const cachedMoves = [];
+    if (preferredMove) {
+      cachedMoves.push(preferredMove);
+    }
+    if (Array.isArray(orderedMoves) && orderedMoves.length > 0) {
+      cachedMoves.push(...orderedMoves);
+    }
+    orderingCache.orderedMoves = cachedMoves;
+  }
+
+  trimTranspositionTable(forceClear = false) {
+    if (forceClear) {
+      const removed = this.transpositionTable.size;
+      this.transpositionTable.clear();
+      if (this.stats) {
+        this.stats.ttEvictions += removed;
+      }
+      return;
+    }
+
+    const maxEntries = Math.max(1000, Math.floor(this.options.maxTableEntries ?? 1000));
+    if (this.transpositionTable.size <= maxEntries) {
+      return;
+    }
+
+    const batchSize = Math.max(64, Math.floor(maxEntries * 0.12));
+    const targetSize = Math.max(0, maxEntries - batchSize);
+    const keysToDelete = [];
+    const queued = new Set();
+    const requiredRemovals = this.transpositionTable.size - targetSize;
+    const ageOf = (entry) => Math.max(0, this.searchGeneration - (entry.generation ?? this.searchGeneration));
+    const queueMatchingEntries = (predicate) => {
+      if (keysToDelete.length >= requiredRemovals) {
+        return;
+      }
+
+      for (const [key, entry] of this.transpositionTable) {
+        if (keysToDelete.length >= requiredRemovals) {
+          break;
+        }
+        if (queued.has(key)) {
+          continue;
+        }
+        if (!predicate(entry, ageOf(entry))) {
+          continue;
+        }
+
+        queued.add(key);
+        keysToDelete.push(key);
+      }
+    };
+
+    queueMatchingEntries((entry, age) => age >= 2 && entry.flag !== 'exact' && (entry.depth ?? 0) <= 4);
+    queueMatchingEntries((entry, age) => age >= 2 && entry.flag !== 'exact');
+    queueMatchingEntries((entry, age) => age >= 1 && entry.flag !== 'exact' && (entry.depth ?? 0) <= 2);
+    queueMatchingEntries((entry, age) => age >= 2 && (entry.depth ?? 0) <= 4);
+    queueMatchingEntries((entry, age) => age >= 1 && entry.flag !== 'exact');
+
+    if (keysToDelete.length < requiredRemovals) {
+      for (const key of this.transpositionTable.keys()) {
+        if (keysToDelete.length >= requiredRemovals) {
+          break;
+        }
+        if (queued.has(key)) {
+          continue;
+        }
+
+        queued.add(key);
+        keysToDelete.push(key);
+      }
+    }
+
+    for (const key of keysToDelete) {
+      this.transpositionTable.delete(key);
+    }
+
+    if (this.stats) {
+      this.stats.ttEvictions += keysToDelete.length;
+    }
+  }
+
+  checkDeadline() {
+    if (now() >= this.deadlineMs) {
+      throw new SearchTimeoutError();
+    }
+  }
+
+  exactTerminalScoreFromBoards(player, opponent) {
+    return (popcount(player) - popcount(opponent)) * 10000;
+  }
+
+  exactTerminalScoreFromDiskDiff(diskDiff) {
+    return Number(diskDiff) * 10000;
+  }
+
+  normalizeWldScore(score) {
+    if (score > 0) {
+      return WLD_RESULT_SCORE;
+    }
+    if (score < 0) {
+      return -WLD_RESULT_SCORE;
+    }
+    return 0;
+  }
+
+  wldTerminalScoreFromBoards(player, opponent) {
+    return this.normalizeWldScore(popcount(player) - popcount(opponent));
+  }
+
+  wldTerminalScoreFromDiskDiff(diskDiff) {
+    return this.normalizeWldScore(Number(diskDiff));
+  }
+
+  describeWldOutcome(score) {
+    if (score > 0) {
+      return 'win';
+    }
+    if (score < 0) {
+      return 'loss';
+    }
+    return 'draw';
+  }
+
+  solveStateForMcts(state, rootPlayer) {
+    if (!this.options?.mctsSolverEnabled || !(state instanceof GameState)) {
+      return null;
+    }
+
+    const exactThreshold = Math.max(0, Math.round(Number(this.options?.exactEndgameEmpties ?? 0)));
+    const wldThreshold = exactThreshold + Math.max(0, Math.round(Number(this.options?.mctsSolverWldEmpties ?? 0)));
+    const empties = typeof state.getEmptyCount === 'function' ? state.getEmptyCount() : Number.POSITIVE_INFINITY;
+    if (!Number.isFinite(empties) || empties > wldThreshold) {
+      return null;
+    }
+
+    if (empties <= exactThreshold) {
+      const exactResult = this.negamax(state, empties + 1, -INFINITY, INFINITY, 1, true);
+      const rootScore = state.currentPlayer === rootPlayer
+        ? exactResult.score
+        : -exactResult.score;
+      return {
+        bucket: 'exact',
+        exact: true,
+        score: rootScore,
+        reward: clamp(rootScore / (64 * 10000), -1, 1),
+        outcome: this.describeWldOutcome(rootScore),
+        principalVariation: [...(exactResult.principalVariation ?? [])],
+      };
+    }
+
+    const wldResult = this.wldNegamax(state, -WLD_RESULT_SCORE, WLD_RESULT_SCORE, 1);
+    const rootScore = state.currentPlayer === rootPlayer
+      ? wldResult.score
+      : -wldResult.score;
+    const drawAwareScoreBounds = this.options?.mctsScoreBoundsEnabled === true && rootScore === 0;
+    return {
+      bucket: drawAwareScoreBounds ? 'exact' : 'wld',
+      exact: drawAwareScoreBounds,
+      score: rootScore,
+      reward: rootScore > 0 ? 1 : (rootScore < 0 ? -1 : 0),
+      outcome: this.describeWldOutcome(rootScore),
+      principalVariation: [...(wldResult.principalVariation ?? [])],
+    };
+  }
+
+  scoreFewEmptiesExactMove(index) {
+    let score = 0;
+
+    if (CORNER_INDEX_SET.has(index)) {
+      score += 8_000_000;
+    }
+
+    score += POSITIONAL_WEIGHTS[index] * 12_000;
+
+    const riskType = getPositionalRisk(index);
+    if (riskType === 'x-square') {
+      score -= 1_600_000;
+    } else if (riskType === 'c-square') {
+      score -= 900_000;
+    }
+
+    return score;
+  }
+
+  generateFewEmptiesExactMoves(player, opponent, emptyBits) {
+    const moves = [];
+    const empties = popcount(emptyBits);
+    const exactFastestFirstEligible = this.isExactFastestFirstOrderingEnabled()
+      && empties >= EXACT_FASTEST_FIRST_MIN_EMPTIES;
+    let cursor = emptyBits;
+
+    while (cursor !== 0n) {
+      const moveBit = cursor & -cursor;
+      cursor ^= moveBit;
+
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      const index = indexFromBit(moveBit);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+
+      moves.push({
+        index,
+        moveBit,
+        flips,
+        nextPlayerBoard,
+        nextOpponentBoard,
+        remainingEmptyBits: emptyBits & ~moveBit,
+        orderingScore: this.scoreFewEmptiesExactMove(index),
+        opponentMoveCount: null,
+      });
+    }
+
+    const useFastestFirst = exactFastestFirstEligible
+      && !this.shouldSkipFewEmptiesExactFastestFirstForMoveCount(moves.length);
+    if (useFastestFirst) {
+      this.stats.optimizedFewEmptiesFastestFirstSorts += 1;
+      for (const move of moves) {
+        move.opponentMoveCount = popcount(legalMovesBitboard(move.nextOpponentBoard, move.nextPlayerBoard));
+      }
+      if (moves.some((move) => move.opponentMoveCount === 0)) {
+        this.stats.optimizedFewEmptiesFastestFirstPassCandidates += 1;
+      }
+    } else if (exactFastestFirstEligible && moves.length > 0) {
+      this.stats.optimizedFewEmptiesFastestFirstSelectiveSkips += 1;
+    }
+
+    moves.sort((left, right) => compareFewEmptiesExactMoveSlots(left, right, useFastestFirst));
+
+    return moves;
+  }
+
+  orderSpecializedFewEmptiesIndices(indices) {
+    if (!Array.isArray(indices) || indices.length <= 1) {
+      return Array.isArray(indices) ? [...indices] : [];
+    }
+
+    const ranked = indices.map((index) => ({
+      index,
+      squareScore: this.scoreFewEmptiesExactMove(index),
+    }));
+
+    ranked.sort((left, right) => {
+      if (right.squareScore !== left.squareScore) {
+        return right.squareScore - left.squareScore;
+      }
+      return left.index - right.index;
+    });
+
+    return ranked.map((entry) => entry.index);
+  }
+
+  solveSpecializedFewEmptiesExactBoards(player, opponent, emptyBits, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    if (this.isSpecializedFewEmptiesLastFlipPathEnabled()) {
+      let x1 = -1;
+      let x2 = -1;
+      let x3 = -1;
+      let x4 = -1;
+      let count = 0;
+      let cursor = emptyBits;
+
+      while (cursor !== 0n) {
+        const moveBit = cursor & -cursor;
+        cursor ^= moveBit;
+        const moveIndex = indexFromBit(moveBit);
+        if (count === 0) {
+          x1 = moveIndex;
+        } else if (count === 1) {
+          x2 = moveIndex;
+        } else if (count === 2) {
+          x3 = moveIndex;
+        } else if (count === 3) {
+          x4 = moveIndex;
+        }
+        count += 1;
+      }
+
+      const diskDiff = popcount(player) - popcount(opponent);
+      switch (count) {
+        case 0:
+          return this.exactTerminalScoreFromDiskDiff(diskDiff);
+        case 1:
+          return this.solveSpecializedExact1WithDiskDiff(player, opponent, x1, diskDiff, consecutivePasses);
+        case 2:
+          return this.solveSpecializedExact2WithDiskDiff(player, opponent, x1, x2, diskDiff, consecutivePasses, alpha, beta);
+        case 3:
+          return this.solveSpecializedExact3WithDiskDiff(player, opponent, x1, x2, x3, diskDiff, consecutivePasses, alpha, beta);
+        case 4:
+          return this.solveSpecializedExact4WithDiskDiff(player, opponent, x1, x2, x3, x4, diskDiff, consecutivePasses, alpha, beta);
+        default:
+          return this.solveSmallExactBoards(player, opponent, emptyBits, consecutivePasses, alpha, beta);
+      }
+    }
+
+    const indices = bitsToIndices(emptyBits);
+
+    switch (indices.length) {
+      case 0:
+        return this.exactTerminalScoreFromBoards(player, opponent);
+      case 1:
+        return this.solveSpecializedExact1(player, opponent, indices[0], consecutivePasses);
+      case 2:
+        return this.solveSpecializedExact2(player, opponent, indices[0], indices[1], consecutivePasses, alpha, beta);
+      case 3:
+        return this.solveSpecializedExact3(player, opponent, indices[0], indices[1], indices[2], consecutivePasses, alpha, beta);
+      case 4:
+        return this.solveSpecializedExact4(player, opponent, indices[0], indices[1], indices[2], indices[3], consecutivePasses, alpha, beta);
+      default:
+        return this.solveSmallExactBoards(player, opponent, emptyBits, consecutivePasses, alpha, beta);
+    }
+  }
+
+  solveSpecializedExact1WithDiskDiff(player, opponent, x1, diskDiff, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(1);
+    this.recordSpecializedFewEmptiesLastFlipCall();
+
+    const flipCount = computeFlipCountAtIndex(x1, player, opponent);
+    if (flipCount > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff + 1 + (2 * flipCount));
+    }
+
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    const opponentFlipCount = computeFlipCountAtIndex(x1, opponent, player);
+    if (opponentFlipCount > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff - 1 - (2 * opponentFlipCount));
+    }
+
+    return this.exactTerminalScoreFromDiskDiff(diskDiff);
+  }
+
+  solveSpecializedExact2WithDiskDiff(player, opponent, x1, x2, diskDiff, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(2);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      firstIndex = x2;
+      secondIndex = x1;
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact1WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingIndex,
+        nextDiskDiff,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact1WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingIndex,
+        nextDiskDiff,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedExact2WithDiskDiff(opponent, player, x1, x2, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedExact3WithDiskDiff(player, opponent, x1, x2, x3, diskDiff, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(3);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    let thirdIndex = x3;
+    let swap = 0;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      swap = firstIndex;
+      firstIndex = secondIndex;
+      secondIndex = swap;
+    }
+    if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+      swap = secondIndex;
+      secondIndex = thirdIndex;
+      thirdIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+        swap = firstIndex;
+        firstIndex = secondIndex;
+        secondIndex = swap;
+      }
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = thirdIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedExact3WithDiskDiff(opponent, player, x1, x2, x3, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedExact4WithDiskDiff(player, opponent, x1, x2, x3, x4, diskDiff, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(4);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    let thirdIndex = x3;
+    let fourthIndex = x4;
+    let swap = 0;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      swap = firstIndex;
+      firstIndex = secondIndex;
+      secondIndex = swap;
+    }
+    if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+      swap = secondIndex;
+      secondIndex = thirdIndex;
+      thirdIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+        swap = firstIndex;
+        firstIndex = secondIndex;
+        secondIndex = swap;
+      }
+    }
+    if (compareSpecializedFewEmptiesIndices(fourthIndex, thirdIndex) < 0) {
+      swap = thirdIndex;
+      thirdIndex = fourthIndex;
+      fourthIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+        swap = secondIndex;
+        secondIndex = thirdIndex;
+        thirdIndex = swap;
+        if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+          swap = firstIndex;
+          firstIndex = secondIndex;
+          secondIndex = swap;
+        }
+      }
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = thirdIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = fourthIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedExact3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedExact4WithDiskDiff(opponent, player, x1, x2, x3, x4, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedExact1(player, opponent, x1, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(1);
+
+    const moveBit = bitFromIndex(x1);
+    const flips = computeFlips(moveBit, player, opponent);
+    if (flips !== 0n) {
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      return -this.exactTerminalScoreFromBoards(nextOpponentBoard, nextPlayerBoard);
+    }
+
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedExact1(opponent, player, x1, consecutivePasses + 1);
+  }
+
+  solveSpecializedExact2(player, opponent, x1, x2, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(2);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const score = -this.solveSpecializedExact1(nextOpponentBoard, nextPlayerBoard, remainingIndex, 0);
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedExact2(opponent, player, x1, x2, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedExact3(player, opponent, x1, x2, x3, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(3);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2, x3]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+
+      const score = -this.solveSpecializedExact2(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedExact3(opponent, player, x1, x2, x3, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedExact4(player, opponent, x1, x2, x3, x4, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesCall(4);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2, x3, x4]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+
+      const score = -this.solveSpecializedExact3(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedExact4(opponent, player, x1, x2, x3, x4, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  recordSpecializedFewEmptiesWldCall(empties) {
+    this.stats.specializedFewEmptiesWldCalls += 1;
+    const stageKey = `specializedFewEmptiesWld${Math.max(1, Math.min(4, empties))}Calls`;
+    if (Object.hasOwn(this.stats, stageKey)) {
+      this.stats[stageKey] += 1;
+    }
+  }
+
+  recordSpecializedFewEmptiesWldLastFlipCall() {
+    this.stats.specializedFewEmptiesWldLastFlipCalls += 1;
+  }
+
+  solveSpecializedFewEmptiesWldBoards(player, opponent, emptyBits, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    if (this.isSpecializedFewEmptiesWldLastFlipPathEnabled()) {
+      let x1 = -1;
+      let x2 = -1;
+      let x3 = -1;
+      let x4 = -1;
+      let count = 0;
+      let cursor = emptyBits;
+
+      while (cursor !== 0n) {
+        const moveBit = cursor & -cursor;
+        cursor ^= moveBit;
+        const moveIndex = indexFromBit(moveBit);
+        if (count === 0) {
+          x1 = moveIndex;
+        } else if (count === 1) {
+          x2 = moveIndex;
+        } else if (count === 2) {
+          x3 = moveIndex;
+        } else if (count === 3) {
+          x4 = moveIndex;
+        }
+        count += 1;
+      }
+
+      const diskDiff = popcount(player) - popcount(opponent);
+      switch (count) {
+        case 0:
+          return this.wldTerminalScoreFromDiskDiff(diskDiff);
+        case 1:
+          return this.solveSpecializedWld1WithDiskDiff(player, opponent, x1, diskDiff, consecutivePasses);
+        case 2:
+          return this.solveSpecializedWld2WithDiskDiff(player, opponent, x1, x2, diskDiff, consecutivePasses, alpha, beta);
+        case 3:
+          return this.solveSpecializedWld3WithDiskDiff(player, opponent, x1, x2, x3, diskDiff, consecutivePasses, alpha, beta);
+        case 4:
+          return this.solveSpecializedWld4WithDiskDiff(player, opponent, x1, x2, x3, x4, diskDiff, consecutivePasses, alpha, beta);
+        default:
+          return this.solveSmallWldBoards(player, opponent, emptyBits, consecutivePasses, alpha, beta);
+      }
+    }
+
+    const indices = bitsToIndices(emptyBits);
+
+    switch (indices.length) {
+      case 0:
+        return this.wldTerminalScoreFromBoards(player, opponent);
+      case 1:
+        return this.solveSpecializedWld1(player, opponent, indices[0], consecutivePasses);
+      case 2:
+        return this.solveSpecializedWld2(player, opponent, indices[0], indices[1], consecutivePasses, alpha, beta);
+      case 3:
+        return this.solveSpecializedWld3(player, opponent, indices[0], indices[1], indices[2], consecutivePasses, alpha, beta);
+      case 4:
+        return this.solveSpecializedWld4(player, opponent, indices[0], indices[1], indices[2], indices[3], consecutivePasses, alpha, beta);
+      default:
+        return this.solveSmallWldBoards(player, opponent, emptyBits, consecutivePasses, alpha, beta);
+    }
+  }
+
+  solveSpecializedWld1WithDiskDiff(player, opponent, x1, diskDiff, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(1);
+    this.recordSpecializedFewEmptiesWldLastFlipCall();
+
+    const flipCount = computeFlipCountAtIndex(x1, player, opponent);
+    if (flipCount > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff + 1 + (2 * flipCount));
+    }
+
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    const opponentFlipCount = computeFlipCountAtIndex(x1, opponent, player);
+    if (opponentFlipCount > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff - 1 - (2 * opponentFlipCount));
+    }
+
+    return this.wldTerminalScoreFromDiskDiff(diskDiff);
+  }
+
+  solveSpecializedWld2WithDiskDiff(player, opponent, x1, x2, diskDiff, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(2);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      firstIndex = x2;
+      secondIndex = x1;
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld1WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingIndex,
+        nextDiskDiff,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld1WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingIndex,
+        nextDiskDiff,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedWld2WithDiskDiff(opponent, player, x1, x2, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedWld3WithDiskDiff(player, opponent, x1, x2, x3, diskDiff, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(3);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    let thirdIndex = x3;
+    let swap = 0;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      swap = firstIndex;
+      firstIndex = secondIndex;
+      secondIndex = swap;
+    }
+    if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+      swap = secondIndex;
+      secondIndex = thirdIndex;
+      thirdIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+        swap = firstIndex;
+        firstIndex = secondIndex;
+        secondIndex = swap;
+      }
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = thirdIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld2WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedWld3WithDiskDiff(opponent, player, x1, x2, x3, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedWld4WithDiskDiff(player, opponent, x1, x2, x3, x4, diskDiff, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(4);
+
+    let firstIndex = x1;
+    let secondIndex = x2;
+    let thirdIndex = x3;
+    let fourthIndex = x4;
+    let swap = 0;
+    if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+      swap = firstIndex;
+      firstIndex = secondIndex;
+      secondIndex = swap;
+    }
+    if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+      swap = secondIndex;
+      secondIndex = thirdIndex;
+      thirdIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+        swap = firstIndex;
+        firstIndex = secondIndex;
+        secondIndex = swap;
+      }
+    }
+    if (compareSpecializedFewEmptiesIndices(fourthIndex, thirdIndex) < 0) {
+      swap = thirdIndex;
+      thirdIndex = fourthIndex;
+      fourthIndex = swap;
+      if (compareSpecializedFewEmptiesIndices(thirdIndex, secondIndex) < 0) {
+        swap = secondIndex;
+        secondIndex = thirdIndex;
+        thirdIndex = swap;
+        if (compareSpecializedFewEmptiesIndices(secondIndex, firstIndex) < 0) {
+          swap = firstIndex;
+          firstIndex = secondIndex;
+          secondIndex = swap;
+        }
+      }
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    let moveIndex = firstIndex;
+    let flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = secondIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = thirdIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    moveIndex = fourthIndex;
+    flips = computeFlipsAtIndex(moveIndex, player, opponent);
+    if (flips !== 0n) {
+      legalFound = true;
+      const moveBit = bitFromIndex(moveIndex);
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+      const nextDiskDiff = -(diskDiff + 1 + (2 * popcount(flips)));
+      const score = -this.solveSpecializedWld3WithDiskDiff(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        nextDiskDiff,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromDiskDiff(diskDiff);
+    }
+
+    return -this.solveSpecializedWld4WithDiskDiff(opponent, player, x1, x2, x3, x4, -diskDiff, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedWld1(player, opponent, x1, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(1);
+
+    const moveBit = bitFromIndex(x1);
+    const flips = computeFlips(moveBit, player, opponent);
+    if (flips !== 0n) {
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      return -this.wldTerminalScoreFromBoards(nextOpponentBoard, nextPlayerBoard);
+    }
+
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedWld1(opponent, player, x1, consecutivePasses + 1);
+  }
+
+  solveSpecializedWld2(player, opponent, x1, x2, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(2);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const remainingIndex = moveIndex === x1 ? x2 : x1;
+      const score = -this.solveSpecializedWld1(nextOpponentBoard, nextPlayerBoard, remainingIndex, 0);
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedWld2(opponent, player, x1, x2, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedWld3(player, opponent, x1, x2, x3, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(3);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2, x3]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+      }
+
+      const score = -this.solveSpecializedWld2(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedWld3(opponent, player, x1, x2, x3, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSpecializedWld4(player, opponent, x1, x2, x3, x4, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    this.recordSpecializedFewEmptiesWldCall(4);
+
+    const orderedIndices = this.orderSpecializedFewEmptiesIndices([x1, x2, x3, x4]);
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+
+    for (const moveIndex of orderedIndices) {
+      const moveBit = bitFromIndex(moveIndex);
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      let remainingA;
+      let remainingB;
+      let remainingC;
+      if (moveIndex === x1) {
+        remainingA = x2;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x2) {
+        remainingA = x1;
+        remainingB = x3;
+        remainingC = x4;
+      } else if (moveIndex === x3) {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x4;
+      } else {
+        remainingA = x1;
+        remainingB = x2;
+        remainingC = x3;
+      }
+
+      const score = -this.solveSpecializedWld3(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        remainingA,
+        remainingB,
+        remainingC,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSpecializedWld4(opponent, player, x1, x2, x3, x4, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSmallWldBoardsFullWidth(player, opponent, emptyBits, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+
+    if (emptyBits === 0n) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let cursor = emptyBits;
+
+    while (cursor !== 0n) {
+      const moveBit = cursor & -cursor;
+      cursor ^= moveBit;
+
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const score = -this.solveSmallWldBoardsFullWidth(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        emptyBits & ~moveBit,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+        if (bestScore >= WLD_RESULT_SCORE) {
+          return bestScore;
+        }
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallWldBoardsFullWidth(opponent, player, emptyBits, consecutivePasses + 1);
+  }
+
+  solveSmallWldBoards(player, opponent, emptyBits, consecutivePasses = 0, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    if (!this.isOptimizedFewEmptiesWldSolverEnabled()) {
+      return this.solveSmallWldBoardsFullWidth(player, opponent, emptyBits, consecutivePasses);
+    }
+
+    const empties = popcount(emptyBits);
+    if (empties <= SMALL_EXACT_SOLVER_EMPTIES) {
+      return this.solveSpecializedFewEmptiesWldBoards(
+        player,
+        opponent,
+        emptyBits,
+        consecutivePasses,
+        alpha,
+        beta,
+      );
+    }
+
+    this.checkDeadline();
+    this.stats.wldSmallSolverNodes += 1;
+    if (empties > SMALL_EXACT_SOLVER_EMPTIES) {
+      this.recordOptimizedFewEmptiesWldCall(empties);
+    }
+
+    if (emptyBits === 0n) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    if (this.shouldUseLightweightFewEmptiesWldMovePath(empties)) {
+      return this.solveLightweightFewEmptiesWldBoards(
+        player,
+        opponent,
+        emptyBits,
+        empties,
+        consecutivePasses,
+        alpha,
+        beta,
+      );
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+    let cursor = emptyBits;
+
+    while (cursor !== 0n) {
+      const moveBit = cursor & -cursor;
+      cursor ^= moveBit;
+
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const score = -this.solveSmallWldBoards(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        emptyBits & ~moveBit,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.wldTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallWldBoards(opponent, player, emptyBits, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSmallWld(state, alpha = -WLD_RESULT_SCORE, beta = WLD_RESULT_SCORE) {
+    this.stats.wldSmallSolverCalls += 1;
+    const { player, opponent } = state.getPlayerBoards();
+    return this.solveSmallWldBoards(
+      player,
+      opponent,
+      state.getEmptyBitboard(),
+      state.consecutivePasses,
+      alpha,
+      beta,
+    );
+  }
+
+  solveSmallExactBoardsFullWidth(player, opponent, emptyBits, consecutivePasses = 0) {
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+
+    if (emptyBits === 0n) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let cursor = emptyBits;
+
+    while (cursor !== 0n) {
+      const moveBit = cursor & -cursor;
+      cursor ^= moveBit;
+
+      const flips = computeFlips(moveBit, player, opponent);
+      if (flips === 0n) {
+        continue;
+      }
+
+      legalFound = true;
+      const nextPlayerBoard = player | moveBit | flips;
+      const nextOpponentBoard = opponent & ~flips;
+      const score = -this.solveSmallExactBoardsFullWidth(
+        nextOpponentBoard,
+        nextPlayerBoard,
+        emptyBits & ~moveBit,
+        0,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallExactBoardsFullWidth(opponent, player, emptyBits, consecutivePasses + 1);
+  }
+
+  solveSmallExactBoards(player, opponent, emptyBits, consecutivePasses = 0, alpha = -INFINITY, beta = INFINITY) {
+    if (!this.isOptimizedFewEmptiesExactSolverEnabled()) {
+      return this.solveSmallExactBoardsFullWidth(player, opponent, emptyBits, consecutivePasses);
+    }
+
+    const empties = popcount(emptyBits);
+    if (this.isSpecializedFewEmptiesExactSolverEnabled() && empties <= SMALL_EXACT_SOLVER_EMPTIES) {
+      return this.solveSpecializedFewEmptiesExactBoards(
+        player,
+        opponent,
+        emptyBits,
+        consecutivePasses,
+        alpha,
+        beta,
+      );
+    }
+
+    this.checkDeadline();
+    this.stats.smallSolverNodes += 1;
+    if (empties > SMALL_EXACT_SOLVER_EMPTIES) {
+      this.recordOptimizedFewEmptiesCall(empties);
+    }
+
+    if (emptyBits === 0n) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    if (this.shouldUseLightweightFewEmptiesExactMovePath(empties)) {
+      return this.solveLightweightFewEmptiesExactBoards(
+        player,
+        opponent,
+        emptyBits,
+        empties,
+        consecutivePasses,
+        alpha,
+        beta,
+      );
+    }
+
+    let bestScore = -INFINITY;
+    let legalFound = false;
+    let localAlpha = alpha;
+    const moves = this.generateFewEmptiesExactMoves(player, opponent, emptyBits);
+
+    for (const move of moves) {
+      legalFound = true;
+      const score = -this.solveSmallExactBoards(
+        move.nextOpponentBoard,
+        move.nextPlayerBoard,
+        move.remainingEmptyBits,
+        0,
+        -beta,
+        -localAlpha,
+      );
+
+      if (score > bestScore) {
+        bestScore = score;
+      }
+
+      if (score > localAlpha) {
+        localAlpha = score;
+      }
+
+      if (localAlpha >= beta) {
+        return bestScore;
+      }
+    }
+
+    if (legalFound) {
+      return bestScore;
+    }
+    if (consecutivePasses > 0) {
+      return this.exactTerminalScoreFromBoards(player, opponent);
+    }
+
+    return -this.solveSmallExactBoards(opponent, player, emptyBits, consecutivePasses + 1, -beta, -alpha);
+  }
+
+  solveSmallExact(state, alpha = -INFINITY, beta = INFINITY) {
+    this.stats.smallSolverCalls += 1;
+    const { player, opponent } = state.getPlayerBoards();
+    return this.solveSmallExactBoards(
+      player,
+      opponent,
+      state.getEmptyBitboard(),
+      state.consecutivePasses,
+      alpha,
+      beta,
+    );
+  }
+
+  pullPreferredMove(moves, preferredMoveIndex) {
+    if (!Number.isInteger(preferredMoveIndex)) {
+      return { preferredMove: null, remainingMoves: moves };
+    }
+
+    const useInPlaceExtraction = this.options.ttFirstInPlaceMoveExtraction !== false;
+    let preferredIndex = -1;
+
+    if (useInPlaceExtraction) {
+      for (let index = 0; index < moves.length; index += 1) {
+        if (moves[index]?.index === preferredMoveIndex) {
+          preferredIndex = index;
+          break;
+        }
+      }
+    } else {
+      preferredIndex = moves.findIndex((move) => move.index === preferredMoveIndex);
+    }
+
+    if (preferredIndex < 0) {
+      return { preferredMove: null, remainingMoves: moves };
+    }
+
+    const preferredMove = moves[preferredIndex];
+    if (!useInPlaceExtraction) {
+      const remainingMoves = [
+        ...moves.slice(0, preferredIndex),
+        ...moves.slice(preferredIndex + 1),
+      ];
+      return { preferredMove, remainingMoves };
+    }
+
+    for (let index = preferredIndex + 1; index < moves.length; index += 1) {
+      moves[index - 1] = moves[index];
+    }
+    moves.pop();
+
+    return { preferredMove, remainingMoves: moves };
+  }
+
+  createRootOpeningContext(bookHit, priorHit) {
+    const bookTotalWeight = bookHit?.totalWeight ?? 0;
+    const bookByMove = new Map((bookHit?.candidates ?? []).map((candidate) => [
+      candidate.moveIndex,
+      {
+        ...candidate,
+        share: bookTotalWeight > 0 ? candidate.weight / bookTotalWeight : 0,
+      },
+    ]));
+
+    const priorMoves = Array.isArray(priorHit?.moves) ? priorHit.moves : [];
+    const priorTotalCount = Math.max(
+      0,
+      Number.isFinite(priorHit?.totalCount)
+        ? priorHit.totalCount
+        : priorMoves.reduce((sum, move) => sum + (Number.isFinite(move?.count) ? move.count : 0), 0),
+    );
+    const finitePriorMoves = priorMoves.filter((move) => Number.isFinite(move?.priorScore));
+    const priorScoreWeightedSum = finitePriorMoves.reduce(
+      (sum, move) => sum + (move.priorScore * Math.max(1, Number.isFinite(move?.count) ? move.count : 1)),
+      0,
+    );
+    const priorScoreWeight = finitePriorMoves.reduce(
+      (sum, move) => sum + Math.max(1, Number.isFinite(move?.count) ? move.count : 1),
+      0,
+    );
+    const priorMeanScore = priorScoreWeight > 0 ? priorScoreWeightedSum / priorScoreWeight : 0;
+    const priorByMove = new Map(priorMoves.map((move) => [
+      move.moveIndex,
+      {
+        ...move,
+        share: priorTotalCount > 0 ? (move.count ?? 0) / priorTotalCount : 0,
+        priorScoreDelta: Number.isFinite(move?.priorScore) ? move.priorScore - priorMeanScore : 0,
+      },
+    ]));
+
+    return {
+      bookHit,
+      priorHit,
+      bookByMove,
+      bookWeights: bookByMove.size > 0
+        ? new Map([...bookByMove.values()].map((candidate) => [candidate.moveIndex, candidate.weight]))
+        : null,
+      bookTotalWeight,
+      bookCoverage: openingEvidenceCoverage(bookTotalWeight),
+      priorByMove,
+      priorTotalCount,
+      priorCandidateCount: priorMoves.length,
+      priorCoverage: openingEvidenceCoverage(priorTotalCount),
+      priorMeanScore,
+      priorBestScore: priorMoves.length > 0
+        ? Math.max(...priorMoves.map((move) => (Number.isFinite(move?.priorScore) ? move.priorScore : -INFINITY)))
+        : null,
+    };
+  }
+
+  getOpeningPriorContradiction(state, selection = null, openingContext = null) {
+    const tuning = this.openingTuning ?? resolveOpeningHybridTuning();
+    const minPly = Number.isFinite(tuning?.priorContradictionVetoMinPly)
+      ? Math.max(0, Math.round(tuning.priorContradictionVetoMinPly))
+      : (OPENING_BOOK_DIRECT_USE_MAX_PLY + 1);
+    if ((state?.moveHistory.length ?? 0) < minPly) {
+      return null;
+    }
+
+    const topCandidate = selection?.scoredCandidates?.[0] ?? null;
+    const priorBest = openingContext?.priorHit?.moves?.[0] ?? null;
+    if (!topCandidate || !priorBest) {
+      return null;
+    }
+    if (topCandidate.index === priorBest.moveIndex) {
+      return null;
+    }
+
+    const priorTotalCount = Math.max(
+      0,
+      Number.isFinite(openingContext?.priorTotalCount) ? openingContext.priorTotalCount : 0,
+    );
+    const minCount = Number.isFinite(tuning?.priorContradictionVetoMinCount)
+      ? Math.max(0, Math.round(tuning.priorContradictionVetoMinCount))
+      : Number.POSITIVE_INFINITY;
+    if (priorTotalCount < minCount) {
+      return null;
+    }
+
+    const selectedPriorRank = Number.isFinite(topCandidate.priorRank)
+      ? topCandidate.priorRank
+      : Number.POSITIVE_INFINITY;
+    const minRank = Number.isFinite(tuning?.priorContradictionVetoMinRank)
+      ? Math.max(2, Math.round(tuning.priorContradictionVetoMinRank))
+      : Number.POSITIVE_INFINITY;
+    if (selectedPriorRank < minRank) {
+      return null;
+    }
+
+    const selectedPriorShare = Number.isFinite(topCandidate.priorShare) ? topCandidate.priorShare : 0;
+    const bestPriorShare = Number.isFinite(priorBest.share) ? priorBest.share : 0;
+    const shareDelta = bestPriorShare - selectedPriorShare;
+    const minShareDelta = Number.isFinite(tuning?.priorContradictionVetoMinShareDelta)
+      ? Math.max(0, tuning.priorContradictionVetoMinShareDelta)
+      : 1;
+    if (shareDelta < minShareDelta) {
+      return null;
+    }
+
+    return {
+      selectedMoveIndex: topCandidate.index,
+      selectedMoveCoord: topCandidate.coord,
+      selectedPriorRank: Number.isFinite(selectedPriorRank) ? selectedPriorRank : null,
+      selectedPriorShare,
+      bestMoveIndex: priorBest.moveIndex,
+      bestMoveCoord: priorBest.coord,
+      bestPriorRank: Number.isFinite(priorBest.rank) ? priorBest.rank : 1,
+      bestPriorShare,
+      shareDelta,
+      priorTotalCount,
+    };
+  }
+
+  getOpeningBookDirectDecision(state, bookHit, selection = null, openingContext = null) {
+    if (!bookHit || bookHit.candidateCount === 0 || !selection?.scoredCandidates?.length) {
+      return { allowDirect: false, reason: 'no-candidate', contradiction: null };
+    }
+
+    const tuning = this.openingTuning ?? resolveOpeningHybridTuning();
+    const directUseMaxPly = Math.min(
+      OPENING_BOOK_DIRECT_USE_MAX_PLY,
+      Number.isFinite(tuning?.directUseMaxPly) ? tuning.directUseMaxPly : OPENING_BOOK_DIRECT_USE_MAX_PLY,
+    );
+    if (directUseMaxPly < 0 || state.moveHistory.length > directUseMaxPly) {
+      return { allowDirect: false, reason: 'ply-cap', contradiction: null };
+    }
+
+    const contradiction = this.getOpeningPriorContradiction(state, selection, openingContext);
+    if (state.moveHistory.length <= (tuning?.directAlwaysUseMaxPly ?? -1)) {
+      return contradiction
+        ? { allowDirect: false, reason: 'prior-contradiction', contradiction }
+        : { allowDirect: true, reason: 'always-use', contradiction: null };
+    }
+
+    const [topCandidate, secondCandidate] = selection.scoredCandidates;
+    if (!topCandidate) {
+      return { allowDirect: false, reason: 'no-candidate', contradiction: null };
+    }
+
+    let allowDirect = false;
+    if (!secondCandidate) {
+      allowDirect = (topCandidate.weight ?? 0) >= (tuning?.singleMoveMinWeight ?? 1)
+        || (
+          (topCandidate.priorCount ?? 0) >= (tuning?.singleMovePriorSupportMinCount ?? 0)
+          && (topCandidate.priorShare ?? 0) >= (tuning?.singleMovePriorSupportMinShare ?? 1)
+        )
+        || (
+          (topCandidate.priorCount ?? 0) >= (tuning?.singleMoveElitePriorSupportMinCount ?? Number.POSITIVE_INFINITY)
+          && (topCandidate.priorShare ?? 0) >= (tuning?.singleMoveElitePriorSupportMinShare ?? 1)
+        );
+    } else {
+      const scoreGap = Number.isFinite(selection.scoreGap)
+        ? selection.scoreGap
+        : (topCandidate.score - secondCandidate.score);
+      if (scoreGap >= (tuning?.highConfidenceScoreGap ?? 0)) {
+        allowDirect = true;
+      }
+      if (
+        !allowDirect
+        && scoreGap >= (tuning?.mediumConfidenceScoreGap ?? 0)
+        && (topCandidate.bookShare ?? 0) >= (tuning?.mediumBookShare ?? 1)
+      ) {
+        allowDirect = true;
+      }
+      if (
+        !allowDirect
+        && scoreGap >= (tuning?.priorSupportScoreGap ?? 0)
+        && (topCandidate.bookShare ?? 0) >= (tuning?.priorSupportBookShare ?? 1)
+        && (topCandidate.priorCount ?? 0) >= (tuning?.priorSupportMinCount ?? 0)
+        && (topCandidate.priorShare ?? 0) >= (tuning?.priorSupportMinShare ?? 1)
+      ) {
+        allowDirect = true;
+      }
+    }
+
+    if (!allowDirect) {
+      return { allowDirect: false, reason: 'low-confidence', contradiction: null };
+    }
+    if (contradiction) {
+      return { allowDirect: false, reason: 'prior-contradiction', contradiction };
+    }
+    return { allowDirect: true, reason: 'confidence', contradiction: null };
+  }
+
+  shouldUseOpeningBookDirect(state, bookHit, selection = null, openingContext = null) {
+    return this.getOpeningBookDirectDecision(state, bookHit, selection, openingContext).allowDirect;
+  }
+
+  describeOpeningPriorContradiction(contradiction = null) {
+    if (!contradiction) {
+      return null;
+    }
+
+    return {
+      selectedMoveCoord: contradiction.selectedMoveCoord,
+      selectedPriorRank: contradiction.selectedPriorRank,
+      selectedPriorShare: contradiction.selectedPriorShare,
+      bestMoveCoord: contradiction.bestMoveCoord,
+      bestPriorRank: contradiction.bestPriorRank,
+      bestPriorShare: contradiction.bestPriorShare,
+      shareDelta: contradiction.shareDelta,
+      priorTotalCount: contradiction.priorTotalCount,
+    };
+  }
+
+  describeBookHit(bookHit, selectedMoveIndex = null, usedDirectly = false) {
+    const matchedCandidate = Number.isInteger(selectedMoveIndex)
+      ? bookHit.candidates.find((candidate) => candidate.moveIndex === selectedMoveIndex) ?? null
+      : null;
+
+    return {
+      usedDirectly,
+      depthPly: bookHit.depthPly,
+      candidateCount: bookHit.candidateCount,
+      totalWeight: bookHit.totalWeight,
+      topNames: bookHit.topNames.map((entry) => entry.name),
+      matchedMoveCoord: matchedCandidate?.coord ?? null,
+      matchedMoveWeight: matchedCandidate?.weight ?? 0,
+      matchedMoveShare: matchedCandidate && bookHit.totalWeight > 0
+        ? matchedCandidate.weight / bookHit.totalWeight
+        : 0,
+      matchedNames: matchedCandidate ? matchedCandidate.topNames.map((entry) => entry.name) : [],
+    };
+  }
+
+  describeOpeningPriorHit(priorHit, selectedMoveIndex = null, usedDirectly = false) {
+    if (!priorHit) {
+      return null;
+    }
+
+    const matchedMove = Number.isInteger(selectedMoveIndex)
+      ? priorHit.moves.find((move) => move.moveIndex === selectedMoveIndex) ?? null
+      : null;
+
+    return {
+      usedDirectly,
+      depthPly: priorHit.ply,
+      candidateCount: priorHit.moves.length,
+      totalCount: priorHit.totalCount,
+      matchedMoveCoord: matchedMove?.coord ?? null,
+      matchedMoveCount: matchedMove?.count ?? 0,
+      matchedMoveShare: matchedMove?.share ?? 0,
+      matchedMoveRank: matchedMove?.rank ?? null,
+      matchedMovePriorScore: matchedMove?.priorScore ?? null,
+      topMoves: priorHit.moves.slice(0, 3).map((move) => move.coord),
+    };
+  }
+
+  scoreMoveForOpeningSelection(state, move, openingContext = null) {
+    const bookCandidate = openingContext?.bookByMove?.get(move.index) ?? null;
+    const priorCandidate = openingContext?.priorByMove?.get(move.index) ?? null;
+    const tuning = this.openingTuning ?? resolveOpeningHybridTuning();
+    let score = 0;
+
+    if (bookCandidate) {
+      if ((openingContext?.bookHit?.candidateCount ?? 0) <= 1) {
+        score += 34 + Math.min(24, Math.log2((bookCandidate.weight ?? 0) + 1) * 2.4);
+      } else {
+        const averageShare = 1 / Math.max(1, openingContext?.bookHit?.candidateCount ?? 1);
+        score += ((bookCandidate.share ?? 0) - averageShare) * 120;
+        score += Math.min(26, Math.log2((bookCandidate.weight ?? 0) + 1) * 2.1);
+      }
+    }
+
+    if (priorCandidate) {
+      const averageShare = 1 / Math.max(1, openingContext?.priorCandidateCount ?? 1);
+      const priorOutcomeScore = clamp((priorCandidate.priorScoreDelta ?? 0) / 6000, -3, 3) * 14;
+      score += (openingContext?.priorCoverage ?? 0) * (tuning?.selectionPriorScale ?? 1) * (
+        ((priorCandidate.share ?? 0) - averageShare) * 110 + priorOutcomeScore
+      );
+    } else if ((openingContext?.priorCoverage ?? 0) >= 0.7 && (openingContext?.priorCandidateCount ?? 0) > 0) {
+      score -= 12 * openingContext.priorCoverage * (tuning?.selectionMissingPriorPenaltyScale ?? 1);
+    }
+
+    if (CORNER_INDEX_SET.has(move.index)) {
+      score += 22 * (this.options.cornerScale ?? 1);
+    }
+
+    score += POSITIONAL_WEIGHTS[move.index] * 0.85 * (this.options.positionalScale ?? 1);
+    score += (moveFlipCountForRecord(move) ?? 0) * 0.35;
+
+    const riskPenaltyScale = this.options.riskPenaltyScale ?? 1;
+    const riskType = getPositionalRisk(move.index);
+    if (riskType === 'x-square') {
+      score -= 9 * riskPenaltyScale;
+    } else if (riskType === 'c-square') {
+      score -= 5 * riskPenaltyScale;
+    }
+
+    const childState = this.applyPreparedMoveFast(state, move);
+    if (childState) {
+      const childBoards = childState.getPlayerBoards();
+      const opponentMovesBitboard = legalMovesBitboard(childBoards.player, childBoards.opponent);
+      const opponentMoveCount = popcount(opponentMovesBitboard);
+      const opponentCornerReplies = countCornerMoves(opponentMovesBitboard);
+      score -= opponentMoveCount * 0.75 * (this.options.mobilityScale ?? 1);
+      score -= opponentCornerReplies * 10 * (this.options.cornerAdjacencyScale ?? 1);
+      if (opponentMoveCount === 0) {
+        score += 12;
+      }
+    }
+
+    return Number(score.toFixed(2));
+  }
+
+  selectOpeningBookMove(state, legalMoves, bookHit, openingContext = null) {
+    const legalMoveMap = new Map(legalMoves.map((move) => [move.index, move]));
+    const scoredCandidates = bookHit.candidates
+      .map((candidate) => {
+        const move = legalMoveMap.get(candidate.moveIndex);
+        if (!move) {
+          return null;
+        }
+
+        const priorCandidate = openingContext?.priorByMove?.get(candidate.moveIndex) ?? null;
+        const score = this.scoreMoveForOpeningSelection(state, move, openingContext);
+        return {
+          index: candidate.moveIndex,
+          coord: candidate.coord,
+          score,
+          weight: candidate.weight,
+          bookShare: candidate.share ?? (bookHit.totalWeight > 0 ? candidate.weight / bookHit.totalWeight : 0),
+          priorCount: priorCandidate?.count ?? 0,
+          priorShare: priorCandidate?.share ?? 0,
+          priorRank: priorCandidate?.rank ?? null,
+          priorScore: priorCandidate?.priorScore ?? null,
+          topNames: candidate.topNames.map((entry) => entry.name),
+          flipCount: moveFlipCountForRecord(move) ?? null,
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => {
+        if (right.score !== left.score) {
+          return right.score - left.score;
+        }
+        if ((right.priorScore ?? -INFINITY) !== (left.priorScore ?? -INFINITY)) {
+          return (right.priorScore ?? -INFINITY) - (left.priorScore ?? -INFINITY);
+        }
+        if (right.weight !== left.weight) {
+          return right.weight - left.weight;
+        }
+        return left.coord.localeCompare(right.coord);
+      });
+
+    if (scoredCandidates.length === 0) {
+      return null;
+    }
+
+    return {
+      scoredCandidates,
+      chosen: chooseRandomBest(
+        scoredCandidates,
+        resolveOpeningSelectionRandomness(
+          this.options.openingRandomness ?? this.options.randomness ?? 0,
+          this.options,
+          scoredCandidates,
+        ),
+      ) ?? scoredCandidates[0],
+      scoreGap: scoredCandidates.length > 1
+        ? scoredCandidates[0].score - scoredCandidates[1].score
+        : Number.POSITIVE_INFINITY,
+    };
+  }
+
+  createOpeningBookResult(state, legalMoves, bookHit, openingContext, selection, startedAt) {
+    const resolvedSelection = selection ?? this.selectOpeningBookMove(state, legalMoves, bookHit, openingContext);
+    if (!resolvedSelection) {
+      return null;
+    }
+
+    this.stats.bookMoves += 1;
+    if (openingContext?.priorHit) {
+      this.stats.openingHybridDirectMoves += 1;
+    }
+    this.stats.elapsedMs = Math.round(now() - startedAt);
+
+    return {
+      bestMoveIndex: resolvedSelection.chosen.index,
+      bestMoveCoord: resolvedSelection.chosen.coord,
+      score: resolvedSelection.chosen.score,
+      principalVariation: [resolvedSelection.chosen.index],
+      analyzedMoves: resolvedSelection.scoredCandidates.map((candidate) => ({
+        index: candidate.index,
+        coord: candidate.coord,
+        score: candidate.score,
+        principalVariation: [candidate.index],
+        weight: candidate.weight,
+        bookShare: candidate.bookShare,
+        priorCount: candidate.priorCount,
+        priorShare: candidate.priorShare,
+        priorRank: candidate.priorRank,
+        priorScore: candidate.priorScore,
+        flipCount: moveFlipCountForRecord(candidate) ?? null,
+      })),
+      didPass: false,
+      stats: { ...this.stats },
+      options: this.createResultOptionsSnapshot(),
+      source: 'opening-book',
+      searchMode: 'opening-book',
+      searchCompletion: 'opening-book',
+      isExactResult: false,
+      rootEmptyCount: state.getEmptyCount(),
+      exactThreshold: this.options.exactEndgameEmpties,
+      bookHit: {
+        ...this.describeBookHit(bookHit, resolvedSelection.chosen.index, true),
+        chosenNames: resolvedSelection.chosen.topNames,
+        openingScoreGap: Number.isFinite(resolvedSelection.scoreGap) ? resolvedSelection.scoreGap : null,
+        matchedMovePriorShare: resolvedSelection.chosen.priorShare ?? 0,
+      },
+      ...(openingContext?.priorHit
+        ? { openingPriorHit: this.describeOpeningPriorHit(openingContext.priorHit, resolvedSelection.chosen.index, true) }
+        : {}),
+    };
+  }
+
+  buildRootFallback(state, legalMoves, openingContext = null) {
+    const orderedMoves = this.orderMoves(state, legalMoves, 0, 1, null, openingContext, 'general');
+    const analyzedMoves = [];
+
+    for (const move of orderedMoves) {
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        continue;
+      }
+
+      let fallbackState = outcome;
+      if (!fallbackState.isTerminal() && this.listSearchMoves(fallbackState, { ply: 1 }).length === 0) {
+        fallbackState = this.passSearchStateFast(fallbackState);
+      }
+
+      const score = fallbackState.isTerminal()
+        ? this.evaluator.evaluateTerminal(fallbackState, state.currentPlayer)
+        : this.evaluator.evaluate(fallbackState, state.currentPlayer);
+
+      analyzedMoves.push({
+        index: move.index,
+        coord: move.coord,
+        score,
+        principalVariation: [move.index],
+        flipCount: moveFlipCountForRecord(move) ?? null,
+      });
+    }
+
+    analyzedMoves.sort((left, right) => right.score - left.score);
+    const bestMove = analyzedMoves[0] ?? {
+      index: legalMoves[0].index,
+      coord: legalMoves[0].coord,
+      score: this.evaluator.evaluate(state, state.currentPlayer),
+      principalVariation: [legalMoves[0].index],
+      flipCount: moveFlipCountForRecord(legalMoves[0]) ?? null,
+    };
+
+    return {
+      bestMoveIndex: bestMove.index,
+      bestMoveCoord: bestMove.coord,
+      score: bestMove.score,
+      principalVariation: [...bestMove.principalVariation],
+      analyzedMoves,
+      didPass: false,
+      stats: { ...this.stats },
+      options: this.createResultOptionsSnapshot(),
+      source: 'search',
+      searchCompletion: 'heuristic-fallback',
+      rootAnalyzedMoveCount: analyzedMoves.length,
+      rootLegalMoveCount: legalMoves.length,
+    };
+  }
+
+  searchMctsRoot(state, legalMoves, algorithm = this.options.searchAlgorithm, optionOverrides = null) {
+    const normalizedAlgorithm = normalizeSearchAlgorithm(algorithm);
+    const runtimeOptions = optionOverrides && typeof optionOverrides === 'object'
+      ? { ...this.options, ...optionOverrides }
+      : this.options;
+    const sharedArgs = {
+      state,
+      legalMoves,
+      options: runtimeOptions,
+      stats: this.stats,
+      checkDeadline: () => this.checkDeadline(),
+      solveState: (solverState, rootPlayer) => this.solveStateForMcts(solverState, rootPlayer),
+    };
+
+    if (normalizedAlgorithm === 'mcts-guided') {
+      return runMctsGuidedSearch({
+        ...sharedArgs,
+        evaluator: this.evaluator,
+        moveOrderingEvaluator: this.moveOrderingEvaluator,
+        lookupOpeningPrior,
+      });
+    }
+
+    if (normalizedAlgorithm === 'mcts-hybrid') {
+      return runMctsHybridSearch({
+        ...sharedArgs,
+        evaluator: this.evaluator,
+        moveOrderingEvaluator: this.moveOrderingEvaluator,
+        lookupOpeningPrior,
+      });
+    }
+
+    return runMctsLiteSearch(sharedArgs);
+  }
+
+  searchMctsForcedPassRoot(passedState, algorithm = this.options.searchAlgorithm) {
+    const legalMoves = passedState.getLegalMoves();
+    const childResult = legalMoves.length > 0
+      ? this.searchMctsRoot(passedState, legalMoves, algorithm)
+      : null;
+    if (!childResult) {
+      return null;
+    }
+
+    return {
+      bestMoveIndex: null,
+      score: -childResult.score,
+      principalVariation: [...childResult.principalVariation],
+      analyzedMoves: [],
+      didPass: true,
+      searchCompletion: childResult.searchCompletion ?? 'complete',
+      rootAnalyzedMoveCount: 0,
+      rootLegalMoveCount: 0,
+    };
+  }
+
+  searchForcedPassRoot(passedState, depth, alpha, beta, rootExactEndgame) {
+    const childResult = this.negamax(passedState, Math.max(0, depth - 1), -beta, -alpha, 1, rootExactEndgame);
+    return {
+      bestMoveIndex: null,
+      score: -childResult.score,
+      principalVariation: childResult.principalVariation,
+      analyzedMoves: [],
+      didPass: true,
+      searchCompletion: 'complete',
+      rootAnalyzedMoveCount: 0,
+      rootLegalMoveCount: 0,
+    };
+  }
+
+  searchWldForcedPassRoot(passedState, depth, alpha, beta) {
+    const childResult = this.wldNegamax(passedState, -beta, -alpha, 1);
+    return {
+      bestMoveIndex: null,
+      score: -childResult.score,
+      principalVariation: childResult.principalVariation,
+      analyzedMoves: [],
+      didPass: true,
+      searchCompletion: 'complete',
+      rootAnalyzedMoveCount: 0,
+      rootLegalMoveCount: 0,
+    };
+  }
+
+  getClassicSearchDriver() {
+    const requestedDriver = typeof this.options?.classicSearchDriver === 'string'
+      ? this.options.classicSearchDriver
+      : DEFAULT_CLASSIC_SEARCH_DRIVER;
+    return CLASSIC_SEARCH_DRIVERS.includes(requestedDriver)
+      ? requestedDriver
+      : DEFAULT_CLASSIC_SEARCH_DRIVER;
+  }
+
+  resolveMtdfFirstGuess(depth, completedScoresByDepth) {
+    const configuredOffset = Number.isFinite(Number(this.options?.classicMtdfGuessPlyOffset))
+      ? Math.max(1, Math.min(MAX_CLASSIC_MTDF_GUESS_PLY_OFFSET, Math.round(Number(this.options.classicMtdfGuessPlyOffset))))
+      : DEFAULT_CLASSIC_MTDF_GUESS_PLY_OFFSET;
+    const preferredDepth = depth - configuredOffset;
+    const fallbackDepth = depth - 1;
+    const preferredGuess = preferredDepth >= 1 ? completedScoresByDepth[preferredDepth] : null;
+    const fallbackGuess = fallbackDepth >= 1 ? completedScoresByDepth[fallbackDepth] : null;
+    const guess = Number.isFinite(preferredGuess)
+      ? preferredGuess
+      : (Number.isFinite(fallbackGuess) ? fallbackGuess : 0);
+    return Math.round(guess);
+  }
+
+  runMtdfAtDepth(depth, guess, searchAtDepth) {
+    let score = Number.isFinite(Number(guess)) ? Math.round(Number(guess)) : 0;
+    let upperBound = INFINITY;
+    let lowerBound = -INFINITY;
+    let lastResult = null;
+    let passCount = 0;
+    const verificationEnabled = this.options?.classicMtdfVerificationPassEnabled !== false;
+    const rootOrderingCache = { depth, orderedMoves: null };
+
+    while (lowerBound < upperBound) {
+      this.checkDeadline();
+      if (passCount >= MAX_CLASSIC_MTDF_PASSES_PER_DEPTH) {
+        this.stats.mtdfFullWindowFallbacks += 1;
+        const fallbackResult = this.withActiveRootSearchContext({
+          mode: 'mtdf-full-window-fallback',
+          depth,
+          collectDetailedRootData: true,
+          rootOrderingCache,
+        }, () => searchAtDepth(depth, -INFINITY, INFINITY));
+        return {
+          ...fallbackResult,
+          mtdfPassCount: passCount,
+          mtdfLowerBound: lowerBound,
+          mtdfUpperBound: upperBound,
+          mtdfVerified: false,
+          mtdfFallbackToFullWindow: true,
+        };
+      }
+
+      const beta = score === lowerBound ? score + 1 : score;
+      const shouldCollectDetailedRootData = !verificationEnabled
+        && Number.isFinite(lowerBound)
+        && Number.isFinite(upperBound)
+        && (upperBound - lowerBound) <= 1;
+      if (shouldCollectDetailedRootData) {
+        this.stats.mtdfRootDetailPasses += 1;
+      } else {
+        this.stats.mtdfRootLightPasses += 1;
+      }
+
+      lastResult = this.withActiveRootSearchContext({
+        mode: 'mtdf-zero-window',
+        depth,
+        collectDetailedRootData: shouldCollectDetailedRootData,
+        rootOrderingCache,
+      }, () => searchAtDepth(depth, beta - 1, beta));
+      passCount += 1;
+      this.stats.mtdfPasses += 1;
+      score = lastResult.score;
+
+      if (score < beta) {
+        upperBound = score;
+        this.stats.mtdfFailLows += 1;
+      } else {
+        lowerBound = score;
+        this.stats.mtdfFailHighs += 1;
+      }
+    }
+
+    this.stats.mtdfConvergences += 1;
+    this.stats.mtdfMaxPassesPerDepth = Math.max(this.stats.mtdfMaxPassesPerDepth, passCount);
+
+    if (verificationEnabled && lastResult) {
+      try {
+        this.stats.mtdfVerificationPasses += 1;
+        const verifiedResult = this.withActiveRootSearchContext({
+          mode: 'mtdf-verification',
+          depth,
+          collectDetailedRootData: true,
+          rootOrderingCache,
+        }, () => searchAtDepth(depth, score - 1, score + 1));
+        return {
+          ...verifiedResult,
+          mtdfPassCount: passCount,
+          mtdfLowerBound: lowerBound,
+          mtdfUpperBound: upperBound,
+          mtdfVerified: true,
+          mtdfFallbackToFullWindow: false,
+        };
+      } catch (error) {
+        if (!(error instanceof SearchTimeoutError)) {
+          throw error;
+        }
+        this.stats.mtdfVerificationTimeouts += 1;
+        const timedOutSnapshot = this.getRootProgressSnapshot();
+        if (timedOutSnapshot) {
+          return {
+            ...timedOutSnapshot,
+            mtdfPassCount: passCount,
+            mtdfLowerBound: lowerBound,
+            mtdfUpperBound: upperBound,
+            mtdfVerified: false,
+            mtdfFallbackToFullWindow: false,
+          };
+        }
+      }
+    }
+
+    return {
+      ...(lastResult ?? {
+        bestMoveIndex: null,
+        score,
+        principalVariation: [],
+        analyzedMoves: [],
+        didPass: false,
+        searchCompletion: 'complete',
+        rootAnalyzedMoveCount: 0,
+        rootLegalMoveCount: 0,
+      }),
+      mtdfPassCount: passCount,
+      mtdfLowerBound: lowerBound,
+      mtdfUpperBound: upperBound,
+      mtdfVerified: false,
+      mtdfFallbackToFullWindow: false,
+    };
+  }
+
+  runIterativeDeepeningPvs(searchAtDepth) {
+    let lastCompleted = null;
+    let previousScore = 0;
+
+    for (let depth = 1; depth <= this.options.maxDepth; depth += 1) {
+      try {
+        this.checkDeadline();
+        let result;
+        const aspirationWindow = depth > 1 ? this.options.aspirationWindow : 0;
+
+        if (aspirationWindow > 0 && lastCompleted) {
+          const alpha = previousScore - aspirationWindow;
+          const beta = previousScore + aspirationWindow;
+          result = searchAtDepth(depth, alpha, beta);
+          if (result.score <= alpha || result.score >= beta) {
+            result = searchAtDepth(depth, -INFINITY, INFINITY);
+          }
+        } else {
+          result = searchAtDepth(depth, -INFINITY, INFINITY);
+        }
+
+        lastCompleted = result;
+        previousScore = result.score;
+        this.stats.completedDepth = depth;
+      } catch (error) {
+        if (error instanceof SearchTimeoutError) {
+          break;
+        }
+        throw error;
+      }
+    }
+
+    return lastCompleted;
+  }
+
+  runIterativeDeepeningMtdf(searchAtDepth) {
+    let lastCompleted = null;
+    const completedScoresByDepth = [];
+
+    for (let depth = 1; depth <= this.options.maxDepth; depth += 1) {
+      try {
+        this.checkDeadline();
+        const firstGuess = this.resolveMtdfFirstGuess(depth, completedScoresByDepth);
+        const result = this.runMtdfAtDepth(depth, firstGuess, searchAtDepth);
+        lastCompleted = result;
+        completedScoresByDepth[depth] = result.score;
+        this.stats.completedDepth = depth;
+      } catch (error) {
+        if (error instanceof SearchTimeoutError) {
+          break;
+        }
+        throw error;
+      }
+    }
+
+    return lastCompleted;
+  }
+
+  runIterativeDeepening(searchAtDepth) {
+    return this.getClassicSearchDriver() === 'mtdf'
+      ? this.runIterativeDeepeningMtdf(searchAtDepth)
+      : this.runIterativeDeepeningPvs(searchAtDepth);
+  }
+
+  runSingleDepthSearch(depth, searchAtDepth) {
+    try {
+      this.checkDeadline();
+      const result = searchAtDepth(depth, -INFINITY, INFINITY);
+      this.stats.completedDepth = depth;
+      return result;
+    } catch (error) {
+      if (error instanceof SearchTimeoutError) {
+        return this.getRootProgressSnapshot();
+      }
+      throw error;
+    }
+  }
+
+  findBestMove(state, overrides = {}) {
+    if (!(state instanceof GameState)) {
+      throw new TypeError('findBestMove expects a GameState instance.');
+    }
+
+    if (Object.keys(overrides).length > 0) {
+      this.updateOptions(overrides);
+    }
+
+    this.resetStats();
+    this.searchGeneration += 1;
+    this.trimTranspositionTable();
+    const startedAt = now();
+    this.deadlineMs = startedAt + this.options.timeLimitMs;
+    const rootEmptyCount = state.getEmptyCount();
+    const rootExactEndgame = rootEmptyCount <= this.options.exactEndgameEmpties;
+    const wldPreExactEmpties = this.options.wldPreExactEmpties ?? 0;
+    const rootWldEndgame = !rootExactEndgame
+      && wldPreExactEmpties > 0
+      && rootEmptyCount <= (this.options.exactEndgameEmpties + wldPreExactEmpties);
+    const searchAlgorithm = normalizeSearchAlgorithm(this.options.searchAlgorithm);
+    const rootClassicSearchDriver = (!rootExactEndgame && !rootWldEndgame && !isMctsSearchAlgorithm(searchAlgorithm))
+      ? this.getClassicSearchDriver()
+      : null;
+    const rootSearchMode = rootExactEndgame
+      ? 'exact-endgame'
+      : (rootWldEndgame ? 'wld-endgame' : (isMctsSearchAlgorithm(searchAlgorithm) ? searchAlgorithm : 'depth-limited'));
+    if (rootWldEndgame) {
+      this.stats.wldRootSearches += 1;
+    }
+
+    const legalMoves = state.getLegalMoves();
+    if (legalMoves.length === 0) {
+      if (state.isTerminal()) {
+        return {
+          bestMoveIndex: null,
+          bestMoveCoord: null,
+          score: this.evaluator.evaluateTerminal(state),
+          principalVariation: [],
+          analyzedMoves: [],
+          didPass: false,
+          stats: { ...this.stats, elapsedMs: Math.round(now() - startedAt) },
+          options: this.createResultOptionsSnapshot(),
+          source: 'search',
+          searchMode: 'terminal',
+          searchDriver: rootClassicSearchDriver,
+          searchCompletion: 'complete',
+          isExactResult: true,
+          rootEmptyCount,
+          exactThreshold: this.options.exactEndgameEmpties,
+        };
+      }
+
+      const passedState = this.passSearchStateFast(state);
+      const fallback = {
+        bestMoveIndex: null,
+        bestMoveCoord: null,
+        score: this.evaluator.evaluate(passedState, state.currentPlayer),
+        principalVariation: [],
+        analyzedMoves: [],
+        didPass: true,
+        stats: { ...this.stats },
+        options: this.createResultOptionsSnapshot(),
+        source: 'search',
+        searchCompletion: 'heuristic-fallback',
+        rootAnalyzedMoveCount: 0,
+        rootLegalMoveCount: 0,
+      };
+
+      const finalResult = rootExactEndgame
+        ? this.runSingleDepthSearch(this.options.maxDepth, (depth, alpha, beta) => (
+          this.searchForcedPassRoot(passedState, depth, alpha, beta, rootExactEndgame)
+        )) ?? fallback
+        : rootWldEndgame
+          ? this.runSingleDepthSearch(this.options.maxDepth, (depth) => (
+            this.searchWldForcedPassRoot(passedState, depth, -WLD_RESULT_SCORE, WLD_RESULT_SCORE)
+          )) ?? fallback
+          : isMctsSearchAlgorithm(searchAlgorithm)
+            ? this.searchMctsForcedPassRoot(passedState, searchAlgorithm) ?? fallback
+            : this.runIterativeDeepening((depth, alpha, beta) => (
+              this.searchForcedPassRoot(passedState, depth, alpha, beta, rootExactEndgame)
+            )) ?? fallback;
+      const finalSearchCompletion = finalResult.searchCompletion ?? (finalResult === fallback ? 'heuristic-fallback' : 'complete');
+      const finalWldOutcome = rootWldEndgame && finalSearchCompletion !== 'heuristic-fallback' && Number.isFinite(finalResult.score)
+        ? this.describeWldOutcome(finalResult.score)
+        : null;
+      this.stats.elapsedMs = Math.round(now() - startedAt);
+      const shapedResult = {
+        ...finalResult,
+        stats: { ...this.stats },
+        options: this.createResultOptionsSnapshot(),
+        source: 'search',
+        searchMode: rootSearchMode,
+        searchDriver: rootClassicSearchDriver,
+        searchCompletion: finalSearchCompletion,
+        isExactResult: rootExactEndgame && finalSearchCompletion === 'complete',
+        isWldResult: rootWldEndgame && finalSearchCompletion === 'complete',
+        wldOutcome: finalWldOutcome,
+        rootEmptyCount,
+        exactThreshold: this.options.exactEndgameEmpties,
+      };
+      return this.attachMctsProofTelemetry(shapedResult);
+    }
+
+    if (!rootExactEndgame && !rootWldEndgame && isMctsSearchAlgorithm(searchAlgorithm)) {
+      const fallback = this.buildRootFallback(state, legalMoves, null);
+      const mctsRootRuntimeConfig = this.resolveMctsRootRuntimeConfig(rootEmptyCount);
+      const mctsRawBaseResult = this.searchMctsRoot(
+        state,
+        candidateMoves,
+        searchAlgorithm,
+        mctsRootRuntimeConfig.optionOverrides,
+      ) ?? fallback;
+      const mctsRawResult = {
+        ...mctsRawBaseResult,
+        mctsProofPriorityRuntimeEnabled: mctsRootRuntimeConfig.proofPriorityEnabled,
+        mctsProofPriorityRuntimeScale: mctsRootRuntimeConfig.proofPriorityScale,
+        mctsProofPriorityRuntimeMaxEmpties: mctsRootRuntimeConfig.proofPriorityMaxEmpties,
+        mctsProofPriorityRuntimeMetricMode: mctsRootRuntimeConfig.proofMetricMode,
+        mctsProofPriorityRuntimeBiasMode: mctsRootRuntimeConfig.proofPriorityBiasMode,
+        mctsProofPrioritySuppressedByContinuationWindow:
+          mctsRootRuntimeConfig.proofPrioritySuppressedByContinuationWindow,
+        mctsProofPriorityLateBiasPackageMode: mctsRootRuntimeConfig.proofPriorityLateBiasPackageMode,
+        mctsProofPriorityLateBiasThresholdMs: mctsRootRuntimeConfig.proofPriorityLateBiasThresholdMs,
+        mctsProofPriorityLateBiasMetricMode: mctsRootRuntimeConfig.proofPriorityLateBiasMetricMode,
+        mctsProofPriorityLateBiasBiasMode: mctsRootRuntimeConfig.proofPriorityLateBiasBiasMode,
+        mctsProofPriorityLateBiasEligibleByBudget: mctsRootRuntimeConfig.proofPriorityLateBiasEligibleByBudget,
+        mctsProofPriorityLateBiasEligibleByDepth: mctsRootRuntimeConfig.proofPriorityLateBiasEligibleByDepth,
+        mctsProofPriorityLateBiasActivated: mctsRootRuntimeConfig.proofPriorityLateBiasActivated,
+      };
+      const mctsWithExactContinuation = this.applyMctsExactContinuationToRootResult(
+        state,
+        legalMoves,
+        mctsRawResult,
+        rootEmptyCount,
+      );
+      const mctsResult = this.applySpecialEndingScoutToRootResult(
+        state,
+        legalMoves,
+        mctsWithExactContinuation,
+        rootEmptyCount,
+      );
+      const finalSearchCompletion = mctsResult.searchCompletion ?? (mctsRawResult === fallback ? 'heuristic-fallback' : 'complete');
+      const mctsRootSolvedExact = Boolean(mctsResult.mctsRootSolvedExact);
+      const mctsRootSolvedOutcome = typeof mctsResult.mctsRootSolvedOutcome === 'string'
+        ? mctsResult.mctsRootSolvedOutcome
+        : null;
+
+      this.stats.elapsedMs = Math.round(now() - startedAt);
+      const shapedResult = {
+        ...mctsResult,
+        stats: { ...this.stats },
+        options: this.createResultOptionsSnapshot(),
+        source: 'search',
+        searchMode: searchAlgorithm,
+        searchDriver: rootClassicSearchDriver,
+        searchCompletion: finalSearchCompletion,
+        isExactResult: mctsRootSolvedExact && finalSearchCompletion === 'complete',
+        isWldResult: !mctsRootSolvedExact && mctsRootSolvedOutcome !== null && finalSearchCompletion === 'complete',
+        wldOutcome: !mctsRootSolvedExact && finalSearchCompletion === 'complete'
+          ? mctsRootSolvedOutcome
+          : null,
+        rootEmptyCount,
+        exactThreshold: this.options.exactEndgameEmpties,
+      };
+      return this.attachMctsProofTelemetry(shapedResult);
+    }
+
+    const bookHit = state.moveHistory.length <= OPENING_BOOK_ADVISORY_MAX_PLY
+      ? lookupOpeningBook(state)
+      : null;
+    const priorHit = lookupOpeningPrior(state);
+    const openingContext = (bookHit || priorHit)
+      ? this.createRootOpeningContext(bookHit, priorHit)
+      : null;
+
+    if (bookHit) {
+      this.stats.bookHits += 1;
+    }
+    if (priorHit) {
+      this.stats.openingPriorHits += 1;
+    }
+
+    const openingSelection = bookHit
+      ? this.selectOpeningBookMove(state, legalMoves, bookHit, openingContext)
+      : null;
+    const openingDirectDecision = bookHit && openingSelection
+      ? this.getOpeningBookDirectDecision(state, bookHit, openingSelection, openingContext)
+      : null;
+    const directUseMaxPly = Math.min(
+      OPENING_BOOK_DIRECT_USE_MAX_PLY,
+      Number.isFinite(this.openingTuning?.directUseMaxPly) ? this.openingTuning.directUseMaxPly : OPENING_BOOK_DIRECT_USE_MAX_PLY,
+    );
+    if (bookHit && openingSelection && openingDirectDecision?.allowDirect) {
+      const bookResult = this.createOpeningBookResult(state, legalMoves, bookHit, openingContext, openingSelection, startedAt);
+      if (bookResult) {
+        return bookResult;
+      }
+    } else if (bookHit && openingSelection && directUseMaxPly >= 0 && state.moveHistory.length <= directUseMaxPly) {
+      if (openingDirectDecision?.reason === 'prior-contradiction') {
+        this.stats.openingPriorContradictionVetoes += 1;
+      } else if (openingDirectDecision?.reason === 'low-confidence') {
+        this.stats.openingConfidenceSkips += 1;
+      }
+    }
+
+    const fallback = this.buildRootFallback(state, legalMoves, openingContext);
+
+    const rawFinalResult = rootExactEndgame
+      // Exact root search does not need iterative deepening. Run the full exact solve once
+      // at the configured top depth so move-ordering heuristics still see the late-game
+      // depth horizon, but avoid repeating the exact tree for depths 1..maxDepth.
+      ? this.runSingleDepthSearch(this.options.maxDepth, (depth, alpha, beta) => (
+        this.searchRoot(state, legalMoves, depth, alpha, beta, openingContext, rootExactEndgame)
+      )) ?? fallback
+      : rootWldEndgame
+        ? this.runSingleDepthSearch(this.options.maxDepth, (depth) => (
+          this.searchWldRoot(state, legalMoves, depth, -WLD_RESULT_SCORE, WLD_RESULT_SCORE, openingContext)
+        )) ?? fallback
+        : this.runIterativeDeepening((depth, alpha, beta) => (
+          this.searchRoot(state, legalMoves, depth, alpha, beta, openingContext, rootExactEndgame)
+        )) ?? fallback;
+    const finalResult = this.applySpecialEndingScoutToRootResult(state, legalMoves, rawFinalResult, rootEmptyCount);
+    const chosen = chooseRandomBest(
+      finalResult.analyzedMoves,
+      this.options.searchRandomness ?? this.options.randomness ?? 0,
+    ) ?? finalResult.analyzedMoves[0] ?? null;
+    const selectedMove = chosen?.index ?? finalResult.bestMoveIndex;
+    const selectedCoord = chosen?.coord ?? (
+      selectedMove === null || selectedMove === undefined
+        ? null
+        : legalMoves.find((move) => move.index === selectedMove)?.coord ?? null
+    );
+    const selectedScore = Number.isFinite(chosen?.score) ? chosen.score : finalResult.score;
+    const selectedPrincipalVariation = Array.isArray(chosen?.principalVariation) && chosen.principalVariation.length > 0
+      ? [...chosen.principalVariation]
+      : (selectedMove === null || selectedMove === undefined ? [] : [selectedMove]);
+    const finalSearchCompletion = finalResult.searchCompletion ?? (finalResult === fallback ? 'heuristic-fallback' : 'complete');
+    const finalWldOutcome = rootWldEndgame && finalSearchCompletion !== 'heuristic-fallback' && Number.isFinite(selectedScore)
+      ? this.describeWldOutcome(selectedScore)
+      : null;
+
+    this.stats.elapsedMs = Math.round(now() - startedAt);
+    return {
+      ...finalResult,
+      bestMoveIndex: selectedMove,
+      bestMoveCoord: selectedCoord,
+      score: selectedScore,
+      principalVariation: selectedPrincipalVariation,
+      stats: { ...this.stats },
+      options: this.createResultOptionsSnapshot(),
+      source: 'search',
+      searchMode: rootSearchMode,
+      searchDriver: rootClassicSearchDriver,
+      searchCompletion: finalSearchCompletion,
+      isExactResult: rootExactEndgame && finalSearchCompletion === 'complete',
+      isWldResult: rootWldEndgame && finalSearchCompletion === 'complete',
+      wldOutcome: finalWldOutcome,
+      rootEmptyCount,
+      exactThreshold: this.options.exactEndgameEmpties,
+      ...(bookHit
+        ? {
+          bookHit: {
+            ...this.describeBookHit(bookHit, selectedMove, false),
+            ...(openingDirectDecision?.reason === 'prior-contradiction'
+              ? { priorContradictionVeto: this.describeOpeningPriorContradiction(openingDirectDecision.contradiction) }
+              : {}),
+          },
+        }
+        : {}),
+      ...(priorHit ? { openingPriorHit: this.describeOpeningPriorHit(priorHit, selectedMove, false) } : {}),
+    };
+  }
+
+  searchRoot(state, rootMoves, depth, alpha, beta, openingContext = null, rootExactEndgame = false) {
+    const alphaStart = alpha;
+    const betaStart = beta;
+    const ttEntry = this.lookupTransposition(state);
+    const ttMoveIndex = this.selectTableMoveForOrdering(ttEntry, depth);
+    const rootSearchContext = this.activeRootSearchContext ?? null;
+    const collectDetailedRootData = rootSearchContext?.collectDetailedRootData !== false;
+
+    let bestScore = -INFINITY;
+    let bestMoveIndex = null;
+    let bestPv = [];
+    const analyzedMoves = collectDetailedRootData ? [] : null;
+    let analyzedMoveCount = 0;
+
+    let preferredMove = null;
+    let moves = null;
+    const cachedRootOrdering = this.resolveReusableRootMoveOrdering(rootSearchContext, ttMoveIndex);
+    if (cachedRootOrdering) {
+      preferredMove = cachedRootOrdering.preferredMove ?? null;
+      moves = Array.isArray(cachedRootOrdering.remainingMoves)
+        ? cachedRootOrdering.remainingMoves
+        : [];
+    } else {
+      const rootMoveSelectionInput = this.options.ttFirstInPlaceMoveExtraction !== false && Number.isInteger(ttMoveIndex)
+        ? [...rootMoves]
+        : rootMoves;
+      const extractedMoves = this.pullPreferredMove(rootMoveSelectionInput, ttMoveIndex);
+      preferredMove = extractedMoves.preferredMove ?? null;
+      moves = this.orderMoves(
+        state,
+        extractedMoves.remainingMoves,
+        0,
+        depth,
+        preferredMove ? null : ttMoveIndex,
+        openingContext,
+        rootExactEndgame ? 'exact' : 'general',
+      );
+      this.storeReusableRootMoveOrdering(rootSearchContext, preferredMove, moves);
+    }
+
+    if (preferredMove) {
+      this.stats.ttFirstSearches += 1;
+      const preferredOutcome = this.applyPreparedMoveFast(state, preferredMove);
+      if (preferredOutcome) {
+        const preferredChild = this.negamax(preferredOutcome, depth - 1, -beta, -alpha, 1, rootExactEndgame);
+        const preferredScore = -preferredChild.score;
+        const preferredPrincipalVariation = [preferredMove.index, ...preferredChild.principalVariation];
+        analyzedMoveCount += 1;
+        if (collectDetailedRootData) {
+          analyzedMoves.push({
+            index: preferredMove.index,
+            coord: preferredMove.coord,
+            score: preferredScore,
+            principalVariation: preferredPrincipalVariation,
+            flipCount: moveFlipCountForRecord(preferredMove) ?? null,
+          });
+          this.storeRootProgressSnapshot(rootMoves, preferredMove.index, preferredScore, preferredPrincipalVariation, analyzedMoves);
+        }
+        bestScore = preferredScore;
+        bestMoveIndex = preferredMove.index;
+        bestPv = preferredPrincipalVariation;
+        alpha = Math.max(alpha, preferredScore);
+
+        if (alpha >= beta) {
+          this.stats.cutoffs += 1;
+          this.stats.ttFirstCutoffs += 1;
+          this.recordKiller(0, preferredMove.index);
+          this.recordHistory(state.currentPlayer, preferredMove.index, depth);
+
+          const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+          this.storeTransposition(state, {
+            depth,
+            value: bestScore,
+            flag,
+            bestMoveIndex,
+          });
+
+          return {
+            bestMoveIndex,
+            score: bestScore,
+            principalVariation: bestPv,
+            analyzedMoves: analyzedMoves ?? [],
+            didPass: false,
+            searchCompletion: 'complete',
+            rootAnalyzedMoveCount: analyzedMoveCount,
+            rootLegalMoveCount: rootMoves.length,
+          };
+        }
+      }
+    }
+
+    for (let orderedMoveIndex = 0; orderedMoveIndex < moves.length; orderedMoveIndex += 1) {
+      this.checkDeadline();
+      const move = moves[orderedMoveIndex];
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        continue;
+      }
+
+      let childResult;
+      if (orderedMoveIndex === 0 && !preferredMove) {
+        childResult = this.negamax(outcome, depth - 1, -beta, -alpha, 1, rootExactEndgame);
+      } else {
+        childResult = this.negamax(outcome, depth - 1, -alpha - 1, -alpha, 1, rootExactEndgame);
+        if (-childResult.score > alpha && -childResult.score < beta) {
+          childResult = this.negamax(outcome, depth - 1, -beta, -alpha, 1, rootExactEndgame);
+        }
+      }
+
+      const score = -childResult.score;
+      const principalVariation = (collectDetailedRootData || score > bestScore)
+        ? [move.index, ...childResult.principalVariation]
+        : null;
+      analyzedMoveCount += 1;
+      if (collectDetailedRootData) {
+        analyzedMoves.push({
+          index: move.index,
+          coord: move.coord,
+          score,
+          principalVariation: principalVariation ?? [move.index, ...childResult.principalVariation],
+          flipCount: moveFlipCountForRecord(move) ?? null,
+        });
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoveIndex = move.index;
+        bestPv = principalVariation ?? [move.index, ...childResult.principalVariation];
+      }
+
+      if (collectDetailedRootData) {
+        this.storeRootProgressSnapshot(rootMoves, bestMoveIndex, bestScore, bestPv, analyzedMoves);
+      }
+
+      if (score > alpha) {
+        alpha = score;
+      }
+
+      if (alpha >= beta) {
+        this.stats.cutoffs += 1;
+        this.recordKiller(0, move.index);
+        this.recordHistory(state.currentPlayer, move.index, depth);
+        break;
+      }
+    }
+
+    if (collectDetailedRootData) {
+      analyzedMoves.sort((left, right) => right.score - left.score);
+    }
+    const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+    this.storeTransposition(state, {
+      depth,
+      value: bestScore,
+      flag,
+      bestMoveIndex,
+    });
+
+    return {
+      bestMoveIndex,
+      score: bestScore,
+      principalVariation: bestPv,
+      analyzedMoves: analyzedMoves ?? [],
+      didPass: false,
+      searchCompletion: 'complete',
+      rootAnalyzedMoveCount: analyzedMoveCount,
+      rootLegalMoveCount: rootMoves.length,
+    };
+  }
+
+  searchWldRoot(state, rootMoves, depth, alpha, beta, openingContext = null) {
+    const alphaStart = alpha;
+    const betaStart = beta;
+    const tableDepth = state.getEmptyCount() + 1;
+    const orderingDepth = Math.max(depth, tableDepth);
+    const ttEntry = this.lookupTransposition(state);
+    const ttMoveIndex = this.selectTableMoveForOrdering(ttEntry, tableDepth);
+
+    let bestScore = -INFINITY;
+    let bestMoveIndex = null;
+    let bestPv = [];
+    const analyzedMoves = [];
+
+    const rootMoveSelectionInput = this.options.ttFirstInPlaceMoveExtraction !== false && Number.isInteger(ttMoveIndex)
+      ? [...rootMoves]
+      : rootMoves;
+    const { preferredMove, remainingMoves } = this.pullPreferredMove(rootMoveSelectionInput, ttMoveIndex);
+    if (preferredMove) {
+      this.stats.ttFirstSearches += 1;
+      const preferredOutcome = this.applyPreparedMoveFast(state, preferredMove);
+      if (preferredOutcome) {
+        const preferredChild = this.wldNegamax(preferredOutcome, -beta, -alpha, 1);
+        const preferredScore = -preferredChild.score;
+        const preferredPrincipalVariation = [preferredMove.index, ...preferredChild.principalVariation];
+        analyzedMoves.push({
+          index: preferredMove.index,
+          coord: preferredMove.coord,
+          score: preferredScore,
+          principalVariation: preferredPrincipalVariation,
+          flipCount: moveFlipCountForRecord(preferredMove) ?? null,
+        });
+        bestScore = preferredScore;
+        bestMoveIndex = preferredMove.index;
+        bestPv = preferredPrincipalVariation;
+        this.storeRootProgressSnapshot(rootMoves, bestMoveIndex, bestScore, bestPv, analyzedMoves);
+        alpha = Math.max(alpha, preferredScore);
+
+        if (alpha >= beta) {
+          this.stats.cutoffs += 1;
+          this.stats.ttFirstCutoffs += 1;
+          this.recordKiller(0, preferredMove.index);
+          this.recordHistory(state.currentPlayer, preferredMove.index, orderingDepth);
+
+          const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: bestScore,
+            flag,
+            bestMoveIndex,
+          });
+
+          return {
+            bestMoveIndex,
+            score: bestScore,
+            principalVariation: bestPv,
+            analyzedMoves,
+            didPass: false,
+            searchCompletion: 'complete',
+            rootAnalyzedMoveCount: analyzedMoves.length,
+            rootLegalMoveCount: rootMoves.length,
+          };
+        }
+      }
+    }
+
+    const moves = this.orderMoves(state, remainingMoves, 0, orderingDepth, preferredMove ? null : ttMoveIndex, openingContext, 'wld');
+
+    for (let orderedMoveIndex = 0; orderedMoveIndex < moves.length; orderedMoveIndex += 1) {
+      this.checkDeadline();
+      const move = moves[orderedMoveIndex];
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        continue;
+      }
+
+      let childResult;
+      if (orderedMoveIndex === 0 && !preferredMove) {
+        childResult = this.wldNegamax(outcome, -beta, -alpha, 1);
+      } else {
+        childResult = this.wldNegamax(outcome, -alpha - 1, -alpha, 1);
+        if (-childResult.score > alpha && -childResult.score < beta) {
+          childResult = this.wldNegamax(outcome, -beta, -alpha, 1);
+        }
+      }
+
+      const score = -childResult.score;
+      const principalVariation = [move.index, ...childResult.principalVariation];
+      analyzedMoves.push({
+        index: move.index,
+        coord: move.coord,
+        score,
+        principalVariation,
+        flipCount: moveFlipCountForRecord(move) ?? null,
+      });
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoveIndex = move.index;
+        bestPv = principalVariation;
+      }
+
+      this.storeRootProgressSnapshot(rootMoves, bestMoveIndex, bestScore, bestPv, analyzedMoves);
+
+      if (score > alpha) {
+        alpha = score;
+      }
+
+      if (alpha >= beta) {
+        this.stats.cutoffs += 1;
+        this.recordKiller(0, move.index);
+        this.recordHistory(state.currentPlayer, move.index, orderingDepth);
+        break;
+      }
+    }
+
+    analyzedMoves.sort((left, right) => right.score - left.score);
+    const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+    this.storeTransposition(state, {
+      depth: tableDepth,
+      value: bestScore,
+      flag,
+      bestMoveIndex,
+    });
+
+    return {
+      bestMoveIndex,
+      score: bestScore,
+      principalVariation: bestPv,
+      analyzedMoves,
+      didPass: false,
+      searchCompletion: 'complete',
+      rootAnalyzedMoveCount: analyzedMoves.length,
+      rootLegalMoveCount: rootMoves.length,
+    };
+  }
+
+  wldNegamax(state, alpha, beta, ply) {
+    this.checkDeadline();
+    this.stats.nodes += 1;
+    this.stats.wldNodes += 1;
+
+    const empties = state.getEmptyCount();
+    const tableDepth = empties + 1;
+    const alphaStart = alpha;
+    const betaStart = beta;
+
+    const ttEntry = this.lookupTransposition(state);
+    if (ttEntry && ttEntry.depth >= tableDepth) {
+      this.stats.ttHits += 1;
+      this.stats.wldTtHits += 1;
+      const ttScore = this.normalizeWldScore(ttEntry.value);
+      if (ttEntry.flag === 'exact') {
+        return {
+          score: ttScore,
+          principalVariation: ttEntry.bestMoveIndex === null ? [] : [ttEntry.bestMoveIndex],
+        };
+      }
+      if (ttEntry.flag === 'lower') {
+        alpha = Math.max(alpha, ttScore);
+      } else if (ttEntry.flag === 'upper') {
+        beta = Math.min(beta, ttScore);
+      }
+      if (alpha >= beta) {
+        return {
+          score: ttScore,
+          principalVariation: ttEntry.bestMoveIndex === null ? [] : [ttEntry.bestMoveIndex],
+        };
+      }
+    }
+
+    const optimizedFewEmptiesWldThreshold = this.isOptimizedFewEmptiesWldSolverEnabled()
+      ? this.getOptimizedFewEmptiesWldSolverThreshold()
+      : SMALL_EXACT_SOLVER_EMPTIES;
+    if (empties <= optimizedFewEmptiesWldThreshold) {
+      const score = this.solveSmallWld(state, alpha, beta);
+      const flag = this.computeTableFlag(score, alphaStart, betaStart);
+      this.storeTransposition(state, {
+        depth: tableDepth,
+        value: score,
+        flag,
+        bestMoveIndex: null,
+      });
+      return {
+        score,
+        principalVariation: [],
+      };
+    }
+
+    const legalMoves = this.listSearchMoves(state, { ply });
+    const immediateWipeout = this.findImmediateWipeoutMove(state, legalMoves, 'wld');
+    if (immediateWipeout) {
+      this.storeTransposition(state, {
+        depth: tableDepth,
+        value: immediateWipeout.score,
+        flag: 'exact',
+        bestMoveIndex: immediateWipeout.index,
+      });
+      return {
+        score: immediateWipeout.score,
+        principalVariation: [immediateWipeout.index],
+      };
+    }
+    if (legalMoves.length === 0) {
+      const { player, opponent } = state.getPlayerBoards();
+      if (legalMovesBitboard(opponent, player) === 0n) {
+        const score = this.wldTerminalScoreFromBoards(player, opponent);
+        const flag = this.computeTableFlag(score, alphaStart, betaStart);
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: score,
+          flag,
+          bestMoveIndex: null,
+        });
+        return {
+          score,
+          principalVariation: [],
+        };
+      }
+
+      const passed = this.passSearchStateFast(state);
+      const childResult = this.wldNegamax(passed, -beta, -alpha, ply + 1);
+      const score = -childResult.score;
+      const flag = this.computeTableFlag(score, alphaStart, betaStart);
+      this.storeTransposition(state, {
+        depth: tableDepth,
+        value: score,
+        flag,
+        bestMoveIndex: null,
+      });
+      return {
+        score,
+        principalVariation: childResult.principalVariation,
+      };
+    }
+
+    const ttMoveIndex = this.selectTableMoveForOrdering(ttEntry, tableDepth);
+    let bestScore = -INFINITY;
+    let bestMoveIndex = null;
+    let bestPv = [];
+
+    let candidateMoves = legalMoves;
+    const etcResult = this.applyEnhancedTranspositionCutoff(
+      state,
+      legalMoves,
+      tableDepth,
+      alpha,
+      beta,
+      ply,
+      true,
+      'wld',
+    );
+    if (etcResult) {
+      candidateMoves = etcResult.moves;
+      alpha = etcResult.alpha;
+      beta = etcResult.beta;
+      if (etcResult.cutoff) {
+        const etcFlag = this.computeTableFlag(etcResult.score, alphaStart, betaStart);
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: etcResult.score,
+          flag: etcFlag,
+          bestMoveIndex: etcResult.bestMoveIndex,
+        });
+        return {
+          score: etcResult.score,
+          principalVariation: Number.isInteger(etcResult.bestMoveIndex) ? [etcResult.bestMoveIndex] : [],
+        };
+      }
+    }
+
+    const { preferredMove, remainingMoves } = this.pullPreferredMove(candidateMoves, ttMoveIndex);
+    if (preferredMove) {
+      this.stats.ttFirstSearches += 1;
+      const preferredOutcome = preferredMove.orderingOutcome ?? this.applyPreparedMoveFast(state, preferredMove);
+      if (preferredOutcome) {
+        const preferredChild = this.wldNegamax(preferredOutcome, -beta, -alpha, ply + 1);
+        bestScore = -preferredChild.score;
+        bestMoveIndex = preferredMove.index;
+        bestPv = [preferredMove.index, ...preferredChild.principalVariation];
+        alpha = Math.max(alpha, bestScore);
+
+        if (alpha >= beta) {
+          this.stats.cutoffs += 1;
+          this.stats.ttFirstCutoffs += 1;
+          this.recordKiller(ply, preferredMove.index);
+          this.recordHistory(state.currentPlayer, preferredMove.index, tableDepth);
+
+          const preferredFlag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: bestScore,
+            flag: preferredFlag,
+            bestMoveIndex,
+          });
+
+          return {
+            score: bestScore,
+            principalVariation: bestPv,
+          };
+        }
+      }
+    }
+
+    const orderedMoves = this.orderMoves(state, remainingMoves, ply, tableDepth, preferredMove ? null : ttMoveIndex, null, 'wld');
+
+    for (let orderedMoveIndex = 0; orderedMoveIndex < orderedMoves.length; orderedMoveIndex += 1) {
+      const move = orderedMoves[orderedMoveIndex];
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        continue;
+      }
+
+      let childResult;
+      let score;
+      if (orderedMoveIndex === 0 && !preferredMove) {
+        childResult = this.wldNegamax(outcome, -beta, -alpha, ply + 1);
+        score = -childResult.score;
+      } else {
+        childResult = this.wldNegamax(outcome, -alpha - 1, -alpha, ply + 1);
+        score = -childResult.score;
+        if (score > alpha && score < beta) {
+          childResult = this.wldNegamax(outcome, -beta, -alpha, ply + 1);
+          score = -childResult.score;
+        }
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoveIndex = move.index;
+        bestPv = [move.index, ...childResult.principalVariation];
+      }
+
+      if (score > alpha) {
+        alpha = score;
+      }
+
+      if (alpha >= beta) {
+        this.stats.cutoffs += 1;
+        this.recordKiller(ply, move.index);
+        this.recordHistory(state.currentPlayer, move.index, tableDepth);
+        break;
+      }
+    }
+
+    const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+    this.storeTransposition(state, {
+      depth: tableDepth,
+      value: bestScore,
+      flag,
+      bestMoveIndex,
+    });
+
+    return {
+      score: bestScore,
+      principalVariation: bestPv,
+    };
+  }
+
+  negamax(state, depth, alpha, beta, ply, rootExactEndgame = false) {
+    this.checkDeadline();
+    this.stats.nodes += 1;
+
+    const empties = state.getEmptyCount();
+    // Propagate the root decision instead of re-triggering exact search mid-tree. This
+    // keeps positions above the configured boundary depth-limited for the whole search.
+    const exactEndgame = rootExactEndgame;
+    const tableDepth = exactEndgame ? empties + 1 : Math.max(0, depth);
+    const alphaStart = alpha;
+    const betaStart = beta;
+
+    const ttEntry = this.lookupTransposition(state);
+    if (ttEntry && ttEntry.depth >= tableDepth) {
+      this.stats.ttHits += 1;
+      if (ttEntry.flag === 'exact') {
+        return {
+          score: ttEntry.value,
+          principalVariation: ttEntry.bestMoveIndex === null ? [] : [ttEntry.bestMoveIndex],
+        };
+      }
+      if (ttEntry.flag === 'lower') {
+        alpha = Math.max(alpha, ttEntry.value);
+      } else if (ttEntry.flag === 'upper') {
+        beta = Math.min(beta, ttEntry.value);
+      }
+      if (alpha >= beta) {
+        return {
+          score: ttEntry.value,
+          principalVariation: ttEntry.bestMoveIndex === null ? [] : [ttEntry.bestMoveIndex],
+        };
+      }
+    }
+
+    if (exactEndgame && empties <= this.getOptimizedFewEmptiesExactSolverThreshold()) {
+      const score = this.solveSmallExact(state, alpha, beta);
+      const flag = this.computeTableFlag(score, alphaStart, betaStart);
+      this.storeTransposition(state, {
+        depth: tableDepth,
+        value: score,
+        flag,
+        bestMoveIndex: null,
+      });
+      return {
+        score,
+        principalVariation: [],
+      };
+    }
+
+    if (depth <= 0 && !exactEndgame) {
+      const legalMoves = this.listSearchMoves(state, { ply });
+      if (legalMoves.length === 0) {
+        const { player, opponent } = state.getPlayerBoards();
+        if (legalMovesBitboard(opponent, player) === 0n) {
+          const score = this.exactTerminalScoreFromBoards(player, opponent);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: score,
+            flag: 'exact',
+            bestMoveIndex: null,
+          });
+          return {
+            score,
+            principalVariation: [],
+          };
+        }
+
+        const passed = this.passSearchStateFast(state);
+        const childResult = this.negamax(passed, Math.max(0, depth - 1), -beta, -alpha, ply + 1, rootExactEndgame);
+        const score = -childResult.score;
+        const flag = this.computeTableFlag(score, alphaStart, betaStart);
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: score,
+          flag,
+          bestMoveIndex: null,
+        });
+        return {
+          score,
+          principalVariation: childResult.principalVariation,
+        };
+      }
+
+      const immediateWipeout = this.findImmediateWipeoutMove(state, legalMoves, 'exact');
+      if (immediateWipeout) {
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: immediateWipeout.score,
+          flag: 'exact',
+          bestMoveIndex: immediateWipeout.index,
+        });
+        return {
+          score: immediateWipeout.score,
+          principalVariation: [immediateWipeout.index],
+        };
+      }
+
+      return {
+        score: this.evaluator.evaluate(state),
+        principalVariation: [],
+      };
+    }
+
+    const ttMoveIndex = this.selectTableMoveForOrdering(ttEntry, tableDepth);
+    const deferredPreferredMove = Number.isInteger(ttMoveIndex)
+      && this.shouldUseTtFirstDeferredMoveListBuild(empties, ply, depth, exactEndgame)
+      ? this.prepareDeferredTtFirstSearchMove(state, ttMoveIndex, { ply })
+      : null;
+    let nonDeferredLegalMoves = null;
+
+    if (deferredPreferredMove) {
+      const deferredImmediateWipeout = this.evaluateImmediateWipeoutPreparedMove(state, deferredPreferredMove, 'exact');
+      if (deferredImmediateWipeout) {
+        this.stats.immediateWipeoutHits += 1;
+        this.stats.ttFirstDeferredMoveListBuildSkips += 1;
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: deferredImmediateWipeout.score,
+          flag: 'exact',
+          bestMoveIndex: deferredImmediateWipeout.index,
+        });
+        return {
+          score: deferredImmediateWipeout.score,
+          principalVariation: [deferredImmediateWipeout.index],
+        };
+      }
+
+      const deferredMpcCut = this.tryMpcCut(state, depth, alpha, beta, ply, exactEndgame);
+      if (deferredMpcCut) {
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: deferredMpcCut.score,
+          flag: deferredMpcCut.flag ?? this.computeTableFlag(deferredMpcCut.score, alphaStart, betaStart),
+          bestMoveIndex: null,
+        });
+        return {
+          score: deferredMpcCut.score,
+          principalVariation: [],
+        };
+      }
+    } else {
+      nonDeferredLegalMoves = this.listSearchMoves(state, { ply });
+      const immediateWipeout = this.findImmediateWipeoutMove(state, nonDeferredLegalMoves, 'exact');
+      if (immediateWipeout) {
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: immediateWipeout.score,
+          flag: 'exact',
+          bestMoveIndex: immediateWipeout.index,
+        });
+        return {
+          score: immediateWipeout.score,
+          principalVariation: [immediateWipeout.index],
+        };
+      }
+      if (nonDeferredLegalMoves.length === 0) {
+        const { player, opponent } = state.getPlayerBoards();
+        if (legalMovesBitboard(opponent, player) === 0n) {
+          const score = this.exactTerminalScoreFromBoards(player, opponent);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: score,
+            flag: 'exact',
+            bestMoveIndex: null,
+          });
+          return {
+            score,
+            principalVariation: [],
+          };
+        }
+
+        const passed = this.passSearchStateFast(state);
+        const childResult = this.negamax(passed, Math.max(0, depth - 1), -beta, -alpha, ply + 1, rootExactEndgame);
+        const score = -childResult.score;
+        const flag = this.computeTableFlag(score, alphaStart, betaStart);
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: score,
+          flag,
+          bestMoveIndex: null,
+        });
+        return {
+          score,
+          principalVariation: childResult.principalVariation,
+        };
+      }
+    }
+
+    let bestScore = -INFINITY;
+    let bestMoveIndex = null;
+    let bestPv = [];
+    let preferredMove = null;
+    let remainingMoves = [];
+    let candidateMoves = [];
+
+    if (deferredPreferredMove) {
+      preferredMove = deferredPreferredMove;
+      this.stats.ttFirstSearches += 1;
+      const preferredOutcome = preferredMove.orderingOutcome ?? this.applyPreparedMoveFast(state, preferredMove);
+      if (preferredOutcome) {
+        const preferredChild = this.negamax(preferredOutcome, depth - 1, -beta, -alpha, ply + 1, rootExactEndgame);
+        bestScore = -preferredChild.score;
+        bestMoveIndex = preferredMove.index;
+        bestPv = [preferredMove.index, ...preferredChild.principalVariation];
+        alpha = Math.max(alpha, bestScore);
+
+        if (alpha >= beta) {
+          this.stats.cutoffs += 1;
+          this.stats.ttFirstCutoffs += 1;
+          this.stats.ttFirstDeferredMoveListBuildCutoffs += 1;
+          this.stats.ttFirstDeferredMoveListBuildSkips += 1;
+          this.recordKiller(ply, preferredMove.index);
+          this.recordHistory(state.currentPlayer, preferredMove.index, depth);
+
+          const preferredFlag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: bestScore,
+            flag: preferredFlag,
+            bestMoveIndex,
+          });
+
+          return {
+            score: bestScore,
+            principalVariation: bestPv,
+          };
+        }
+      } else {
+        preferredMove = null;
+        bestScore = -INFINITY;
+        bestMoveIndex = null;
+        bestPv = [];
+      }
+
+      const legalMoves = this.listSearchMoves(state, { ply });
+      if (!preferredMove) {
+        candidateMoves = legalMoves;
+      } else {
+        const extractedMoves = this.pullPreferredMove(legalMoves, preferredMove.index);
+        candidateMoves = extractedMoves.remainingMoves;
+      }
+
+      const immediateWipeout = this.findImmediateWipeoutMove(state, candidateMoves, 'exact');
+      if (immediateWipeout) {
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: immediateWipeout.score,
+          flag: 'exact',
+          bestMoveIndex: immediateWipeout.index,
+        });
+        return {
+          score: immediateWipeout.score,
+          principalVariation: [immediateWipeout.index],
+        };
+      }
+
+      if (preferredMove && candidateMoves.length === 0) {
+        const preferredFlag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: bestScore,
+          flag: preferredFlag,
+          bestMoveIndex,
+        });
+        return {
+          score: bestScore,
+          principalVariation: bestPv,
+        };
+      }
+
+      remainingMoves = candidateMoves;
+    } else {
+      candidateMoves = nonDeferredLegalMoves ?? [];
+      const mpcCut = this.tryMpcCut(state, depth, alpha, beta, ply, exactEndgame);
+      if (mpcCut) {
+        this.storeTransposition(state, {
+          depth: tableDepth,
+          value: mpcCut.score,
+          flag: mpcCut.flag ?? this.computeTableFlag(mpcCut.score, alphaStart, betaStart),
+          bestMoveIndex: null,
+        });
+        return {
+          score: mpcCut.score,
+          principalVariation: [],
+        };
+      }
+
+      const etcResult = this.applyEnhancedTranspositionCutoff(
+        state,
+        nonDeferredLegalMoves,
+        depth,
+        alpha,
+        beta,
+        ply,
+        exactEndgame,
+        'exact',
+      );
+      if (etcResult) {
+        candidateMoves = etcResult.moves;
+        alpha = etcResult.alpha;
+        beta = etcResult.beta;
+        if (etcResult.cutoff) {
+          const etcFlag = this.computeTableFlag(etcResult.score, alphaStart, betaStart);
+          this.storeTransposition(state, {
+            depth: tableDepth,
+            value: etcResult.score,
+            flag: etcFlag,
+            bestMoveIndex: etcResult.bestMoveIndex,
+          });
+          return {
+            score: etcResult.score,
+            principalVariation: Number.isInteger(etcResult.bestMoveIndex) ? [etcResult.bestMoveIndex] : [],
+          };
+        }
+      }
+
+      const extractedMoves = this.pullPreferredMove(candidateMoves, ttMoveIndex);
+      preferredMove = extractedMoves.preferredMove;
+      remainingMoves = extractedMoves.remainingMoves;
+      if (preferredMove) {
+        this.stats.ttFirstSearches += 1;
+        const preferredOutcome = preferredMove.orderingOutcome ?? this.applyPreparedMoveFast(state, preferredMove);
+        if (preferredOutcome) {
+          const preferredChild = this.negamax(preferredOutcome, depth - 1, -beta, -alpha, ply + 1, rootExactEndgame);
+          bestScore = -preferredChild.score;
+          bestMoveIndex = preferredMove.index;
+          bestPv = [preferredMove.index, ...preferredChild.principalVariation];
+          alpha = Math.max(alpha, bestScore);
+
+          if (alpha >= beta) {
+            this.stats.cutoffs += 1;
+            this.stats.ttFirstCutoffs += 1;
+            this.recordKiller(ply, preferredMove.index);
+            this.recordHistory(state.currentPlayer, preferredMove.index, depth);
+
+            const preferredFlag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+            this.storeTransposition(state, {
+              depth: tableDepth,
+              value: bestScore,
+              flag: preferredFlag,
+              bestMoveIndex,
+            });
+
+            return {
+              score: bestScore,
+              principalVariation: bestPv,
+            };
+          }
+        }
+      }
+    }
+
+    const orderedMoves = this.orderMoves(state, remainingMoves, ply, depth, preferredMove ? null : ttMoveIndex, null, exactEndgame ? 'exact' : 'general');
+
+    for (let orderedMoveIndex = 0; orderedMoveIndex < orderedMoves.length; orderedMoveIndex += 1) {
+      const move = orderedMoves[orderedMoveIndex];
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        continue;
+      }
+
+      let childResult;
+      let score;
+      if (orderedMoveIndex === 0 && !preferredMove) {
+        childResult = this.negamax(outcome, depth - 1, -beta, -alpha, ply + 1, rootExactEndgame);
+        score = -childResult.score;
+      } else if (this.shouldApplyLateMoveReduction(state, move, ply, depth, orderedMoveIndex, exactEndgame)) {
+        const reduction = this.lateMoveReduction(depth, orderedMoveIndex);
+        this.stats.lmrReductions += 1;
+        childResult = this.negamax(outcome, Math.max(0, depth - 1 - reduction), -alpha - 1, -alpha, ply + 1, rootExactEndgame);
+        score = -childResult.score;
+
+        if (score > alpha) {
+          this.stats.lmrReSearches += 1;
+          childResult = this.negamax(outcome, depth - 1, -alpha - 1, -alpha, ply + 1, rootExactEndgame);
+          score = -childResult.score;
+          if (score > alpha && score < beta) {
+            this.stats.lmrFullReSearches += 1;
+            childResult = this.negamax(outcome, depth - 1, -beta, -alpha, ply + 1, rootExactEndgame);
+            score = -childResult.score;
+          }
+        }
+      } else {
+        childResult = this.negamax(outcome, depth - 1, -alpha - 1, -alpha, ply + 1, rootExactEndgame);
+        score = -childResult.score;
+        if (score > alpha && score < beta) {
+          childResult = this.negamax(outcome, depth - 1, -beta, -alpha, ply + 1, rootExactEndgame);
+          score = -childResult.score;
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoveIndex = move.index;
+        bestPv = [move.index, ...childResult.principalVariation];
+      }
+
+      if (score > alpha) {
+        alpha = score;
+      }
+
+      if (alpha >= beta) {
+        this.stats.cutoffs += 1;
+        this.recordKiller(ply, move.index);
+        this.recordHistory(state.currentPlayer, move.index, depth);
+        break;
+      }
+    }
+
+    const flag = this.computeTableFlag(bestScore, alphaStart, betaStart);
+    this.storeTransposition(state, {
+      depth: tableDepth,
+      value: bestScore,
+      flag,
+      bestMoveIndex,
+    });
+
+    return {
+      score: bestScore,
+      principalVariation: bestPv,
+    };
+  }
+
+  computeTableFlag(score, alphaStart, betaStart) {
+    if (score <= alphaStart) {
+      return 'upper';
+    }
+    if (score >= betaStart) {
+      return 'lower';
+    }
+    return 'exact';
+  }
+
+  lookupTransposition(state) {
+    return this.transpositionTable.get(state.hashKey()) ?? null;
+  }
+
+  selectTableMoveForOrdering(ttEntry, requestedDepth) {
+    if (!ttEntry || !Number.isInteger(ttEntry.bestMoveIndex)) {
+      return null;
+    }
+    if (ttEntry.flag === 'exact') {
+      return ttEntry.bestMoveIndex;
+    }
+    if (requestedDepth <= 2) {
+      return ttEntry.bestMoveIndex;
+    }
+
+    const minimumDepth = Math.max(2, requestedDepth - 2);
+    return ttEntry.depth >= minimumDepth ? ttEntry.bestMoveIndex : null;
+  }
+
+  storeTransposition(state, entry) {
+    const key = state.hashKey();
+    const nextEntry = {
+      ...entry,
+      generation: this.searchGeneration,
+    };
+    const existing = this.transpositionTable.get(key);
+    if (shouldKeepExistingTableEntry(existing, nextEntry)) {
+      return;
+    }
+
+    if (existing) {
+      this.transpositionTable.delete(key);
+    }
+
+    if (this.transpositionTable.size >= this.options.maxTableEntries) {
+      this.trimTranspositionTable();
+    }
+
+    this.transpositionTable.set(key, nextEntry);
+    this.stats.ttStores += 1;
+  }
+
+  recordKiller(ply, moveIndex) {
+    if (!Number.isInteger(moveIndex)) {
+      return;
+    }
+
+    if (!this.killerMoves[ply]) {
+      this.killerMoves[ply] = [moveIndex, null];
+      return;
+    }
+
+    if (this.killerMoves[ply][0] === moveIndex) {
+      return;
+    }
+
+    this.killerMoves[ply][1] = this.killerMoves[ply][0];
+    this.killerMoves[ply][0] = moveIndex;
+  }
+
+  recordHistory(color, moveIndex, depth) {
+    if (!Number.isInteger(moveIndex)) {
+      return;
+    }
+    const bucket = this.historyHeuristic[colorIndex(color)];
+    bucket[moveIndex] += depth * depth;
+    if (bucket[moveIndex] > 2_000_000) {
+      for (let index = 0; index < bucket.length; index += 1) {
+        bucket[index] = Math.floor(bucket[index] / 2);
+      }
+    }
+  }
+
+  shouldPrecomputeOrderingOutcome(empties, ply) {
+    return ply <= 1 || empties <= ORDERING_PROBE_EMPTIES;
+  }
+
+  shouldApplyEnhancedTranspositionCutoff(state, legalMoves, depthRemaining, ply, exactEndgame, bucket = 'exact') {
+    if (!this.isEnhancedTranspositionCutoffEnabled(bucket)) {
+      return false;
+    }
+    if (!Array.isArray(legalMoves) || legalMoves.length < 2) {
+      return false;
+    }
+    if (this.transpositionTable.size === 0) {
+      return false;
+    }
+
+    const empties = state.getEmptyCount();
+    if (!this.shouldPrecomputeOrderingOutcome(empties, ply)) {
+      return false;
+    }
+
+    return exactEndgame || depthRemaining >= ETC_MIN_DEPTH;
+  }
+
+  requiredChildTranspositionDepth(parentEmptyCount, depthRemaining, exactEndgame) {
+    return exactEndgame
+      ? parentEmptyCount
+      : Math.max(0, depthRemaining - 1);
+  }
+
+  applyEnhancedTranspositionCutoff(state, legalMoves, depthRemaining, alpha, beta, ply, exactEndgame, bucket = 'exact') {
+    if (!this.shouldApplyEnhancedTranspositionCutoff(state, legalMoves, depthRemaining, ply, exactEndgame, bucket)) {
+      return null;
+    }
+
+    this.recordEtcActivity(bucket, 'Nodes');
+
+    const parentEmptyCount = state.getEmptyCount();
+    const requiredDepth = this.requiredChildTranspositionDepth(parentEmptyCount, depthRemaining, exactEndgame);
+    const alphaStart = alpha;
+    const betaStart = beta;
+    const reusePreparedMoves = this.options.etcInPlaceMovePreparation !== false;
+    const preparedMoves = reusePreparedMoves
+      ? legalMoves
+      : legalMoves.map((move) => ({ ...move }));
+    let parentLowerBound = null;
+    let parentUpperBound = null;
+    let lowerBoundMoveIndex = null;
+    // A parent lower-bound is valid as soon as one child provides a proven upper/exact value.
+    // A parent upper-bound from child lower/exact values is only safe if every legal child
+    // contributes such a bound; otherwise an unknown child could still exceed it.
+    let allMovesProvideUpperBound = true;
+
+    for (const move of preparedMoves) {
+      const outcome = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move);
+      if (!outcome) {
+        allMovesProvideUpperBound = false;
+        continue;
+      }
+
+      move.orderingOutcome = outcome;
+      const preparedChildTableEntry = this.getPreparedChildTableEntryForOrdering(move);
+      const childTableEntry = preparedChildTableEntry !== undefined
+        ? preparedChildTableEntry
+        : this.lookupTransposition(outcome);
+      if (preparedChildTableEntry === undefined) {
+        this.cachePreparedChildTableEntryForOrdering(move, childTableEntry);
+      }
+      if (childTableEntry) {
+        if (!reusePreparedMoves) {
+          move.childTableEntry = childTableEntry;
+        }
+        this.recordEtcActivity(bucket, 'ChildTableHits');
+      }
+      if (!childTableEntry || childTableEntry.depth < requiredDepth) {
+        allMovesProvideUpperBound = false;
+        continue;
+      }
+
+      this.recordEtcActivity(bucket, 'QualifiedBounds');
+
+      if (childTableEntry.flag === 'exact' || childTableEntry.flag === 'upper') {
+        const candidateLowerBound = -childTableEntry.value;
+        if (parentLowerBound === null || candidateLowerBound > parentLowerBound) {
+          parentLowerBound = candidateLowerBound;
+          lowerBoundMoveIndex = move.index;
+        }
+      }
+
+      if (childTableEntry.flag === 'exact' || childTableEntry.flag === 'lower') {
+        const candidateUpperBound = -childTableEntry.value;
+        if (parentUpperBound === null || candidateUpperBound > parentUpperBound) {
+          parentUpperBound = candidateUpperBound;
+        }
+      } else {
+        allMovesProvideUpperBound = false;
+      }
+
+      if (parentLowerBound !== null) {
+        alpha = Math.max(alpha, parentLowerBound);
+      }
+
+      if (parentLowerBound !== null && parentLowerBound >= betaStart) {
+        if (alpha !== alphaStart) {
+          this.recordEtcActivity(bucket, 'Narrowings');
+        }
+        this.recordEtcActivity(bucket, 'Cutoffs');
+        this.stats.cutoffs += 1;
+        return {
+          alpha,
+          beta,
+          moves: preparedMoves,
+          cutoff: true,
+          score: parentLowerBound,
+          bestMoveIndex: lowerBoundMoveIndex,
+        };
+      }
+    }
+
+    if (allMovesProvideUpperBound && parentUpperBound !== null) {
+      beta = Math.min(beta, parentUpperBound);
+      if (parentUpperBound <= alphaStart) {
+        if (alpha !== alphaStart || beta !== betaStart) {
+          this.recordEtcActivity(bucket, 'Narrowings');
+        }
+        this.recordEtcActivity(bucket, 'Cutoffs');
+        this.stats.cutoffs += 1;
+        return {
+          alpha,
+          beta,
+          moves: preparedMoves,
+          cutoff: true,
+          score: parentUpperBound,
+          bestMoveIndex: null,
+        };
+      }
+    }
+
+    if (alpha !== alphaStart || beta !== betaStart) {
+      this.recordEtcActivity(bucket, 'Narrowings');
+    }
+
+    return {
+      alpha,
+      beta,
+      moves: preparedMoves,
+      cutoff: false,
+      score: null,
+      bestMoveIndex: null,
+    };
+  }
+
+  shouldApplyLateMoveReduction(state, move, ply, depthRemaining, moveListIndex, exactEndgame) {
+    if (exactEndgame) {
+      return false;
+    }
+    if (ply < 1 || depthRemaining < LMR_MIN_DEPTH || moveListIndex < LMR_MIN_MOVE_INDEX) {
+      return false;
+    }
+    if (state.getEmptyCount() <= Math.max(LMR_MIN_EMPTIES, (this.options.exactEndgameEmpties ?? 0) + 2)) {
+      return false;
+    }
+    if (CORNER_INDEX_SET.has(move.index)) {
+      return false;
+    }
+    if (this.killerMoves[ply]?.[0] === move.index || this.killerMoves[ply]?.[1] === move.index) {
+      return false;
+    }
+    return true;
+  }
+
+  lateMoveReduction(depthRemaining, moveListIndex) {
+    let reduction = 1;
+
+    if (depthRemaining >= LMR_DEEP_REDUCTION_DEPTH && moveListIndex >= LMR_DEEP_REDUCTION_MOVE_INDEX) {
+      reduction += 1;
+    }
+
+    return Math.min(reduction, Math.max(1, depthRemaining - 2));
+  }
+
+  shouldUseLightweightOrderingEvaluator(empties, depthRemaining) {
+    if (depthRemaining <= 1) {
+      return false;
+    }
+    return this.useLightweightOrderingEvaluatorByEmptyCount[
+      clampTrackedEmptiesForOrdering(empties)
+    ] === true;
+  }
+
+  selectLateOrderingProfile(empties) {
+    // Once the node is already inside the exact window, generic midgame ordering
+    // signals add more noise than value. Favor the trained late-ordering score and
+    // tactical late-game constraints instead.
+    return this.lateOrderingProfilesByEmptyCount[
+      clampTrackedEmptiesForOrdering(empties)
+    ] ?? GENERAL_LATE_ORDERING_PROFILE;
+  }
+
+  scoreLightweightOrderingEvaluation(state, perspectiveColor, empties, opponentMoveCount) {
+    this.stats.orderingEvalCalls += 1;
+    return this.moveOrderingEvaluator.evaluate(state, perspectiveColor, {
+      empties,
+      opponentMoveCount,
+    });
+  }
+
+  scoreTranspositionForOrdering(entry, depthRemaining) {
+    if (!entry || depthRemaining <= 1) {
+      return 0;
+    }
+
+    const profile = this.moveOrderingStructureProfile;
+    const minDepth = Math.max(
+      profile?.ttOrderingMinDepth ?? 0,
+      Number.isInteger(profile?.ttOrderingDepthSlack)
+        ? Math.max(0, depthRemaining - profile.ttOrderingDepthSlack)
+        : 0,
+    );
+    const shallowForOrdering = Number.isInteger(entry.depth) && entry.depth < minDepth;
+    if (shallowForOrdering && !(entry.flag === 'exact' && profile?.allowExactTtOrderingWhenShallow === true)) {
+      this.stats.orderingTtShallowSkips += 1;
+      return 0;
+    }
+
+    const clampedValue = Math.max(-250_000, Math.min(250_000, -entry.value));
+    const depthWeight = Math.max(1, Math.min(entry.depth, depthRemaining - 1));
+
+    if (entry.flag === 'exact') {
+      return (clampedValue * 8) + (depthWeight * 24_000) + 140_000;
+    }
+    if (entry.flag === 'upper') {
+      return (clampedValue * 5) + (depthWeight * 12_000);
+    }
+    return (clampedValue * 3) + (depthWeight * 8_000);
+  }
+
+  getRegionParityOrderingBonus(moveIndex, empties, parityRegionInfo) {
+    if (!parityRegionInfo || empties > REGION_PARITY_EMPTIES || parityRegionInfo.regionCount <= 1) {
+      return 0;
+    }
+
+    const regionSize = parityRegionInfo.regionSizeByIndex[moveIndex] ?? 0;
+    if (regionSize <= 0) {
+      return 0;
+    }
+
+    const baseBonus = empties <= 10 ? 140_000 : 90_000;
+    const oddRegion = regionSize % 2 === 1;
+    let bonus = oddRegion
+      ? baseBonus
+      : -Math.round(baseBonus * 0.45);
+
+    if (oddRegion && regionSize <= 3) {
+      bonus += Math.round(baseBonus * 0.2);
+    }
+    if (!oddRegion && regionSize <= 2) {
+      bonus -= Math.round(baseBonus * 0.1);
+    }
+    if (oddRegion && parityRegionInfo.oddRegionCount > 0 && parityRegionInfo.evenRegionCount > 0) {
+      bonus += Math.round(baseBonus * 0.12);
+    }
+
+    return bonus;
+  }
+
+  shouldUseExactFastestFirstOrdering(bucket, empties, depthRemaining) {
+    return bucket === 'exact'
+      && this.isExactFastestFirstOrderingEnabled()
+      && depthRemaining > 0
+      && empties >= EXACT_FASTEST_FIRST_MIN_EMPTIES;
+  }
+
+  orderExactFastestFirstMoves(moves, empties, parityRegionInfo = null) {
+    if (!Array.isArray(moves) || moves.length <= 1) {
+      return moves;
+    }
+
+    this.stats.fastestFirstExactSorts += 1;
+    if (moves.some((move) => move.opponentMoveCount === 0)) {
+      this.stats.fastestFirstExactPassCandidates += 1;
+    }
+
+    const exactMode = this.moveOrderingStructureProfile?.exactFastestFirstMode ?? 'reply-count';
+    moves.sort((left, right) => {
+      const leftReplyCount = Number.isFinite(left.opponentMoveCount)
+        ? left.opponentMoveCount
+        : Number.POSITIVE_INFINITY;
+      const rightReplyCount = Number.isFinite(right.opponentMoveCount)
+        ? right.opponentMoveCount
+        : Number.POSITIVE_INFINITY;
+      const leftParity = exactMode === 'reply-count'
+        ? 0
+        : this.getRegionParityOrderingBonus(left.index, empties, parityRegionInfo);
+      const rightParity = exactMode === 'reply-count'
+        ? 0
+        : this.getRegionParityOrderingBonus(right.index, empties, parityRegionInfo);
+      const leftSquareClass = exactMode === 'square-parity-reply'
+        ? exactSquareClassScore(left.index)
+        : 0;
+      const rightSquareClass = exactMode === 'square-parity-reply'
+        ? exactSquareClassScore(right.index)
+        : 0;
+
+      if (exactMode === 'square-parity-reply' && rightSquareClass !== leftSquareClass) {
+        return rightSquareClass - leftSquareClass;
+      }
+      if (exactMode !== 'reply-count' && rightParity !== leftParity) {
+        return rightParity - leftParity;
+      }
+      if (leftReplyCount !== rightReplyCount) {
+        return leftReplyCount - rightReplyCount;
+      }
+      if (right.orderingScore !== left.orderingScore) {
+        return right.orderingScore - left.orderingScore;
+      }
+      return left.index - right.index;
+    });
+
+    return moves;
+  }
+
+  orderMoves(state, moves, ply, depthRemaining, ttMoveIndex = null, openingContext = null, bucket = 'general') {
+    const empties = state.getEmptyCount();
+    const useExactFastestOrdering = this.shouldUseExactFastestFirstOrdering(bucket, empties, depthRemaining);
+    const shouldPrecomputeOutcome = this.shouldPrecomputeOrderingOutcome(empties, ply) || useExactFastestOrdering;
+    const lateOrderingProfile = this.selectLateOrderingProfile(empties);
+    const orderingScoreTable = this.orderingScoreTableByEmptyCount[
+      clampTrackedEmptiesForOrdering(empties)
+    ];
+    const useLightweightOrderingEvaluator = this.shouldUseLightweightOrderingEvaluator(empties, depthRemaining);
+    const topKLightweight = useLightweightOrderingEvaluator
+      && !useExactFastestOrdering
+      && Number.isInteger(this.moveOrderingStructureProfile?.lightweightEvalTopK)
+      ? Math.max(0, Math.min(moves.length, this.moveOrderingStructureProfile.lightweightEvalTopK))
+      : 0;
+    const useFullLightweightOrdering = useLightweightOrderingEvaluator && (topKLightweight === 0);
+    const historyBucket = this.historyHeuristic[colorIndex(state.currentPlayer)];
+    const killerMoves = this.killerMoves[ply] ?? null;
+    const emptyBitboard = state.getEmptyBitboard();
+    const parityRegionInfo = empties <= REGION_PARITY_EMPTIES
+      ? buildParityRegionInfo(emptyBitboard)
+      : null;
+    const orderingChildFeatureConfig = this.orderingChildFeatureTableByEmptyCount?.[empties] ?? null;
+    const { player: playerBoard, opponent: opponentBoard } = state.getPlayerBoards();
+    const opponentDiscCount = popcount(opponentBoard);
+
+    for (let moveIndex = 0; moveIndex < moves.length; moveIndex += 1) {
+      const move = moves[moveIndex];
+      const orderingOutcome = move.orderingOutcome ?? (
+        shouldPrecomputeOutcome
+          ? this.applyPreparedMoveFast(state, move, playerBoard, opponentBoard)
+          : null
+      );
+      let childTableEntry = null;
+      if (orderingOutcome) {
+        const preparedChildTableEntry = this.getPreparedChildTableEntryForOrdering(move);
+        if (preparedChildTableEntry !== undefined) {
+          childTableEntry = preparedChildTableEntry;
+          this.stats.etcPreparedChildTableReuseLookups += 1;
+          if (childTableEntry) {
+            this.stats.etcPreparedChildTableReuseHits += 1;
+          }
+        } else {
+          childTableEntry = this.lookupTransposition(orderingOutcome);
+          this.cachePreparedChildTableEntryForOrdering(move, childTableEntry);
+        }
+      }
+
+      let opponentMoveCount = null;
+      let opponentCornerReplies = null;
+      if (orderingOutcome) {
+        const childPlayer = orderingOutcome.currentPlayer === 'black'
+          ? orderingOutcome.black
+          : orderingOutcome.white;
+        const childOpponent = orderingOutcome.currentPlayer === 'black'
+          ? orderingOutcome.white
+          : orderingOutcome.black;
+        const opponentMovesBitboard = legalMovesBitboard(childPlayer, childOpponent);
+        opponentMoveCount = popcount(opponentMovesBitboard);
+        opponentCornerReplies = countCornerMoves(opponentMovesBitboard);
+      }
+
+      move.orderingOutcome = orderingOutcome;
+      move.childTableEntry = childTableEntry;
+      move.opponentMoveCount = opponentMoveCount;
+      move.opponentCornerReplies = opponentCornerReplies;
+      move.orderingScore = this.scoreMoveForOrdering(
+        state,
+        move,
+        {
+          ply,
+          depthRemaining,
+          ttMoveIndex,
+          openingContext,
+          empties,
+          lateOrderingProfile,
+          orderingScoreTable,
+          useLightweightOrderingEvaluator: useFullLightweightOrdering,
+          historyBucket,
+          killerMoves,
+          shouldInspectChild: shouldPrecomputeOutcome,
+          orderingOutcome,
+          childTableEntry,
+          opponentMoveCount,
+          opponentCornerReplies,
+          parityRegionInfo,
+          playerBoard,
+          opponentBoard,
+          opponentDiscCount,
+          emptyBitboard,
+          orderingChildFeatureConfig,
+        },
+      );
+    }
+
+    if (useExactFastestOrdering) {
+      return this.orderExactFastestFirstMoves(moves, empties, parityRegionInfo);
+    }
+
+    moves.sort((left, right) => right.orderingScore - left.orderingScore);
+
+    if (topKLightweight > 0) {
+      let rescoredOrderingChanged = false;
+      for (let index = 0; index < topKLightweight; index += 1) {
+        const move = moves[index];
+        const rescored = this.scoreMoveForOrdering(
+          state,
+          move,
+          {
+            ply,
+            depthRemaining,
+            ttMoveIndex,
+            openingContext,
+            empties,
+            lateOrderingProfile,
+            orderingScoreTable,
+            useLightweightOrderingEvaluator: true,
+            historyBucket,
+            killerMoves,
+            shouldInspectChild: shouldPrecomputeOutcome,
+            orderingOutcome: move.orderingOutcome ?? null,
+            childTableEntry: move.childTableEntry ?? null,
+            opponentMoveCount: move.opponentMoveCount ?? null,
+            opponentCornerReplies: move.opponentCornerReplies ?? null,
+            parityRegionInfo,
+            playerBoard,
+            opponentBoard,
+            opponentDiscCount,
+            emptyBitboard,
+            orderingChildFeatureConfig,
+          },
+        );
+        if (rescored !== move.orderingScore) {
+          this.stats.orderingTopKRescores += 1;
+          move.orderingScore = rescored;
+          rescoredOrderingChanged = true;
+        }
+      }
+      if (rescoredOrderingChanged) {
+        moves.sort((left, right) => right.orderingScore - left.orderingScore);
+      }
+    }
+
+    if (this.shouldRunOrderingShallowProbe(empties, depthRemaining)) {
+      const probeTopK = Math.max(0, Math.min(moves.length, this.moveOrderingStructureProfile?.shallowProbeTopK ?? 0));
+      if (probeTopK > 0) {
+        let probeOrderingChanged = false;
+        for (let index = 0; index < probeTopK; index += 1) {
+          const move = moves[index];
+          const childState = move.orderingOutcome ?? this.applyPreparedMoveFast(state, move, playerBoard, opponentBoard);
+          if (!childState) {
+            continue;
+          }
+          const probeBonus = this.runOrderingShallowProbe(childState, depthRemaining, ply + 1);
+          if (probeBonus !== 0) {
+            move.orderingScore += probeBonus;
+            probeOrderingChanged = true;
+          }
+        }
+        if (probeOrderingChanged) {
+          moves.sort((left, right) => right.orderingScore - left.orderingScore);
+        }
+      }
+    }
+
+    return moves;
+  }
+
+  scoreMoveForOrdering(state, move, context) {
+    const {
+      ply,
+      depthRemaining,
+      ttMoveIndex,
+      openingContext = null,
+      empties,
+      lateOrderingProfile,
+      orderingScoreTable,
+      useLightweightOrderingEvaluator,
+      historyBucket,
+      killerMoves,
+      shouldInspectChild = false,
+      orderingOutcome = null,
+      childTableEntry = null,
+      opponentMoveCount = null,
+      opponentCornerReplies = null,
+      parityRegionInfo = null,
+      playerBoard = null,
+      opponentBoard = null,
+      opponentDiscCount = null,
+      emptyBitboard = 0n,
+      orderingChildFeatureConfig = null,
+    } = context;
+
+    let score = 0;
+    const killerPrimaryIndex = killerMoves?.[0] ?? null;
+    const killerSecondaryIndex = killerMoves?.[1] ?? null;
+
+    if (move.index === ttMoveIndex) {
+      score += 10_000_000;
+    }
+
+    const resolvedFlipCount = this.resolvePreparedMoveFlipCount(move, playerBoard, opponentBoard);
+
+    if (this.isPreparedMoveImmediateWipeout(move, playerBoard, opponentBoard, opponentDiscCount)) {
+      score += ORDERING_IMMEDIATE_WIPEOUT_BONUS;
+    }
+
+    if (CORNER_INDEX_SET.has(move.index)) {
+      score += 5_000_000;
+    }
+
+    const bookWeight = openingContext?.bookWeights?.get(move.index) ?? null;
+    if (Number.isFinite(bookWeight)) {
+      score += bookOrderingBonus(bookWeight);
+    }
+
+    const openingPriorCandidate = openingContext?.priorByMove?.get(move.index) ?? null;
+    if (openingPriorCandidate) {
+      score += openingPriorOrderingBonus(openingPriorCandidate, openingContext, this.openingTuning);
+    }
+
+    if (killerPrimaryIndex === move.index) {
+      score += orderingScoreTable.killerPrimaryBonus;
+    } else if (killerSecondaryIndex === move.index) {
+      score += orderingScoreTable.killerSecondaryBonus;
+    }
+
+    score += Math.round((historyBucket?.[move.index] ?? 0) * orderingScoreTable.historyWeight);
+    score += Math.round(POSITIONAL_WEIGHTS[move.index] * orderingScoreTable.positionalWeight);
+    score += Math.round(resolvedFlipCount * orderingScoreTable.flipWeight);
+
+    const riskType = getPositionalRisk(move.index);
+    if (riskType === 'x-square') {
+      score -= orderingScoreTable.xSquarePenalty;
+    } else if (riskType === 'c-square') {
+      score -= orderingScoreTable.cSquarePenalty;
+    }
+
+    let outcome = orderingOutcome;
+    const shouldInspectMoveChild = Boolean(outcome) || shouldInspectChild;
+
+    if (shouldInspectMoveChild && !outcome) {
+      outcome = this.applyPreparedMoveFast(state, move, playerBoard, opponentBoard);
+    }
+
+    if (outcome) {
+      const childState = outcome;
+      const resolvedChildTableEntry = childTableEntry ?? this.lookupTransposition(childState);
+      score += this.scoreTranspositionForOrdering(resolvedChildTableEntry, depthRemaining);
+
+      let resolvedOpponentMoveCount = opponentMoveCount;
+      let resolvedOpponentCornerReplies = opponentCornerReplies;
+      if (!Number.isFinite(resolvedOpponentMoveCount) || !Number.isFinite(resolvedOpponentCornerReplies)) {
+        const childBoards = childState.getPlayerBoards();
+        const opponentMovesBitboard = legalMovesBitboard(childBoards.player, childBoards.opponent);
+        if (!Number.isFinite(resolvedOpponentMoveCount)) {
+          resolvedOpponentMoveCount = popcount(opponentMovesBitboard);
+        }
+        if (!Number.isFinite(resolvedOpponentCornerReplies)) {
+          resolvedOpponentCornerReplies = countCornerMoves(opponentMovesBitboard);
+        }
+      }
+
+      score -= resolvedOpponentMoveCount * orderingScoreTable.mobilityPenaltyPerMove;
+
+      if (resolvedOpponentCornerReplies > 0) {
+        score -= resolvedOpponentCornerReplies * orderingScoreTable.cornerReplyPenaltyPerMove;
+      }
+
+      if (resolvedOpponentMoveCount === 0) {
+        score += orderingScoreTable.passBonus;
+      }
+
+      if (empties <= REGION_PARITY_EMPTIES) {
+        score += Math.round(
+          this.getRegionParityOrderingBonus(move.index, empties, parityRegionInfo)
+          * orderingScoreTable.parityScale,
+        );
+      }
+
+      if (orderingChildFeatureConfig) {
+        score += this.scoreOrderingChildStructureBonuses(
+          childState,
+          state.currentPlayer,
+          move.index,
+          orderingChildFeatureConfig,
+          emptyBitboard,
+        );
+      }
+
+      if (useLightweightOrderingEvaluator) {
+        score += Math.round(
+          this.scoreLightweightOrderingEvaluation(
+            childState,
+            state.currentPlayer,
+            childState.getEmptyCount(),
+            resolvedOpponentMoveCount,
+          )
+          * orderingScoreTable.lightweightEvalScale,
+        );
+      }
+    }
+
+    return score;
+  }
+}
+
+export function createEngine(presetKey = DEFAULT_PRESET_KEY, customInputs = {}, styleKey = DEFAULT_STYLE_KEY) {
+  const options = resolveEngineOptions(presetKey, customInputs, styleKey);
+  return new SearchEngine(options);
+}
+
+export function listAvailablePresets() {
+  return Object.entries(ENGINE_PRESETS).map(([key, preset]) => ({
+    key,
+    label: preset.label,
+    description: preset.description,
+  }));
+}
+
+export function listAvailableStyles() {
+  return Object.entries(ENGINE_STYLE_PRESETS).map(([key, preset]) => ({
+    key,
+    label: preset.label,
+    description: preset.description,
+  }));
+}

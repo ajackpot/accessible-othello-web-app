@@ -1,0 +1,15 @@
+{
+  "candidate": "s157-main-assertive-both",
+  "decision": "accepted-retained-anchor",
+  "conclusionKorean": "채택 유지",
+  "rationale": [
+    "dual-baseline 6개 셀에서 패배가 하나도 없습니다.",
+    "s154-both 축은 승리 -> 동률 -> 승리, s154-main 축은 동률 -> 동률 -> 승리로 정리됩니다.",
+    "overall 합산이 baseline 20.0/48, candidate 28.0/48로 +8.0점 앞섭니다.",
+    "240ms에서 양 baseline 모두 승리라 long-think non-collapse가 분명합니다.",
+    "평균 nodes/ms가 baseline 9.19, candidate 9.18로 사실상 중립입니다."
+  ],
+  "provenanceMode": "historical-reuse-exact-match",
+  "sourceSummaryJson": "tools/engine-match/out/stage168-assertiveboth-cont/s157-main-assertive-both/summary.json",
+  "nextRecommendation": "다음 비교 우선순위는 s170-main-frontier-zebra와의 직접 head-to-head입니다."
+}

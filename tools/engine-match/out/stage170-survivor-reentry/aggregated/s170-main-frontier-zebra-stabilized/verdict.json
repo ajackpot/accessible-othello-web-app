@@ -1,0 +1,37 @@
+{
+  "candidateKey": "s170-main-frontier-zebra-stabilized",
+  "verdict": "reject",
+  "rationale": "ordering-side stabilization removed the reinforced s154-both 160ms negative cell, but it degraded the s154-main lane into two negative cells at 160/240ms, leaving the overall 72-game aggregate below baseline and all six rows slower in nodes/ms.",
+  "patterns": {
+    "s154-main": "승리 -> 패배 -> 패배",
+    "s154-both": "동률 -> 동률 -> 동률"
+  },
+  "overall": {
+    "baselinePoints": 37,
+    "candidatePoints": 35,
+    "totalGames": 72,
+    "pointGap": -0.027777777777777776
+  },
+  "averageNodesPerMs": {
+    "baseline": 17.103485389306588,
+    "candidate": 16.737419659843987
+  },
+  "timeAggregates": {
+    "80": {
+      "bp": 11.5,
+      "cp": 12.5,
+      "g": 24
+    },
+    "160": {
+      "bp": 12.5,
+      "cp": 11.5,
+      "g": 24
+    },
+    "240": {
+      "bp": 13,
+      "cp": 11,
+      "g": 24
+    }
+  },
+  "nextDirection": "Keep the original s170-main-frontier-zebra as the higher-value hold. Do not continue this ordering-side stabilized branch; if frontier-zebra is revisited, prefer MPC-side micro-adjustment or direct survivor head-to-head."
+}

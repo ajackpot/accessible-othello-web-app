@@ -1,0 +1,46 @@
+{
+  "stage": 192,
+  "tag": "stage192",
+  "runtimeDefaults": {
+    "mobilityKernel": "prefix-bidirectional",
+    "flipKernel": "ray-between-precheck",
+    "patternBankScoreVariant": "packed-lookup"
+  },
+  "candidateStatus": [
+    {"id":"C01","status":"adopted"},
+    {"id":"C02","status":"adopted"},
+    {"id":"C03","status":"adopted"},
+    {"id":"C04","status":"partial"},
+    {"id":"C05","status":"partial"},
+    {"id":"C06","status":"not-adopted"},
+    {"id":"C07","status":"partial"},
+    {"id":"C08","status":"adopted"},
+    {"id":"C09","status":"deferred"},
+    {"id":"C10","status":"not-implemented"},
+    {"id":"C11","status":"deferred"},
+    {"id":"C12","status":"adopted"},
+    {"id":"C13","status":"partial"},
+    {"id":"C14","status":"partial"},
+    {"id":"C15","status":"not-implemented"},
+    {"id":"C16","status":"adopted"},
+    {"id":"C17","status":"adopted"},
+    {"id":"C18","status":"adopted"},
+    {"id":"C19","status":"adopted"},
+    {"id":"C20","status":"not-implemented"},
+    {"id":"C21","status":"not-implemented"},
+    {"id":"C22","status":"partial"},
+    {"id":"C23","status":"not-implemented"},
+    {"id":"C24","status":"adopted"},
+    {"id":"C25","status":"partial"},
+    {"id":"C26","status":"not-implemented"}
+  ],
+  "highReturnLegacyHotspots": [
+    "GameState.applyMoveFast/passTurnFast object allocation",
+    "buildLegalMoveRecords/listLegalMoveDetails object materialization",
+    "bitsToIndices and flippedIndices expansion paths",
+    "pattern-bank detail/fallback paths still using legacy index loop",
+    "line-table family blocked by BigInt representation bridge",
+    "search flow still eager on flip materialization instead of TT/PV-first lazy path",
+    "exact-tail 5~8 empties still leaning on generic rules path"
+  ]
+}

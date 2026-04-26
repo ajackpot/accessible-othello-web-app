@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-04-18T04:32:44.411Z",
+  "inputUsed": "tools/evaluator-training/out/stage29_move_ordering_smoke_input_mixed.jsonl",
+  "configPath": "tools/evaluator-training/examples/stage15x-support-stack.example.json",
+  "outputRoot": "tools/evaluator-training/out/stage15x-support-stack",
+  "families": [
+    {
+      "familyKey": "stage151-split-late3",
+      "manifestSource": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+      "prerequisites": {
+        "familyRoot": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3",
+        "hasSharedProfiles": true,
+        "moveOrderingVariants": [
+          "move-ordering.balanced.json",
+          "move-ordering.safe.json",
+          "move-ordering.superset.json"
+        ],
+        "runtimeMpcVariants": [
+          "runtime.overlapBothSoftLow.json",
+          "runtime.overlapHighSafe.json",
+          "runtime.overlapHighTight.json",
+          "runtime.safe4High.json",
+          "runtime.splitHighTight.json"
+        ],
+        "orderingPatternVariants": [
+          "ordering-pattern-bank.latea.json",
+          "ordering-pattern-bank.noend.json"
+        ],
+        "readyForExport": true
+      },
+      "status": "repaired",
+      "note": "all exported modules look large enough to contain factorized payloads",
+      "command": "node tools/evaluator-training/run-stage15x-support-stack-bundle.mjs --input tools/evaluator-training/out/stage29_move_ordering_smoke_input_mixed.jsonl --config tools/evaluator-training/examples/stage15x-support-stack.example.json --output-root tools/evaluator-training/out/stage15x-support-stack --family stage151-split-late3 --phase export",
+      "exportedModules": [
+        {
+          "file": "s151-full-both.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-full-both.generated.js",
+          "size": {
+            "bytes": 2640992,
+            "kib": 2579.09,
+            "mib": 2.519
+          },
+          "likelyFactorizedPayload": true
+        },
+        {
+          "file": "s151-latea-main.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-latea-main.generated.js",
+          "size": {
+            "bytes": 2459537,
+            "kib": 2401.89,
+            "mib": 2.346
+          },
+          "likelyFactorizedPayload": true
+        },
+        {
+          "file": "s151-linear-only.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-linear-only.generated.js",
+          "size": {
+            "bytes": 2338412,
+            "kib": 2283.61,
+            "mib": 2.23
+          },
+          "likelyFactorizedPayload": true
+        },
+        {
+          "file": "s151-noend-main.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-main.generated.js",
+          "size": {
+            "bytes": 2569991,
+            "kib": 2509.76,
+            "mib": 2.451
+          },
+          "likelyFactorizedPayload": true
+        },
+        {
+          "file": "s151-noend-split.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-noend-split.generated.js",
+          "size": {
+            "bytes": 2569966,
+            "kib": 2509.73,
+            "mib": 2.451
+          },
+          "likelyFactorizedPayload": true
+        },
+        {
+          "file": "s151-safe-full.generated.js",
+          "path": "tools/evaluator-training/out/stage15x-support-stack/stage151-split-late3/exported/s151-safe-full.generated.js",
+          "size": {
+            "bytes": 2639334,
+            "kib": 2577.47,
+            "mib": 2.517
+          },
+          "likelyFactorizedPayload": true
+        }
+      ]
+    }
+  ]
+}

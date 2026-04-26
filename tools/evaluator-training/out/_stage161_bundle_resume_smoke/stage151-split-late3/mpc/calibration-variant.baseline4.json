@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "name": "stage151-split-late3__mpc-calibration__baseline4",
+  "description": "stage151-split-late3 MPC calibration variant baseline4",
+  "source": {
+    "searchPairsInputCount": 1,
+    "searchPairsInputPaths": [
+      "/mnt/data/stage161_work/tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/shared-search-pairs.jsonl"
+    ],
+    "maxSamplesPerBucket": 2,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "zValues": [
+      1,
+      1.5,
+      1.96,
+      2.5,
+      3
+    ],
+    "targetHoldoutCoverage": 0.99,
+    "bucketPreset": null,
+    "adaptiveStopEnabled": false,
+    "adaptiveMinSamplesPerBucket": 160,
+    "adaptiveCheckEvery": 20,
+    "derivedFromProfileName": "stage151-split-late3__mpc__overlap8",
+    "derivedFromProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/calibration.overlap8.json",
+    "derivedAt": "2026-04-17T13:29:22.939Z",
+    "variant": {
+      "keepSpecs": [
+        {
+          "raw": "18-21:4>8",
+          "minEmpties": 18,
+          "maxEmpties": 21,
+          "shallowDepth": 4,
+          "deepDepth": 8
+        }
+      ]
+    }
+  },
+  "diagnostics": {
+    "visitedRecords": 2,
+    "matchedRecords": 2,
+    "acceptedSamples": 2,
+    "usableCalibrationCount": 0,
+    "shallowSearchCost": {
+      "searches": 2,
+      "nodes": 1371,
+      "elapsedMs": 1250,
+      "averageNodesPerSearch": 685.5,
+      "averageElapsedMsPerSearch": 625
+    },
+    "deepSearchCost": {
+      "searches": 2,
+      "nodes": 26188,
+      "elapsedMs": 4108,
+      "averageNodesPerSearch": 13094,
+      "averageElapsedMsPerSearch": 2054
+    },
+    "stopReason": "all-buckets-complete",
+    "elapsedSeconds": 0.011,
+    "derivedVariant": {
+      "baseProfileName": "stage151-split-late3__mpc__overlap8",
+      "keptCalibrationCount": 1,
+      "keptCalibrationKeys": [
+        "mpc-18-21-d4-d8"
+      ]
+    }
+  },
+  "calibrations": [
+    {
+      "key": "mpc-18-21-d4-d8",
+      "label": "18-21 / d4→d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "sampleCount": 2,
+      "trainSampleCount": 1,
+      "holdoutSampleCount": 1,
+      "usable": false,
+      "regression": null,
+      "trainMetrics": {
+        "count": 0,
+        "mae": null,
+        "rmse": null,
+        "meanResidual": null,
+        "stdDevResidual": null,
+        "maxAbsResidual": null
+      },
+      "holdoutMetrics": {
+        "count": 0,
+        "mae": null,
+        "rmse": null,
+        "meanResidual": null,
+        "stdDevResidual": null,
+        "maxAbsResidual": null
+      },
+      "zCoverage": [
+        {
+          "z": 1,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 1.5,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 1.96,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 2.5,
+          "coverage": null,
+          "intervalHalfWidth": null
+        },
+        {
+          "z": 3,
+          "coverage": null,
+          "intervalHalfWidth": null
+        }
+      ],
+      "recommendedZ": null,
+      "shallowSearchCost": {
+        "searches": 2,
+        "nodes": 1371,
+        "elapsedMs": 1250,
+        "averageNodesPerSearch": 685.5,
+        "averageElapsedMsPerSearch": 625
+      },
+      "deepSearchCost": {
+        "searches": 2,
+        "nodes": 26188,
+        "elapsedMs": 4108,
+        "averageNodesPerSearch": 13094,
+        "averageElapsedMsPerSearch": 2054
+      },
+      "closedEarly": false,
+      "closedReason": null,
+      "skippedMissing": 0
+    }
+  ],
+  "stage": {
+    "number": 156,
+    "tag": "stage156",
+    "file": "stage-info.json",
+    "label": "Stage 156",
+    "updatedAt": "2026-04-15T23:40:00+09:00",
+    "kind": "mpc-profile",
+    "status": "derived-variant",
+    "derivedFromProfileName": "stage151-split-late3__mpc__overlap8",
+    "derivedFromProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/mpc/calibration.overlap8.json"
+  }
+}

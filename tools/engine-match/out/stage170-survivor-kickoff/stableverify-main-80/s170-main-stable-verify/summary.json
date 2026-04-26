@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-04-20T06:15:45.333Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-stable-verify",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 2,
+    "tier": "balanced",
+    "risk": "medium",
+    "notes": "Stage158 stable/quiet ordering에 stage157 verify-tight MPC를 얹어, stage158 ordering 기여와 stage157 보수형 MPC를 분리해서 확인하는 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "stage154-stable-quiet-v1",
+    "mpcStructureProfileKey": "verify-tight-v1",
+    "moveOrderingSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    },
+    "mpcSource": {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17,
+      31,
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-main"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-main",
+      "baselineLabel": "s154-main",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-80/s170-main-stable-verify/engine-options/s154-main__s170-main-stable-verify.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-kickoff/stableverify-main-80/s170-main-stable-verify/results/s154-main__s170-main-stable-verify.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-main",
+      "timeLimitMs": 80,
+      "totalGames": 8,
+      "baselinePoints": 6,
+      "candidatePoints": 2,
+      "baselineScoreRate": 0.75,
+      "candidateScoreRate": 0.25,
+      "pointGap": -0.5,
+      "baselineNodesPerMs": 12.075389528694474,
+      "candidateNodesPerMs": 11.335205438959504,
+      "recommendation": "s154-main가 s154-main + s170-main-stable-verify보다 paired score 기준 우세합니다."
+    }
+  ]
+}

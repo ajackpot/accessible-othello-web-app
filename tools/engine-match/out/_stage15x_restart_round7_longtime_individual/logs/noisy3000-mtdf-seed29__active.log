@@ -1,0 +1,22 @@
+$ node tools/engine-match/benchmark-vs-trineutron.mjs --output-json tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-mtdf-seed29__active.json --games 1 --opening-plies 20 --opening-source random --seed 29 --our-time-ms 3000 --their-time-ms 3000 --our-max-depth 6 --their-max-depth 18 --exact-endgame-empties 10 --solver-adjudication-empties 14 --solver-adjudication-time-ms 60000 --their-noise-scale 4 --variant-seed-mode shared --search-algorithm classic-mtdf-2ply --aspiration-window 60 --max-table-entries 90000 --variants active
+
+Opening source      : random
+Opening plies       : 20
+Opening seed range  : 29..29
+Our search          : classic-mtdf-2ply (Classic MTD(f)), aspiration=60, table=90000
+Our engine time     : 3000ms, depth=6, exactEndgameEmpties=10
+Solver adjudication : empties<=14, time=60000ms, depth=14
+Trineutron time     : 3000ms, depth=18, noiseScale=4
+Variant seed mode   : shared
+Variants            : active
+Games per variant   : 1 openings x 2 colors = 2
+
+[variant: active-generated+ordering (balanced13-alllate-smoothed stability extras 0.90x / trained-move-ordering-linear-v2 / diagonal-top24-latea-endgame-patched-calibrated / balanced13-alllate-smoothed-stability-090__runtime-mpc / no pattern-bank)]
+opening#01 black loss diff=-28 our 120,778n/5,248ms vs tri 2,602,205n/39,008ms [exact-adjudication]
+opening#01 white win  diff= 18 our 90,607n/3,851ms vs tri 2,777,601n/39,005ms [exact-adjudication]
+score: 1/2 (50.0%)
+W-L-D: 1-1-0
+avg disc diff: -5.00
+exact adjudications: 2/2
+
+Saved benchmark summary to /mnt/data/long_stage167/stage167_benchmark_reset_repo/tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-mtdf-seed29__active.json

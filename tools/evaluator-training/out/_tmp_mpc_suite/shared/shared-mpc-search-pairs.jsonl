@@ -1,0 +1,2 @@
+{"sampleIndex":0,"empties":24,"scores":{"4":2466,"8":9058},"passDepths":[],"invalidDepths":[],"searchStats":{"4":{"nodes":698,"elapsedMs":406,"searchCompletion":"complete"},"8":{"nodes":13190,"elapsedMs":1044,"searchCompletion":"complete"}},"contributedBucketKeys":["mpc-22-25-d4-d8"]}
+{"sampleIndex":1,"empties":24,"scores":{"4":-3324,"8":1472},"passDepths":[],"invalidDepths":[],"searchStats":{"4":{"nodes":661,"elapsedMs":73,"searchCompletion":"complete"},"8":{"nodes":27964,"elapsedMs":1029,"searchCompletion":"complete"}},"contributedBucketKeys":["mpc-22-25-d4-d8"]}

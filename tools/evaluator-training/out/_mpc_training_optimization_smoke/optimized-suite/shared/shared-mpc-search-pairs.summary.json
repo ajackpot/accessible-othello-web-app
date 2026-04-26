@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "outputJsonlPath": "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_mpc_training_optimization_smoke/optimized-suite/shared/shared-mpc-search-pairs.jsonl",
+  "source": {
+    "inputCount": 1,
+    "inputPaths": [
+      "/mnt/data/work_mpcopt/othello/tools/evaluator-training/out/stage35_mpc_synthetic.jsonl"
+    ],
+    "estimatedInputSamples": null,
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 4,
+    "timeLimitMs": 1000,
+    "aspirationWindow": 40,
+    "maxTableEntries": 50000,
+    "bucketPreset": null,
+    "evaluationProfileName": "balanced13-alllate-smoothed stability extras 0.90x",
+    "moveOrderingProfileName": "trained-move-ordering-linear-v2"
+  },
+  "diagnostics": {
+    "visitedSamples": 4,
+    "matchedSamples": 4,
+    "acceptedSamples": 4,
+    "recordsWritten": 4,
+    "resumedFromCheckpoint": false,
+    "lastProcessedInputSampleIndex": 3,
+    "stopReason": "all-buckets-complete",
+    "shallowSearchCost": {
+      "searches": 4,
+      "nodes": 10152,
+      "elapsedMs": 913,
+      "averageNodesPerSearch": 2538,
+      "averageElapsedMsPerSearch": 228.25
+    },
+    "deepSearchCost": {
+      "searches": 4,
+      "nodes": 83194,
+      "elapsedMs": 4127,
+      "averageNodesPerSearch": 20798.5,
+      "averageElapsedMsPerSearch": 1031.75
+    },
+    "elapsedSeconds": 5.085
+  },
+  "calibrations": [
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "order": 0,
+      "acceptedSamples": 4,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "shallowSearchCost": {
+        "searches": 4,
+        "nodes": 10152,
+        "elapsedMs": 913,
+        "averageNodesPerSearch": 2538,
+        "averageElapsedMsPerSearch": 228.25
+      },
+      "deepSearchCost": {
+        "searches": 4,
+        "nodes": 83194,
+        "elapsedMs": 4127,
+        "averageNodesPerSearch": 20798.5,
+        "averageElapsedMsPerSearch": 1031.75
+      }
+    }
+  ]
+}

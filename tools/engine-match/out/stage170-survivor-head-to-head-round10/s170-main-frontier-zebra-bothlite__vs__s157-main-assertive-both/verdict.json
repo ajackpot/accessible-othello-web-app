@@ -1,0 +1,38 @@
+{
+  "decision": "hold",
+  "matchup": {
+    "first": "s170-main-frontier-zebra-bothlite",
+    "second": "s157-main-assertive-both"
+  },
+  "patternSecondPerspective": [
+    "동률",
+    "동률",
+    "동률"
+  ],
+  "overall": {
+    "firstPoints": 18,
+    "secondPoints": 18,
+    "totalGames": 36,
+    "pointDiffSecondMinusFirst": 0,
+    "pointGapRate": 0,
+    "firstNodesPerMs": 12.050488764758157,
+    "secondNodesPerMs": 13.144351225455976
+  },
+  "timeSlices": {
+    "80ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    },
+    "160ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    },
+    "240ms": {
+      "firstPoints": 6,
+      "secondPoints": 6
+    }
+  },
+  "provisionalLeader": "s170-main-wide-zebra",
+  "rationale": "bothlite and assertive-both finish as an exact 18:18 draw, with all three time slices also ending 6:6. assertive-both is faster, but direct score creates no new hierarchy, so both remain challenger-tier while wide-zebra keeps the bracket lead.",
+  "nextRecommendation": "Revisit s157-main-assertive-both vs s170-main-wide-zebra with a 160ms-focused reinforced retest if the priority is naming a sole provisional mainline leader. If the priority is runtime packaging instead, move to a split review with wide-zebra as provisional mainline and assertive-both/bothlite as user-option candidates."
+}

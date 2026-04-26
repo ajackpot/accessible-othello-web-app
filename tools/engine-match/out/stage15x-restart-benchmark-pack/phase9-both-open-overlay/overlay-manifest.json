@@ -1,0 +1,10 @@
+[
+  {
+    "id": "s154-both-s158-open",
+    "overlayKey": "s154-stable-zebra-open",
+    "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+    "engineOptionsJson": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase9-both-open-overlay/engine-options/s154-both-s158-open.json",
+    "moveOrderingStructureProfile": "stage154-stable-quiet-v1",
+    "mpcStructureProfile": "stage154-zebra-open-v1"
+  }
+]

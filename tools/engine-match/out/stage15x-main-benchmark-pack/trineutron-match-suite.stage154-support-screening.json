@@ -1,0 +1,75 @@
+{
+  "defaults": {
+    "openingPlies": 20,
+    "ourMaxDepth": 6,
+    "theirMaxDepth": 18,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "solverAdjudicationMaxDepth": 14,
+    "variantSeedMode": "shared"
+  },
+  "referenceVariantId": "active",
+  "variants": [
+    {
+      "id": "active",
+      "variant": "active",
+      "label": "active-installed"
+    },
+    {
+      "id": "s154-safe",
+      "type": "custom",
+      "label": "stage154 safe",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-safe.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-safe.json"
+    },
+    {
+      "id": "s154-main",
+      "type": "custom",
+      "label": "stage154 main",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    },
+    {
+      "id": "s154-wide-safe",
+      "type": "custom",
+      "label": "stage154 wide-safe",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-wide-safe.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-wide-safe.json"
+    },
+    {
+      "id": "s154-split",
+      "type": "custom",
+      "label": "stage154 split",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-split.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-split.json"
+    },
+    {
+      "id": "s154-both",
+      "type": "custom",
+      "label": "stage154 both",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "det80-seed17",
+      "label": "deterministic 80ms seed17",
+      "seed": 17,
+      "games": 2,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 0
+    },
+    {
+      "id": "noisy80-seed29",
+      "label": "noisy 80ms seed29",
+      "seed": 29,
+      "games": 4,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 4
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "generatedAt": "2026-04-18T13:48:21Z",
+  "timeMs": 1500,
+  "gamesPerScenario": 1,
+  "scenarios": [
+    {
+      "id": "noisy1500-mtdf-seed29",
+      "label": "noisy 1500ms MTD(f) seed29",
+      "seed": 29,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-mtdf-seed53",
+      "label": "noisy 1500ms MTD(f) seed53",
+      "seed": 53,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-mtdf-seed107",
+      "label": "noisy 1500ms MTD(f) seed107",
+      "seed": 107,
+      "searchAlgorithm": "classic-mtdf-2ply",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed71",
+      "label": "noisy 1500ms PVS seed71",
+      "seed": 71,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed89",
+      "label": "noisy 1500ms PVS seed89",
+      "seed": 89,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    },
+    {
+      "id": "noisy1500-pvs-seed131",
+      "label": "noisy 1500ms PVS seed131",
+      "seed": 131,
+      "searchAlgorithm": "classic",
+      "aspirationWindow": 60,
+      "maxTableEntries": 90000
+    }
+  ],
+  "variants": [
+    {
+      "id": "s154-both-s158-open",
+      "label": "s154-both + s158-stable-zebra-open",
+      "kind": "custom",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-restart-benchmark-pack/phase9-both-open-overlay/engine-options/s154-both-s158-open.json"
+    }
+  ],
+  "runRecords": [
+    {
+      "runId": "noisy1500-mtdf-seed29__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-mtdf-seed29",
+      "scenarioLabel": "noisy 1500ms MTD(f) seed29",
+      "startedAt": 1776519807.2329009,
+      "finishedAt": 1776519858.7537618,
+      "wallSeconds": 51.52086091041565,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-mtdf-seed29__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-mtdf-seed29__s154-both-s158-open.log"
+    },
+    {
+      "runId": "noisy1500-mtdf-seed53__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-mtdf-seed53",
+      "scenarioLabel": "noisy 1500ms MTD(f) seed53",
+      "startedAt": 1776519858.7549856,
+      "finishedAt": 1776519907.7903066,
+      "wallSeconds": 49.03532099723816,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-mtdf-seed53__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-mtdf-seed53__s154-both-s158-open.log"
+    },
+    {
+      "runId": "noisy1500-mtdf-seed107__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-mtdf-seed107",
+      "scenarioLabel": "noisy 1500ms MTD(f) seed107",
+      "startedAt": 1776519907.7911441,
+      "finishedAt": 1776519955.916681,
+      "wallSeconds": 48.12553691864014,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-mtdf-seed107__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-mtdf-seed107__s154-both-s158-open.log"
+    },
+    {
+      "runId": "noisy1500-pvs-seed71__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-pvs-seed71",
+      "scenarioLabel": "noisy 1500ms PVS seed71",
+      "startedAt": 1776519955.9176972,
+      "finishedAt": 1776520004.7973757,
+      "wallSeconds": 48.87967848777771,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-pvs-seed71__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-pvs-seed71__s154-both-s158-open.log"
+    },
+    {
+      "runId": "noisy1500-pvs-seed89__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-pvs-seed89",
+      "scenarioLabel": "noisy 1500ms PVS seed89",
+      "startedAt": 1776520004.7986622,
+      "finishedAt": 1776520053.3669498,
+      "wallSeconds": 48.56828761100769,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-pvs-seed89__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-pvs-seed89__s154-both-s158-open.log"
+    },
+    {
+      "runId": "noisy1500-pvs-seed131__s154-both-s158-open",
+      "variantId": "s154-both-s158-open",
+      "variantLabel": "s154-both + s158-stable-zebra-open",
+      "scenarioId": "noisy1500-pvs-seed131",
+      "scenarioLabel": "noisy 1500ms PVS seed131",
+      "startedAt": 1776520053.3679526,
+      "finishedAt": 1776520101.672557,
+      "wallSeconds": 48.30460453033447,
+      "returnCode": 0,
+      "outputJson": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/results/noisy1500-pvs-seed131__s154-both-s158-open.json",
+      "logPath": "tools/engine-match/out/_stage15x_restart_round9_new_variant_only/logs/noisy1500-pvs-seed131__s154-both-s158-open.log"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-04-18T05:35:23Z",
+  "purpose": "Stage15x restart phase 2 finalist screening after phase 1 shortlist selection.",
+  "configPath": "tools/engine-match/out/stage15x-restart-benchmark-pack/trineutron-match-suite.stage15x-finalist-round2.json",
+  "variantOrder": [
+    "active",
+    "s151-full-both",
+    "s151-safe-full",
+    "s154-main",
+    "s154-both"
+  ],
+  "scenarios": [
+    {
+      "id": "det80-seed17",
+      "label": "deterministic 80ms seed17",
+      "seed": 17,
+      "games": 2,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 0
+    },
+    {
+      "id": "det80-seed41",
+      "label": "deterministic 80ms seed41",
+      "seed": 41,
+      "games": 2,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 0
+    },
+    {
+      "id": "noisy80-seed29",
+      "label": "noisy 80ms seed29",
+      "seed": 29,
+      "games": 4,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 4
+    },
+    {
+      "id": "noisy80-seed53",
+      "label": "noisy 80ms seed53",
+      "seed": 53,
+      "games": 4,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 4
+    }
+  ]
+}

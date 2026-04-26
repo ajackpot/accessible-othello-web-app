@@ -1,0 +1,55 @@
+{
+  "summary": [
+    {
+      "laneKey": "wide-zebra",
+      "currentCandidateKey": "s170-main-wide-zebra",
+      "currentStatus": "adopted_provisional_leader",
+      "primaryBranchKeys": [
+        "s176-main-wide-zebra-bothlite"
+      ],
+      "contingencyBranchKeys": [
+        "s176-main-wide-zebra-midtrim"
+      ],
+      "diagnosis": "80ms short-think는 가장 강하지만, `s157-main-assertive-both` direct match에서 160ms를 내주고 240ms takeover가 없습니다. 개선 포인트는 ordering이 아니라 MPC mid-think calibration 쪽이 우선입니다.",
+      "exhaustedWhen": "both-lite swap과 midtrim ordering이 모두 실패하면, 현재 wide-zebra lane은 사실상 구조 고점에 도달한 것으로 봅니다."
+    },
+    {
+      "laneKey": "assertive-both",
+      "currentCandidateKey": "s157-main-assertive-both",
+      "currentStatus": "adopted_challenger",
+      "primaryBranchKeys": [
+        "s176-main-wide-assertive"
+      ],
+      "contingencyBranchKeys": [
+        "s176-main-assertive-both-lite"
+      ],
+      "diagnosis": "long-think non-collapse와 throughput은 좋지만, `s170-main-wide-zebra` direct match에서 80ms short-think를 내줍니다. 개선 포인트는 MPC를 더 세게 여는 것이 아니라 ordering의 초반 폭을 넓혀 fast lane 대응력을 올리는 쪽입니다.",
+      "exhaustedWhen": "wide-assertive와 assertive-both-lite가 둘 다 실패하면, assertive lane은 이미 자신의 최고 고점 부근에 있다고 보는 것이 타당합니다."
+    },
+    {
+      "laneKey": "frontier-bothlite",
+      "currentCandidateKey": "s170-main-frontier-zebra-bothlite",
+      "currentStatus": "adopted_challenger",
+      "primaryBranchKeys": [
+        "s176-main-frontier-bothlite-parity"
+      ],
+      "contingencyBranchKeys": [
+        "s176-main-frontier-bothlite-topk2"
+      ],
+      "diagnosis": "mid/long-think는 안정적이고 `s157-main-assertive-both`와도 exact draw지만, `s170-main-wide-zebra`에게 80ms를 내주고 throughput도 밀립니다. 개선 포인트는 MPC가 아니라 ordering에 아주 작은 short-think assist를 더하는 것입니다.",
+      "exhaustedWhen": "parity-only와 tiny-topK 둘 다 실패하면, frontier-bothlite lane은 현재 구조상 plateau 상단에 도달한 것으로 정리할 수 있습니다."
+    }
+  ],
+  "roundRobinBudget": {
+    "laneCount": 3,
+    "confirmedPrimaryRounds": 1,
+    "confirmedUpperBoundRounds": 2,
+    "recommendation": {
+      "perConditionRounds": 6,
+      "rationale": "round8~10 direct head-to-head가 19:17 또는 18:18 수준의 plateau로 수렴했으므로, 4라운드는 너무 거칠고 8라운드는 primary queue 확인 단계에서는 과합니다. 다음 풀리그 기본값은 6라운드/조건으로 둡니다.",
+      "escalateToEightWhen": "overall gap이 ±2 이내이거나, 특정 시간대에서 sign flip/near-draw가 재발할 때"
+    },
+    "interpretation": "현재 확정된 primary branch만 기준으로 보면, 다음 세션의 풀리그 round-robin 1회면 세 lane을 모두 한 번씩 업데이트할 수 있습니다.",
+    "interpretationUpperBound": "contingency까지 열어도 현재 확인된 범위 안에서는 2회 풀리그 이내에 대부분의 lane을 소진할 수 있습니다."
+  }
+}

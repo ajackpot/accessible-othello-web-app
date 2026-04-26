@@ -1,0 +1,89 @@
+{
+  "defaults": {
+    "openingPlies": 20,
+    "ourMaxDepth": 6,
+    "theirMaxDepth": 18,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "solverAdjudicationMaxDepth": 14,
+    "variantSeedMode": "shared"
+  },
+  "referenceVariantId": "s154-main-base",
+  "variants": [
+    {
+      "id": "active",
+      "variant": "active",
+      "label": "active-installed"
+    },
+    {
+      "id": "s154-main-base",
+      "type": "custom",
+      "label": "stage154 main base",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-main.json"
+    },
+    {
+      "id": "s154-anchor-main",
+      "type": "custom",
+      "label": "s154-anchor-main (hybrid-main-v1 + conservative-hybrid-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-anchor-main.json"
+    },
+    {
+      "id": "s154-stable-quiet",
+      "type": "custom",
+      "label": "s154-stable-quiet (stage154-stable-quiet-v1 + conservative-hybrid-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-quiet.json"
+    },
+    {
+      "id": "s154-stable-quiet-probe",
+      "type": "custom",
+      "label": "s154-stable-quiet-probe (stage154-stable-quiet-probe-v1 + conservative-hybrid-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-quiet-probe.json"
+    },
+    {
+      "id": "s154-stable-zebra",
+      "type": "custom",
+      "label": "s154-stable-zebra (stage154-stable-quiet-v1 + stage154-zebra-guarded-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-zebra.json"
+    },
+    {
+      "id": "s154-stable-zebra-open",
+      "type": "custom",
+      "label": "s154-stable-zebra-open (stage154-stable-quiet-v1 + stage154-zebra-open-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-stable-zebra-open.json"
+    },
+    {
+      "id": "s154-zebra-both-probe",
+      "type": "custom",
+      "label": "s154-zebra-both-probe (stage154-stable-quiet-probe-v1 + stage154-zebra-both-v1)",
+      "generatedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-main.generated.js",
+      "engineOptionsJson": "tools/engine-match/out/stage15x-main-benchmark-pack/engine-options/s154-zebra-both-probe.json"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "det80-seed17",
+      "label": "deterministic 80ms seed17",
+      "seed": 17,
+      "games": 2,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 0
+    },
+    {
+      "id": "noisy80-seed29",
+      "label": "noisy 80ms seed29",
+      "seed": 29,
+      "games": 4,
+      "ourTimeMs": 80,
+      "theirTimeMs": 80,
+      "theirNoiseScale": 4
+    }
+  ]
+}

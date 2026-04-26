@@ -1,0 +1,13 @@
+{
+  "runId": "noisy3000-pvs-seed71__s151-safe-full",
+  "variantId": "s151-safe-full",
+  "variantLabel": "s151-safe-full",
+  "scenarioId": "noisy3000-pvs-seed71",
+  "scenarioLabel": "noisy 3000ms PVS seed71",
+  "startedAt": 1776511173.6971056,
+  "finishedAt": 1776511266.0457375,
+  "wallSeconds": 92.34863185882568,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/results/noisy3000-pvs-seed71__s151-safe-full.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round7_longtime_individual/logs/noisy3000-pvs-seed71__s151-safe-full.log"
+}

@@ -1,0 +1,450 @@
+{
+  "version": 2,
+  "signature": "{\"version\":1,\"inputPaths\":[\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000000.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000001.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000002.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000003.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000004.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000005.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000006.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000007.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000008.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000009.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000010.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000011.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000012.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000013.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000014.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000015.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000016.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000017.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000018.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000019.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000020.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000021.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000022.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000023.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000024.txt\",\"C:\\\\Downloads\\\\othello-a11y-ai\\\\tools\\\\evaluator-training\\\\Egaroucid_Train_Data\\\\0001_egaroucid_7_5_1_lv17\\\\0000025.txt\"],\"calibrationSpecs\":[{\"key\":\"mpc-18-19-d3-d7\",\"minEmpties\":18,\"maxEmpties\":19,\"shallowDepth\":3,\"deepDepth\":7,\"label\":\"18-19 / d3→d7\",\"order\":8},{\"key\":\"mpc-18-21-d3-d7\",\"minEmpties\":18,\"maxEmpties\":21,\"shallowDepth\":3,\"deepDepth\":7,\"label\":\"18-21 / d3→d7\",\"order\":0},{\"key\":\"mpc-18-21-d4-d8\",\"minEmpties\":18,\"maxEmpties\":21,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"18-21 / d4→d8\",\"order\":1},{\"key\":\"mpc-20-21-d4-d8\",\"minEmpties\":20,\"maxEmpties\":21,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"20-21 / d4→d8\",\"order\":9},{\"key\":\"mpc-22-23-d4-d8\",\"minEmpties\":22,\"maxEmpties\":23,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"22-23 / d4→d8\",\"order\":10},{\"key\":\"mpc-22-25-d4-d8\",\"minEmpties\":22,\"maxEmpties\":25,\"shallowDepth\":4,\"deepDepth\":8,\"label\":\"22-25 / d4→d8\",\"order\":2},{\"key\":\"mpc-22-25-d4-d9\",\"minEmpties\":22,\"maxEmpties\":25,\"shallowDepth\":4,\"deepDepth\":9,\"label\":\"22-25 / d4→d9\",\"order\":3},{\"key\":\"mpc-24-25-d4-d9\",\"minEmpties\":24,\"maxEmpties\":25,\"shallowDepth\":4,\"deepDepth\":9,\"label\":\"24-25 / d4→d9\",\"order\":11},{\"key\":\"mpc-26-27-d5-d10\",\"minEmpties\":26,\"maxEmpties\":27,\"shallowDepth\":5,\"deepDepth\":10,\"label\":\"26-27 / d5→d10\",\"order\":12},{\"key\":\"mpc-26-29-d5-d10\",\"minEmpties\":26,\"maxEmpties\":29,\"shallowDepth\":5,\"deepDepth\":10,\"label\":\"26-29 / d5→d10\",\"order\":4},{\"key\":\"mpc-26-29-d6-d10\",\"minEmpties\":26,\"maxEmpties\":29,\"shallowDepth\":6,\"deepDepth\":10,\"label\":\"26-29 / d6→d10\",\"order\":5},{\"key\":\"mpc-28-29-d6-d10\",\"minEmpties\":28,\"maxEmpties\":29,\"shallowDepth\":6,\"deepDepth\":10,\"label\":\"28-29 / d6→d10\",\"order\":13},{\"key\":\"mpc-30-31-d5-d11\",\"minEmpties\":30,\"maxEmpties\":31,\"shallowDepth\":5,\"deepDepth\":11,\"label\":\"30-31 / d5→d11\",\"order\":14},{\"key\":\"mpc-30-33-d5-d11\",\"minEmpties\":30,\"maxEmpties\":33,\"shallowDepth\":5,\"deepDepth\":11,\"label\":\"30-33 / d5→d11\",\"order\":6},{\"key\":\"mpc-30-33-d6-d10\",\"minEmpties\":30,\"maxEmpties\":33,\"shallowDepth\":6,\"deepDepth\":10,\"label\":\"30-33 / d6→d10\",\"order\":7},{\"key\":\"mpc-32-33-d6-d10\",\"minEmpties\":32,\"maxEmpties\":33,\"shallowDepth\":6,\"deepDepth\":10,\"label\":\"32-33 / d6→d10\",\"order\":15}],\"sampleStride\":200,\"sampleResidue\":0,\"maxSamplesPerBucket\":400,\"timeLimitMs\":120000,\"aspirationWindow\":40,\"maxTableEntries\":200000,\"bucketPreset\":null,\"evaluationProfileName\":\"balanced13-alllate-smoothed stability extras 0.90x\",\"moveOrderingProfileName\":\"stage154-main-recenter__move-ordering__superset\",\"tupleResidualProfileName\":\"diagonal-top24-latea-endgame-patched-calibrated\",\"mpcProfileName\":null,\"patternBankProfileNames\":[\"pattern-bank-v1 balanced13 patched\"],\"moveOrderingPatternBankProfileNames\":null}",
+  "savedAt": "2026-04-17T05:29:07.619Z",
+  "completed": true,
+  "stopReason": "all-buckets-complete",
+  "outputJsonlPath": "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\out\\stage15x-support-stack\\stage154-main-recenter\\mpc\\shared-search-pairs.jsonl",
+  "summaryJsonPath": "C:\\Downloads\\othello-a11y-ai\\tools\\evaluator-training\\out\\stage15x-support-stack\\stage154-main-recenter\\mpc\\shared-search-pairs.summary.json",
+  "bucketPreset": null,
+  "calibrationSpecs": [
+    {
+      "key": "mpc-18-19-d3-d7",
+      "minEmpties": 18,
+      "maxEmpties": 19,
+      "shallowDepth": 3,
+      "deepDepth": 7,
+      "label": "18-19 / d3→d7",
+      "order": 8
+    },
+    {
+      "key": "mpc-18-21-d3-d7",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 3,
+      "deepDepth": 7,
+      "label": "18-21 / d3→d7",
+      "order": 0
+    },
+    {
+      "key": "mpc-18-21-d4-d8",
+      "minEmpties": 18,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "18-21 / d4→d8",
+      "order": 1
+    },
+    {
+      "key": "mpc-20-21-d4-d8",
+      "minEmpties": 20,
+      "maxEmpties": 21,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "20-21 / d4→d8",
+      "order": 9
+    },
+    {
+      "key": "mpc-22-23-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 23,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-23 / d4→d8",
+      "order": 10
+    },
+    {
+      "key": "mpc-22-25-d4-d8",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 8,
+      "label": "22-25 / d4→d8",
+      "order": 2
+    },
+    {
+      "key": "mpc-22-25-d4-d9",
+      "minEmpties": 22,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 9,
+      "label": "22-25 / d4→d9",
+      "order": 3
+    },
+    {
+      "key": "mpc-24-25-d4-d9",
+      "minEmpties": 24,
+      "maxEmpties": 25,
+      "shallowDepth": 4,
+      "deepDepth": 9,
+      "label": "24-25 / d4→d9",
+      "order": 11
+    },
+    {
+      "key": "mpc-26-27-d5-d10",
+      "minEmpties": 26,
+      "maxEmpties": 27,
+      "shallowDepth": 5,
+      "deepDepth": 10,
+      "label": "26-27 / d5→d10",
+      "order": 12
+    },
+    {
+      "key": "mpc-26-29-d5-d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 5,
+      "deepDepth": 10,
+      "label": "26-29 / d5→d10",
+      "order": 4
+    },
+    {
+      "key": "mpc-26-29-d6-d10",
+      "minEmpties": 26,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "26-29 / d6→d10",
+      "order": 5
+    },
+    {
+      "key": "mpc-28-29-d6-d10",
+      "minEmpties": 28,
+      "maxEmpties": 29,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "28-29 / d6→d10",
+      "order": 13
+    },
+    {
+      "key": "mpc-30-31-d5-d11",
+      "minEmpties": 30,
+      "maxEmpties": 31,
+      "shallowDepth": 5,
+      "deepDepth": 11,
+      "label": "30-31 / d5→d11",
+      "order": 14
+    },
+    {
+      "key": "mpc-30-33-d5-d11",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 5,
+      "deepDepth": 11,
+      "label": "30-33 / d5→d11",
+      "order": 6
+    },
+    {
+      "key": "mpc-30-33-d6-d10",
+      "minEmpties": 30,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "30-33 / d6→d10",
+      "order": 7
+    },
+    {
+      "key": "mpc-32-33-d6-d10",
+      "minEmpties": 32,
+      "maxEmpties": 33,
+      "shallowDepth": 6,
+      "deepDepth": 10,
+      "label": "32-33 / d6→d10",
+      "order": 15
+    }
+  ],
+  "bucketData": [
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 116208,
+          "elapsedMs": 7078
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 6002992,
+          "elapsedMs": 208418
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 121939,
+          "elapsedMs": 7719
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 7014536,
+          "elapsedMs": 246012
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 428396,
+          "elapsedMs": 25493
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 21281279,
+          "elapsedMs": 602772
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 528943,
+          "elapsedMs": 27346
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 25705508,
+          "elapsedMs": 689154
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 429243,
+          "elapsedMs": 22989
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 30980307,
+          "elapsedMs": 796465
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 479920,
+          "elapsedMs": 25819
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 31378607,
+          "elapsedMs": 799515
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 479920,
+          "elapsedMs": 25819
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 70903371,
+          "elapsedMs": 1704370
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 516618,
+          "elapsedMs": 24704
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 92348509,
+          "elapsedMs": 1900979
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 1793750,
+          "elapsedMs": 66311
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 192192330,
+          "elapsedMs": 3708542
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 1677035,
+          "elapsedMs": 66911
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 190806122,
+          "elapsedMs": 3625343
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 4282342,
+          "elapsedMs": 116619
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 190806122,
+          "elapsedMs": 3625343
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 0,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 4727118,
+          "elapsedMs": 122626
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 185275066,
+          "elapsedMs": 3403017
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 2023692,
+          "elapsedMs": 75221
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 299048478,
+          "elapsedMs": 5418511
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 2,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 1883825,
+          "elapsedMs": 74282
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 282528709,
+          "elapsedMs": 5385871
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 5866223,
+          "elapsedMs": 150246
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 194578788,
+          "elapsedMs": 3741014
+        }
+      }
+    },
+    {
+      "acceptedSamples": 400,
+      "skippedPass": 0,
+      "skippedInvalid": 1,
+      "searchCost": {
+        "shallow": {
+          "searches": 400,
+          "nodes": 6118454,
+          "elapsedMs": 148927
+        },
+        "deep": {
+          "searches": 400,
+          "nodes": 217406083,
+          "elapsedMs": 3950319
+        }
+      }
+    }
+  ],
+  "globalSearchCost": {
+    "shallow": {
+      "searches": 6400,
+      "nodes": 31473626,
+      "elapsedMs": 988110
+    },
+    "deep": {
+      "searches": 6400,
+      "nodes": 2038256807,
+      "elapsedMs": 39805645
+    }
+  },
+  "diagnostics": {
+    "visitedSamples": 2952801,
+    "matchedSamples": 6406,
+    "acceptedSamples": 6400,
+    "recordsWritten": 3200,
+    "lastProcessedInputSampleIndex": 2952800,
+    "resumedFromCheckpoint": false
+  }
+}

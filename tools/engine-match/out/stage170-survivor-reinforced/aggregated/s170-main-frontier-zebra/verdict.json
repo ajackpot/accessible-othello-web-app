@@ -1,0 +1,30 @@
+{
+  "candidate": "s170-main-frontier-zebra",
+  "verdict": "hold",
+  "overall": {
+    "baselinePoints": 36,
+    "candidatePoints": 36,
+    "totalGames": 72,
+    "pointGap": 0
+  },
+  "pattern": {
+    "s154-main": [
+      "win",
+      "tie",
+      "tie"
+    ],
+    "s154-both": [
+      "tie",
+      "loss",
+      "tie"
+    ]
+  },
+  "notes": [
+    "the original s154-main 160ms negative cell disappeared to a tie under reinforced sampling",
+    "a new s154-both 160ms negative cell appeared, so the cross-baseline mid-think question did not close positively",
+    "240ms stays non-loss on both baselines, so there is still no long-think collapse",
+    "overall is exactly tied at 36.0/72 vs 36.0/72",
+    "throughput is near-neutral overall (mean nodes/ms 5.10 baseline vs 5.09 candidate; 3 faster row(s), 3 slower row(s))",
+    "the candidate remains a logic-reinforcement or direct-compare hold, not an adoption-ready combo"
+  ]
+}

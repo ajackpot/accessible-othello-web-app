@@ -1,0 +1,1227 @@
+{
+  "generatedAt": "2026-04-22T20:50:00+09:00",
+  "stageInfo": {
+    "stage": 204,
+    "tag": "stage204",
+    "label": "Stage 204",
+    "updatedAt": "2026-04-22T20:50:00+09:00",
+    "summary": "Closed out the phase2 candidate pass with a refreshed Stage 192 remainder map, search/tail runtime-default helper exports, shared few-empties move-buffer refactoring, and documentation/version sync"
+  },
+  "totalDocumentCount": 194,
+  "quickLinks": [
+    {
+      "label": "AI 구현 체크리스트",
+      "relativePath": "checklists/ai-implementation-checklist.md"
+    },
+    {
+      "label": "최신 구현 보고서 (Stage 204)",
+      "relativePath": "implementation/impl-stage-204-phase2-closeout-refactor-and-version-sync.md"
+    },
+    {
+      "label": "생성된 리포트 인벤토리 JSON",
+      "relativePath": "report-inventory.generated.json"
+    }
+  ],
+  "categories": [
+    {
+      "key": "checklists",
+      "label": "체크리스트",
+      "description": "현재 구현 상태를 빠르게 확인하는 운영 문서",
+      "count": 1,
+      "latestStage": null,
+      "entries": [
+        {
+          "fileName": "ai-implementation-checklist.md",
+          "title": "AI 구현 체크리스트",
+          "relativePath": "checklists/ai-implementation-checklist.md",
+          "stageNumber": null
+        }
+      ]
+    },
+    {
+      "key": "implementation",
+      "label": "구현",
+      "description": "실제 코드 변경이 반영된 구현 보고서",
+      "count": 114,
+      "latestStage": 204,
+      "entries": [
+        {
+          "fileName": "impl-stage-204-phase2-closeout-refactor-and-version-sync.md",
+          "title": "Stage 204 - phase2 closeout, candidate refresh, refactor, and version sync",
+          "relativePath": "implementation/impl-stage-204-phase2-closeout-refactor-and-version-sync.md",
+          "stageNumber": 204
+        },
+        {
+          "fileName": "impl-stage-203-search-hotpath-revalidation-no-adoption.md",
+          "title": "Stage 203 - search hotpath revalidation bundle (no adoption)",
+          "relativePath": "implementation/impl-stage-203-search-hotpath-revalidation-no-adoption.md",
+          "stageNumber": 203
+        },
+        {
+          "fileName": "impl-stage-202-few-empties-wld-tail-refinement-bundle.md",
+          "title": "Stage 202 - few-empties WLD tail refinement bundle adoption",
+          "relativePath": "implementation/impl-stage-202-few-empties-wld-tail-refinement-bundle.md",
+          "stageNumber": 202
+        },
+        {
+          "fileName": "impl-stage-201-few-empties-exact-fastest-first-selective-gate.md",
+          "title": "Stage 201 - few-empties exact fastest-first selective gate adoption",
+          "relativePath": "implementation/impl-stage-201-few-empties-exact-fastest-first-selective-gate.md",
+          "stageNumber": 201
+        },
+        {
+          "fileName": "impl-stage-200-specialized-few-empties-last-flip-path.md",
+          "title": "Stage 200 - specialized few-empties last-flip exact path adoption",
+          "relativePath": "implementation/impl-stage-200-specialized-few-empties-last-flip-path.md",
+          "stageNumber": 200
+        },
+        {
+          "fileName": "impl-stage-199-few-empties-wld-tail-bundle.md",
+          "title": "Stage 199 - few-empties WLD tail bundle adoption",
+          "relativePath": "implementation/impl-stage-199-few-empties-wld-tail-bundle.md",
+          "stageNumber": 199
+        },
+        {
+          "fileName": "impl-stage-198-compact-prepared-search-move-flips-pilot.md",
+          "title": "Stage 198 - compact prepared-search-move flips pilot (not adopted)",
+          "relativePath": "implementation/impl-stage-198-compact-prepared-search-move-flips-pilot.md",
+          "stageNumber": 198
+        },
+        {
+          "fileName": "impl-stage-197-lightweight-few-empties-exact-move-path-and-threshold8-revalidation.md",
+          "title": "Stage 197 - lightweight few-empties exact move path and threshold-8 revalidation",
+          "relativePath": "implementation/impl-stage-197-lightweight-few-empties-exact-move-path-and-threshold8-revalidation.md",
+          "stageNumber": 197
+        },
+        {
+          "fileName": "impl-stage-196-tokenized-prepared-search-move-core.md",
+          "title": "Stage 196 - tokenized prepared-search-move core, bitless record cleanup, and compact-token groundwork",
+          "relativePath": "implementation/impl-stage-196-tokenized-prepared-search-move-core.md",
+          "stageNumber": 196
+        },
+        {
+          "fileName": "impl-stage-195-lazy-prepared-search-moves-forward-port.md",
+          "title": "Stage 195 - prepared search move hotpath forward-port, reusable buffer, selective lazy materialization",
+          "relativePath": "implementation/impl-stage-195-lazy-prepared-search-moves-forward-port.md",
+          "stageNumber": 195
+        },
+        {
+          "fileName": "impl-stage-192-phase1-runtime-closeout-and-version-sync.md",
+          "title": "Stage 192 - phase1 runtime closeout, candidate remainder map, and version sync",
+          "relativePath": "implementation/impl-stage-192-phase1-runtime-closeout-and-version-sync.md",
+          "stageNumber": 192
+        },
+        {
+          "fileName": "impl-stage-182-stage176-finals-closeout-and-doc-sync.md",
+          "title": "Stage 182 - stage176 finals closeout, historical retirement, and documentation sync",
+          "relativePath": "implementation/impl-stage-182-stage176-finals-closeout-and-doc-sync.md",
+          "stageNumber": 182
+        },
+        {
+          "fileName": "impl-stage-180-session03-carry-forward-reconstruction.md",
+          "title": "Implementation note: stage180 session03 carry-forward reconstruction",
+          "relativePath": "implementation/impl-stage-180-session03-carry-forward-reconstruction.md",
+          "stageNumber": 180
+        },
+        {
+          "fileName": "impl-stage-178-stage176-primary-branches-and-session-runner.md",
+          "title": "Stage 178 implementation note — stage176 branch candidates and staggered session runner",
+          "relativePath": "implementation/impl-stage-178-stage176-primary-branches-and-session-runner.md",
+          "stageNumber": 178
+        },
+        {
+          "fileName": "impl-stage-177-staggered-session-manifests.md",
+          "title": "Stage177 implementation - staggered session manifest generation",
+          "relativePath": "implementation/impl-stage-177-staggered-session-manifests.md",
+          "stageNumber": 177
+        },
+        {
+          "fileName": "impl-stage-170-head-to-head-micro-aggregator.md",
+          "title": "Implementation note - stage170 survivor head-to-head micro aggregator",
+          "relativePath": "implementation/impl-stage-170-head-to-head-micro-aggregator.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "impl-stage-170-frontier-zebra-bothlite-reentry.md",
+          "title": "Stage170 implementation - frontier-zebra both-lite MPC re-entry",
+          "relativePath": "implementation/impl-stage-170-frontier-zebra-bothlite-reentry.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "impl-stage-170-frontier-zebra-stabilized-reentry.md",
+          "title": "Stage170 implementation - frontier-zebra stabilized re-entry",
+          "relativePath": "implementation/impl-stage-170-frontier-zebra-stabilized-reentry.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "impl-stage-169-stage158-runtime-retirement-and-doc-sync.md",
+          "title": "Stage 169 - stage158 verdict closeout, retired candidate pruning, and documentation sync",
+          "relativePath": "implementation/impl-stage-169-stage158-runtime-retirement-and-doc-sync.md",
+          "stageNumber": 169
+        },
+        {
+          "fileName": "impl-stage-168-stage154-runtime-closeout-and-documentation-sync.md",
+          "title": "Stage 168 - stage154 runtime closeout, active retirement, and final documentation sync",
+          "relativePath": "implementation/impl-stage-168-stage154-runtime-closeout-and-documentation-sync.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "impl-stage-167-factorized-pattern-export-fix-and-benchmark-reset.md",
+          "title": "Stage 167 - factorized pattern-bank export root-cause fix, stage15x candidate repair, and benchmark reset",
+          "relativePath": "implementation/impl-stage-167-factorized-pattern-export-fix-and-benchmark-reset.md",
+          "stageNumber": 167
+        },
+        {
+          "fileName": "impl-stage-167-stage15x-factorized-export-repair-report.md",
+          "title": "Stage 167 — stage15x factorized export repair report",
+          "relativePath": "implementation/impl-stage-167-stage15x-factorized-export-repair-report.md",
+          "stageNumber": 167
+        },
+        {
+          "fileName": "impl-stage-159-mpc-training-optimization-notes.md",
+          "title": "Stage159 MPC training optimization notes",
+          "relativePath": "implementation/impl-stage-159-mpc-training-optimization-notes.md",
+          "stageNumber": 159
+        },
+        {
+          "fileName": "impl-stage-156-ordering-split-candidate-gate-and-closeout.md",
+          "title": "Stage 156 - move-ordering edge/corner split candidate gate, direct override plumbing fix, and repository closeout",
+          "relativePath": "implementation/impl-stage-156-ordering-split-candidate-gate-and-closeout.md",
+          "stageNumber": 156
+        },
+        {
+          "fileName": "impl-stage-147-compact-tuple-adoption-closeout-and-runtime-install.md",
+          "title": "Stage 147 - compact tuple adoption closeout, runtime install, and documentation finalization",
+          "relativePath": "implementation/impl-stage-147-compact-tuple-adoption-closeout-and-runtime-install.md",
+          "stageNumber": 147
+        },
+        {
+          "fileName": "impl-stage-147-runtime-install-and-post-adoption-validation-notes.md",
+          "title": "Stage 147 runtime install and post-adoption validation notes",
+          "relativePath": "implementation/impl-stage-147-runtime-install-and-post-adoption-validation-notes.md",
+          "stageNumber": 147
+        },
+        {
+          "fileName": "impl-stage-146-final-compact-tuple-adoption-gate-notes.md",
+          "title": "Stage 146 final compact tuple adoption gate notes",
+          "relativePath": "implementation/impl-stage-146-final-compact-tuple-adoption-gate-notes.md",
+          "stageNumber": 146
+        },
+        {
+          "fileName": "impl-stage-136-balanced13-support-stack-notes.md",
+          "title": "Stage 136 balanced13 support-stack notes",
+          "relativePath": "implementation/impl-stage-136-balanced13-support-stack-notes.md",
+          "stageNumber": 136
+        },
+        {
+          "fileName": "impl-stage-129-settings-ui-refactor-and-documentation-closeout.md",
+          "title": "Stage 129 - 설정 UI 리팩토링과 문서화 마감 정리",
+          "relativePath": "implementation/impl-stage-129-settings-ui-refactor-and-documentation-closeout.md",
+          "stageNumber": 129
+        },
+        {
+          "fileName": "impl-stage-126-user-executable-weight-learning-bundle-and-trainer-refresh.md",
+          "title": "Stage 126 - user-executable weight learning bundle and trainer refresh",
+          "relativePath": "implementation/impl-stage-126-user-executable-weight-learning-bundle-and-trainer-refresh.md",
+          "stageNumber": 126
+        },
+        {
+          "fileName": "impl-stage-125-compact-tuple-family-bounded-pilot-and-no-adoption.md",
+          "title": "Stage 125 - compact tuple family bounded pilot and no adoption",
+          "relativePath": "implementation/impl-stage-125-compact-tuple-family-bounded-pilot-and-no-adoption.md",
+          "stageNumber": 125
+        },
+        {
+          "fileName": "impl-stage-123-opening-default-revalidation-and-final-runtime-closeout.md",
+          "title": "Stage 123 - opening default revalidation and final runtime closeout",
+          "relativePath": "implementation/impl-stage-123-opening-default-revalidation-and-final-runtime-closeout.md",
+          "stageNumber": 123
+        },
+        {
+          "fileName": "impl-stage-122-allocation-light-search-move-path.md",
+          "title": "Stage 122 - allocation-light search move path",
+          "relativePath": "implementation/impl-stage-122-allocation-light-search-move-path.md",
+          "stageNumber": 122
+        },
+        {
+          "fileName": "impl-stage-121-active-mpc-default-parity-hardening.md",
+          "title": "Stage 121 - active MPC default parity hardening",
+          "relativePath": "implementation/impl-stage-121-active-mpc-default-parity-hardening.md",
+          "stageNumber": 121
+        },
+        {
+          "fileName": "impl-stage-120-documentation-baseline-and-version-sync.md",
+          "title": "Stage 120 - 문서 기준선 정리와 버전 동기화",
+          "relativePath": "implementation/impl-stage-120-documentation-baseline-and-version-sync.md",
+          "stageNumber": 120
+        },
+        {
+          "fileName": "impl-stage-119-refactor-audit-and-documentation-closeout.md",
+          "title": "Stage 119 - 리팩토링 감사와 문서화 마감 정리",
+          "relativePath": "implementation/impl-stage-119-refactor-audit-and-documentation-closeout.md",
+          "stageNumber": 119
+        },
+        {
+          "fileName": "impl-stage-118-mcts-root-maturity-gate-causality-closeout.md",
+          "title": "Stage 118 - MCTS root-maturity gate causality closeout",
+          "relativePath": "implementation/impl-stage-118-mcts-root-maturity-gate-causality-closeout.md",
+          "stageNumber": 118
+        },
+        {
+          "fileName": "impl-stage-117-mcts-root-maturity-gate-trigger-refinement-screening.md",
+          "title": "Stage 117 - MCTS root-maturity gate trigger refinement screening",
+          "relativePath": "implementation/impl-stage-117-mcts-root-maturity-gate-trigger-refinement-screening.md",
+          "stageNumber": 117
+        },
+        {
+          "fileName": "impl-stage-116-mcts-root-maturity-gate-runtime-prototype.md",
+          "title": "Stage 116 - MCTS root-maturity gate runtime prototype",
+          "relativePath": "implementation/impl-stage-116-mcts-root-maturity-gate-runtime-prototype.md",
+          "stageNumber": 116
+        },
+        {
+          "fileName": "impl-stage-115-mcts-root-maturity-gate-screening.md",
+          "title": "Stage 115 - MCTS root-maturity / proof-maturity gate fixed-iteration screening",
+          "relativePath": "implementation/impl-stage-115-mcts-root-maturity-gate-screening.md",
+          "stageNumber": 115
+        },
+        {
+          "fileName": "impl-stage-114-mcts-late-bias-package-fixed-iteration-control.md",
+          "title": "Stage 114 - MCTS late-bias package fixed-iteration control",
+          "relativePath": "implementation/impl-stage-114-mcts-late-bias-package-fixed-iteration-control.md",
+          "stageNumber": 114
+        },
+        {
+          "fileName": "impl-stage-113-mcts-time-budget-conditioned-late-bias-package.md",
+          "title": "Stage 113 - MCTS time-budget-conditioned late-bias package screening",
+          "relativePath": "implementation/impl-stage-113-mcts-time-budget-conditioned-late-bias-package.md",
+          "stageNumber": 113
+        },
+        {
+          "fileName": "impl-stage-112-mcts-proof-metric-bias-combo-screening.md",
+          "title": "Stage 112 — MCTS proof metric × bias combo screening",
+          "relativePath": "implementation/impl-stage-112-mcts-proof-metric-bias-combo-screening.md",
+          "stageNumber": 112
+        },
+        {
+          "fileName": "impl-stage-111-mcts-proof-priority-bias-formula-screening.md",
+          "title": "Stage 111 — MCTS proof-priority bias formula screening",
+          "relativePath": "implementation/impl-stage-111-mcts-proof-priority-bias-formula-screening.md",
+          "stageNumber": 111
+        },
+        {
+          "fileName": "impl-stage-109-repository-wide-refactor-audit-and-documentation-closeout.md",
+          "title": "Stage 109 - 저장소 전반 리팩토링 감사와 문서화 마감 정리",
+          "relativePath": "implementation/impl-stage-109-repository-wide-refactor-audit-and-documentation-closeout.md",
+          "stageNumber": 109
+        },
+        {
+          "fileName": "impl-stage-108-score-bounded-draw-blocker-priority.md",
+          "title": "Stage 108 - score-bounded draw-blocker priority와 마지막 채택 판정",
+          "relativePath": "implementation/impl-stage-108-score-bounded-draw-blocker-priority.md",
+          "stageNumber": 108
+        },
+        {
+          "fileName": "impl-stage-107-true-score-bounded-late-lane-correction.md",
+          "title": "Stage 107 - true score-bounded late lane correction과 채택 판정",
+          "relativePath": "implementation/impl-stage-107-true-score-bounded-late-lane-correction.md",
+          "stageNumber": 107
+        },
+        {
+          "fileName": "impl-stage-106-mcts-score-bounded-late-lane.md",
+          "title": "Stage 106 - draw-aware / score-bounded late lane prototype와 채택 판정",
+          "relativePath": "implementation/impl-stage-106-mcts-score-bounded-late-lane.md",
+          "stageNumber": 106
+        },
+        {
+          "fileName": "impl-stage-105-generalized-proof-metric-benchmarking.md",
+          "title": "Stage 105 - draw-aware / per-player generalized proof metric prototype와 채택 판정",
+          "relativePath": "implementation/impl-stage-105-generalized-proof-metric-benchmarking.md",
+          "stageNumber": 105
+        },
+        {
+          "fileName": "impl-stage-104-mcts-proof-priority-continuation-bridge.md",
+          "title": "Stage 104 — MCTS proof-priority ↔ exact continuation bridge readjustment",
+          "relativePath": "implementation/impl-stage-104-mcts-proof-priority-continuation-bridge.md",
+          "stageNumber": 104
+        },
+        {
+          "fileName": "impl-stage-103-mcts-proof-priority-frontier-bias.md",
+          "title": "Stage 103 — MCTS proof-priority frontier bias",
+          "relativePath": "implementation/impl-stage-103-mcts-proof-priority-frontier-bias.md",
+          "stageNumber": 103
+        },
+        {
+          "fileName": "impl-stage-102-sensei-proof-telemetry-survey-and-mcts-ui-annotation.md",
+          "title": "Stage 102 - Othello Sensei 조사와 MCTS proof telemetry / UI annotation",
+          "relativePath": "implementation/impl-stage-102-sensei-proof-telemetry-survey-and-mcts-ui-annotation.md",
+          "stageNumber": 102
+        },
+        {
+          "fileName": "impl-stage-101-mcts-root-exact-continuation.md",
+          "title": "Stage 101 - MCTS root exact continuation after proof",
+          "relativePath": "implementation/impl-stage-101-mcts-root-exact-continuation.md",
+          "stageNumber": 101
+        },
+        {
+          "fileName": "impl-stage-100-mcts-solver-late-solved-value-propagation.md",
+          "title": "Stage 100 - MCTS-Solver / late solved-value propagation",
+          "relativePath": "implementation/impl-stage-100-mcts-solver-late-solved-value-propagation.md",
+          "stageNumber": 100
+        },
+        {
+          "fileName": "impl-stage-98-special-ending-wrapup-and-regression-suite.md",
+          "title": "Stage 98 - 특수 종국 안전망 정리, 공용 휴리스틱 리팩토링, 회귀셋 통합",
+          "relativePath": "implementation/impl-stage-98-special-ending-wrapup-and-regression-suite.md",
+          "stageNumber": 98
+        },
+        {
+          "fileName": "impl-stage-93-mcts-ui-refactor-and-throughput.md",
+          "title": "Stage 93 - MCTS 모드 가용성 정리, 핫패스 리팩토링, 처리량 점검",
+          "relativePath": "implementation/impl-stage-93-mcts-ui-refactor-and-throughput.md",
+          "stageNumber": 93
+        },
+        {
+          "fileName": "impl-stage-92-mcts-preset-benchmark-refresh.md",
+          "title": "Stage 92 - MCTS preset-time benchmark refresh and multi-seed pair sampling",
+          "relativePath": "implementation/impl-stage-92-mcts-preset-benchmark-refresh.md",
+          "stageNumber": 92
+        },
+        {
+          "fileName": "impl-stage-91-mcts-hybrid-priors.md",
+          "title": "Stage 91 - MCTS Hybrid informed-prior lane",
+          "relativePath": "implementation/impl-stage-91-mcts-hybrid-priors.md",
+          "stageNumber": 91
+        },
+        {
+          "fileName": "impl-stage-90-mcts-search-algorithm-pair-benchmarking.md",
+          "title": "Stage 90 - MCTS Lite vs Guided pair benchmarking",
+          "relativePath": "implementation/impl-stage-90-mcts-search-algorithm-pair-benchmarking.md",
+          "stageNumber": 90
+        },
+        {
+          "fileName": "impl-stage-87-runtime-documentation-closeout.md",
+          "title": "구현 보고서 Stage 87 — 런타임 문서 정리 마감",
+          "relativePath": "implementation/impl-stage-87-runtime-documentation-closeout.md",
+          "stageNumber": 87
+        },
+        {
+          "fileName": "impl-stage-86-runtime-stability-hotpath-audit.md",
+          "title": "구현 보고서 Stage 86 — 런타임 stability hotpath audit / refactor",
+          "relativePath": "implementation/impl-stage-86-runtime-stability-hotpath-audit.md",
+          "stageNumber": 86
+        },
+        {
+          "fileName": "impl-stage-85-report-hub-and-ai-checklist-closeout.md",
+          "title": "구현 보고서 Stage 85 — 리포트 허브/AI 체크리스트 마감 리팩토링",
+          "relativePath": "implementation/impl-stage-85-report-hub-and-ai-checklist-closeout.md",
+          "stageNumber": 85
+        },
+        {
+          "fileName": "impl-stage-84-exact-micro-solver-threshold-extension.md",
+          "title": "Stage 84 Implementation - Exact micro-solver threshold extension",
+          "relativePath": "implementation/impl-stage-84-exact-micro-solver-threshold-extension.md",
+          "stageNumber": 84
+        },
+        {
+          "fileName": "impl-stage-80-etc-inplace-preparation-cleanup.md",
+          "title": "Stage 80 — ETC in-place prepared-move cleanup",
+          "relativePath": "implementation/impl-stage-80-etc-inplace-preparation-cleanup.md",
+          "stageNumber": 80
+        },
+        {
+          "fileName": "impl-stage-63-multi-candidate-training-suite.md",
+          "title": "Stage 63 training pipeline hardening",
+          "relativePath": "implementation/impl-stage-63-multi-candidate-training-suite.md",
+          "stageNumber": 63
+        },
+        {
+          "fileName": "impl-stage-60-evaluator-training-package-refresh.md",
+          "title": "Stage 60 — evaluator training package refresh",
+          "relativePath": "implementation/impl-stage-60-evaluator-training-package-refresh.md",
+          "stageNumber": 60
+        },
+        {
+          "fileName": "impl-stage-59-opening-wrapup-candidates.md",
+          "title": "구현 보고서 Stage 59 — Opening wrap-up 후보 적용/채택",
+          "relativePath": "implementation/impl-stage-59-opening-wrapup-candidates.md",
+          "stageNumber": 59
+        },
+        {
+          "fileName": "impl-stage-58-opening-hybrid-reference-suite.md",
+          "title": "구현 보고서 Stage 58 — Stronger opening hybrid reference suite benchmark",
+          "relativePath": "implementation/impl-stage-58-opening-hybrid-reference-suite.md",
+          "stageNumber": 58
+        },
+        {
+          "fileName": "impl-stage-57-opening-hybrid-tuning-benchmark.md",
+          "title": "구현 보고서 Stage 57 — Opening hybrid tuning benchmark",
+          "relativePath": "implementation/impl-stage-57-opening-hybrid-tuning-benchmark.md",
+          "stageNumber": 57
+        },
+        {
+          "fileName": "impl-stage-56-opening-prior-search-integration.md",
+          "title": "구현 보고서 Stage 56 — Opening prior search integration",
+          "relativePath": "implementation/impl-stage-56-opening-prior-search-integration.md",
+          "stageNumber": 56
+        },
+        {
+          "fileName": "impl-stage-55-opening-prior-runtime-compaction.md",
+          "title": "Stage 55 구현 보고서 — opening prior runtime compaction",
+          "relativePath": "implementation/impl-stage-55-opening-prior-runtime-compaction.md",
+          "stageNumber": 55
+        },
+        {
+          "fileName": "impl-stage-54-opening-book-named-expansion.md",
+          "title": "Stage 54 구현 보고서 — opening book named expansion",
+          "relativePath": "implementation/impl-stage-54-opening-book-named-expansion.md",
+          "stageNumber": 54
+        },
+        {
+          "fileName": "impl-stage-53-evaluator-final-cleanup-summary.md",
+          "title": "Stage 53 evaluator final cleanup summary",
+          "relativePath": "implementation/impl-stage-53-evaluator-final-cleanup-summary.md",
+          "stageNumber": 53
+        },
+        {
+          "fileName": "impl-stage-45-move-ordering-replay-and-next-lane-decision.md",
+          "title": "Stage 45 - Move-ordering replay/orchestrator, optional MPC module slot, and next-lane decision",
+          "relativePath": "implementation/impl-stage-45-move-ordering-replay-and-next-lane-decision.md",
+          "stageNumber": 45
+        },
+        {
+          "fileName": "impl-stage-45-move-ordering-replay-and-next-lane-summary.md",
+          "title": "Stage 45 move-ordering replay + next-lane summary (2026-04-01)",
+          "relativePath": "implementation/impl-stage-45-move-ordering-replay-and-next-lane-summary.md",
+          "stageNumber": 45
+        },
+        {
+          "fileName": "impl-stage-44-move-ordering-candidateh2-adoption-summary.md",
+          "title": "Stage 44 candidateH2 adoption summary (2026-03-30)",
+          "relativePath": "implementation/impl-stage-44-move-ordering-candidateh2-adoption-summary.md",
+          "stageNumber": 44
+        },
+        {
+          "fileName": "impl-stage-43-top-pair-move-ordering-local-search.md",
+          "title": "Stage 43: top-pair move-ordering local search",
+          "relativePath": "implementation/impl-stage-43-top-pair-move-ordering-local-search.md",
+          "stageNumber": 43
+        },
+        {
+          "fileName": "impl-stage-42-multi-action-move-ordering-local-search.md",
+          "title": "Stage 42 - Multi-action move-ordering local-search support and candidateF follow-up",
+          "relativePath": "implementation/impl-stage-42-multi-action-move-ordering-local-search.md",
+          "stageNumber": 42
+        },
+        {
+          "fileName": "impl-stage-41-move-ordering-candidatef-adoption-summary.md",
+          "title": "Stage 41 candidateF adoption summary (2026-03-30)",
+          "relativePath": "implementation/impl-stage-41-move-ordering-candidatef-adoption-summary.md",
+          "stageNumber": 41
+        },
+        {
+          "fileName": "impl-stage-40-exact-tie-swap-tooling-summary.md",
+          "title": "Stage 40 exact tie-swap tooling summary (2026-03-30)",
+          "relativePath": "implementation/impl-stage-40-exact-tie-swap-tooling-summary.md",
+          "stageNumber": 40
+        },
+        {
+          "fileName": "impl-stage-39-search-cost-local-search-tuner.md",
+          "title": "Stage 39 — move-ordering search-cost local-search tuner",
+          "relativePath": "implementation/impl-stage-39-search-cost-local-search-tuner.md",
+          "stageNumber": 39
+        },
+        {
+          "fileName": "impl-stage-39-move-ordering-candidated-adoption-summary.md",
+          "title": "Stage 39 candidateD adoption summary (2026-03-30)",
+          "relativePath": "implementation/impl-stage-39-move-ordering-candidated-adoption-summary.md",
+          "stageNumber": 39
+        },
+        {
+          "fileName": "impl-stage-39-move-ordering-local-search-tuner-summary.md",
+          "title": "Stage 39 move-ordering local-search tuner summary (2026-03-29)",
+          "relativePath": "implementation/impl-stage-39-move-ordering-local-search-tuner-summary.md",
+          "stageNumber": 39
+        },
+        {
+          "fileName": "impl-stage-38-stage-metadata-and-move-ordering-decision.md",
+          "title": "Stage 38 — stage metadata 정리와 move-ordering 학습 방향 결정",
+          "relativePath": "implementation/impl-stage-38-stage-metadata-and-move-ordering-decision.md",
+          "stageNumber": 38
+        },
+        {
+          "fileName": "impl-stage-38-move-ordering-candidateb-adoption-summary.md",
+          "title": "Stage 38 candidateB adoption summary (2026-03-29)",
+          "relativePath": "implementation/impl-stage-38-move-ordering-candidateb-adoption-summary.md",
+          "stageNumber": 38
+        },
+        {
+          "fileName": "impl-stage-38-move-ordering-candidatec-adoption-summary.md",
+          "title": "Stage 38 candidateC adoption summary (2026-03-29)",
+          "relativePath": "implementation/impl-stage-38-move-ordering-candidatec-adoption-summary.md",
+          "stageNumber": 38
+        },
+        {
+          "fileName": "impl-stage-37-json-profile-module-builder-and-uploaded-weight-benchmarking.md",
+          "title": "Stage 37 — JSON 기반 generated module 재구성 및 업로드 가중치 검증",
+          "relativePath": "implementation/impl-stage-37-json-profile-module-builder-and-uploaded-weight-benchmarking.md",
+          "stageNumber": 37
+        },
+        {
+          "fileName": "impl-stage-36-package-slimming-and-release-profiles.md",
+          "title": "Stage 36 구현 보고서 - 패키지 경량화 분석과 release profile 도입",
+          "relativePath": "implementation/impl-stage-36-package-slimming-and-release-profiles.md",
+          "stageNumber": 36
+        },
+        {
+          "fileName": "impl-stage-35-mpc-calibration-harness-and-next-pipeline-decision.md",
+          "title": "Stage 35 — MPC calibration harness and next-pipeline decision",
+          "relativePath": "implementation/impl-stage-35-mpc-calibration-harness-and-next-pipeline-decision.md",
+          "stageNumber": 35
+        },
+        {
+          "fileName": "impl-stage-34-cwd-independent-training-path-resolution.md",
+          "title": "Stage 34 — cwd-independent training tool path resolution",
+          "relativePath": "implementation/impl-stage-34-cwd-independent-training-path-resolution.md",
+          "stageNumber": 34
+        },
+        {
+          "fileName": "impl-stage-33-evaluation-profile-audit-and-bucket-exclusions.md",
+          "title": "Stage 33 — evaluation profile audit / parity alias canonicalization / bucket exclusion pipeline",
+          "relativePath": "implementation/impl-stage-33-evaluation-profile-audit-and-bucket-exclusions.md",
+          "stageNumber": 33
+        },
+        {
+          "fileName": "impl-stage-32-move-ordering-root-centered-pipeline-and-audit.md",
+          "title": "Stage 32 — move-ordering 파이프라인 보강: root-centered target, root-uniform weighting, audit 도구",
+          "relativePath": "implementation/impl-stage-32-move-ordering-root-centered-pipeline-and-audit.md",
+          "stageNumber": 32
+        },
+        {
+          "fileName": "impl-stage-31-uploaded-move-ordering-validation-and-trineutron-solver-cutoff-benchmarking.md",
+          "title": "Stage 31 — 업로드된 move-ordering 가중치 검증 및 trineutron solver-cutoff 실전 벤치마크",
+          "relativePath": "implementation/impl-stage-31-uploaded-move-ordering-validation-and-trineutron-solver-cutoff-benchmarking.md",
+          "stageNumber": 31
+        },
+        {
+          "fileName": "impl-stage-30-trineutron-match-benchmarking.md",
+          "title": "Stage 30 — trineutron 대국 벤치마크 도입 및 실전 비교",
+          "relativePath": "implementation/impl-stage-30-trineutron-match-benchmarking.md",
+          "stageNumber": 30
+        },
+        {
+          "fileName": "impl-stage-29-move-ordering-profile-training-and-combined-export.md",
+          "title": "Stage 29 — late move-ordering 학습 도구 및 combined export 정비",
+          "relativePath": "implementation/impl-stage-29-move-ordering-profile-training-and-combined-export.md",
+          "stageNumber": 29
+        },
+        {
+          "fileName": "impl-stage-28-uploaded-profile-validation-bias-fix-and-search-benchmarks.md",
+          "title": "Stage 28 — uploaded profile validation, side-to-move bias fix, and search benchmark tooling",
+          "relativePath": "implementation/impl-stage-28-uploaded-profile-validation-bias-fix-and-search-benchmarks.md",
+          "stageNumber": 28
+        },
+        {
+          "fileName": "impl-stage-27-training-eta-progress-and-sampling-tooling.md",
+          "title": "Stage 27 — learned evaluator training ETA / progress / sampling tooling",
+          "relativePath": "implementation/impl-stage-27-training-eta-progress-and-sampling-tooling.md",
+          "stageNumber": 27
+        },
+        {
+          "fileName": "impl-stage-26-phase-bucket-learned-evaluator-tooling.md",
+          "title": "Stage 26 구현 보고서 - phase-bucket learned evaluator 구조와 오프라인 학습 도구",
+          "relativePath": "implementation/impl-stage-26-phase-bucket-learned-evaluator-tooling.md",
+          "stageNumber": 26
+        },
+        {
+          "fileName": "impl-stage-25-runtime-option-cleanup-and-dormant-logic-removal.md",
+          "title": "구현 보고서 Stage 25 — 런타임 옵션 정리와 dormant 로직 제거",
+          "relativePath": "implementation/impl-stage-25-runtime-option-cleanup-and-dormant-logic-removal.md",
+          "stageNumber": 25
+        },
+        {
+          "fileName": "impl-stage-24-exact-fastest-first-ordering.md",
+          "title": "Stage 24 Implementation - Exact-only fastest-first ordering with cut-aware screening",
+          "relativePath": "implementation/impl-stage-24-exact-fastest-first-ordering.md",
+          "stageNumber": 24
+        },
+        {
+          "fileName": "impl-stage-23-specialized-few-empties-exact-solver.md",
+          "title": "Stage 23 Implementation - Specialized exact few-empties solver family",
+          "relativePath": "implementation/impl-stage-23-specialized-few-empties-exact-solver.md",
+          "stageNumber": 23
+        },
+        {
+          "fileName": "impl-stage-22-exact-only-few-empties-solver-and-stats-cleanup.md",
+          "title": "Stage 22 Implementation - Exact-only few-empties solver and stats cleanup",
+          "relativePath": "implementation/impl-stage-22-exact-only-few-empties-solver-and-stats-cleanup.md",
+          "stageNumber": 22
+        },
+        {
+          "fileName": "impl-stage-21-wld-only-stability-cutoff-prototype.md",
+          "title": "구현 보고서 Stage 21 — WLD 전용 Stability Cutoff 프로토타입",
+          "relativePath": "implementation/impl-stage-21-wld-only-stability-cutoff-prototype.md",
+          "stageNumber": 21
+        },
+        {
+          "fileName": "impl-stage-19-wld-range2-default-adoption-and-black-parity.md",
+          "title": "구현 보고서 Stage 19 — WLD `+2` 기본 채택 및 흑 차례 parity 구간 도달",
+          "relativePath": "implementation/impl-stage-19-wld-range2-default-adoption-and-black-parity.md",
+          "stageNumber": 19
+        },
+        {
+          "fileName": "impl-stage-18-strict-root-wld-pre-exact-mode.md",
+          "title": "구현 보고서 Stage 18 — Strict Root-Only WLD Pre-Exact 모드 도입",
+          "relativePath": "implementation/impl-stage-18-strict-root-wld-pre-exact-mode.md",
+          "stageNumber": 18
+        },
+        {
+          "fileName": "impl-stage-17-conservative-enhanced-transposition-cutoff.md",
+          "title": "구현 보고서 Stage 17 — Conservative Enhanced Transposition Cutoff 도입",
+          "relativePath": "implementation/impl-stage-17-conservative-enhanced-transposition-cutoff.md",
+          "stageNumber": 17
+        },
+        {
+          "fileName": "impl-stage-15-exact-root-single-shot-and-ui-mode-annotation.md",
+          "title": "구현 보고서 Stage 15 — exact root 단일 탐색화 및 UI 모드 표기",
+          "relativePath": "implementation/impl-stage-15-exact-root-single-shot-and-ui-mode-annotation.md",
+          "stageNumber": 15
+        },
+        {
+          "fileName": "impl-stage-14-root-exact-endgame-boundary-and-fallback-hardening.md",
+          "title": "구현 보고서 Stage 14 — root exact endgame 경계 수정 및 fallback 하드닝",
+          "relativePath": "implementation/impl-stage-14-root-exact-endgame-boundary-and-fallback-hardening.md",
+          "stageNumber": 14
+        },
+        {
+          "fileName": "impl-stage-13-evaluator-corner-access-and-audit-tuning.md",
+          "title": "구현 보고서 Stage 13 — 평가 함수 감사와 corner-access 보강",
+          "relativePath": "implementation/impl-stage-13-evaluator-corner-access-and-audit-tuning.md",
+          "stageNumber": 13
+        },
+        {
+          "fileName": "impl-stage-12-packed-hash-key-optimization.md",
+          "title": "구현 보고서 Stage 12 — Packed Hash Key 최적화",
+          "relativePath": "implementation/impl-stage-12-packed-hash-key-optimization.md",
+          "stageNumber": 12
+        },
+        {
+          "fileName": "impl-stage-06-search-overhead-reduction-and-tt-first-search.md",
+          "title": "Step 6 Implementation Report — Search Overhead Reduction and TT-First Search",
+          "relativePath": "implementation/impl-stage-06-search-overhead-reduction-and-tt-first-search.md",
+          "stageNumber": 6
+        },
+        {
+          "fileName": "impl-stage-05-exact-endgame-small-solver.md",
+          "title": "Step 5 Implementation Report — Exact Endgame Small-Solver",
+          "relativePath": "implementation/impl-stage-05-exact-endgame-small-solver.md",
+          "stageNumber": 5
+        },
+        {
+          "fileName": "impl-stage-04-pattern-edge-evaluation-upgrade.md",
+          "title": "Step 4 Implementation Report — Pattern / Edge Evaluation Upgrade",
+          "relativePath": "implementation/impl-stage-04-pattern-edge-evaluation-upgrade.md",
+          "stageNumber": 4
+        },
+        {
+          "fileName": "impl-stage-03-search-engine-comparison-and-optimization.md",
+          "title": "Step 3 report: search-engine comparison and optimization",
+          "relativePath": "implementation/impl-stage-03-search-engine-comparison-and-optimization.md",
+          "stageNumber": 3
+        }
+      ]
+    },
+    {
+      "key": "review",
+      "label": "검토",
+      "description": "실험, 검토, 채택/비채택 판단 문서",
+      "count": 78,
+      "latestStage": 183,
+      "entries": [
+        {
+          "fileName": "review-stage-183-move_generation_flips_candidate_report.md",
+          "title": "move generation / flips 후보 조사 보고서",
+          "relativePath": "review/review-stage-183-move_generation_flips_candidate_report.md",
+          "stageNumber": 183
+        },
+        {
+          "fileName": "review-stage-182-stage176-finals-failure-analysis-and-next-directions.md",
+          "title": "Stage 182 review - stage176 finals failure analysis and next directions",
+          "relativePath": "review/review-stage-182-stage176-finals-failure-analysis-and-next-directions.md",
+          "stageNumber": 182
+        },
+        {
+          "fileName": "review-stage-181-finals-session02-latecheck-and-final-decision.md",
+          "title": "Stage 181 — finals session02 late-check and final decision",
+          "relativePath": "review/review-stage-181-finals-session02-latecheck-and-final-decision.md",
+          "stageNumber": 181
+        },
+        {
+          "fileName": "review-stage-180-staggered-session-03-and-carry-forward-resolution.md",
+          "title": "Review: stage180 staggered session 03 and carry-forward resolution",
+          "relativePath": "review/review-stage-180-staggered-session-03-and-carry-forward-resolution.md",
+          "stageNumber": 180
+        },
+        {
+          "fileName": "review-stage-178-staggered-session-01.md",
+          "title": "Stage 178 review — staggered Session 01 (`1a`, `2a`)",
+          "relativePath": "review/review-stage-178-staggered-session-01.md",
+          "stageNumber": 178
+        },
+        {
+          "fileName": "review-stage-177-staggered-session-plan.md",
+          "title": "Stage177 review - sequential carry-forward session plan",
+          "relativePath": "review/review-stage-177-staggered-session-plan.md",
+          "stageNumber": 177
+        },
+        {
+          "fileName": "review-stage-176-survivor-optimization-backlog-and-roundrobin-plan.md",
+          "title": "Stage176 review - survivor optimization backlog freeze and round-robin budget plan",
+          "relativePath": "review/review-stage-176-survivor-optimization-backlog-and-roundrobin-plan.md",
+          "stageNumber": 176
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round4.md",
+          "title": "Review: stage170 survivor kickoff round4 individual anchor normalization",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round4.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-combo-kickoff-plan.md",
+          "title": "Stage170 kickoff - survivor integration matrix and first-round combo priority",
+          "relativePath": "review/review-stage-170-survivor-combo-kickoff-plan.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round1.md",
+          "title": "Stage170 kickoff round1 - first integrated survivor combo results",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round1.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round10.md",
+          "title": "Stage170 kickoff round10 - `s170-main-frontier-zebra-bothlite` vs `s157-main-assertive-both` direct head-to-head",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round10.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round2.md",
+          "title": "Stage170 kickoff round2 - `s170-main-frontier-zebra` result",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round2.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round3.md",
+          "title": "Stage170 kickoff round3 - `s170-main-frontier-zebra` reinforced retest",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round3.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round5.md",
+          "title": "Stage170 kickoff round5 - `s170-main-wide-zebra` reinforced retest",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round5.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round6.md",
+          "title": "Stage170 kickoff round6 - `s170-main-frontier-zebra-stabilized` logic reinforcement re-entry",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round6.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round7.md",
+          "title": "Stage170 kickoff round7 - `s170-main-frontier-zebra-bothlite` MPC-side re-entry",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round7.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round8.md",
+          "title": "Stage170 kickoff round8 - `s157-main-assertive-both` vs `s170-main-wide-zebra` direct head-to-head",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round8.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-170-survivor-kickoff-round9.md",
+          "title": "Stage170 kickoff round9 - `s170-main-frontier-zebra-bothlite` vs `s170-main-wide-zebra` direct head-to-head",
+          "relativePath": "review/review-stage-170-survivor-kickoff-round9.md",
+          "stageNumber": 170
+        },
+        {
+          "fileName": "review-stage-169-stage158-verdict-summary-and-retired-candidate-pruning.md",
+          "title": "Stage169 review - stage158 verdict summary and retired candidate pruning",
+          "relativePath": "review/review-stage-169-stage158-verdict-summary-and-retired-candidate-pruning.md",
+          "stageNumber": 169
+        },
+        {
+          "fileName": "review-stage-168-report-hub-relocation-and-docs-coverage-audit.md",
+          "title": "검토 보고서 Stage 168 — report hub relocation and docs coverage audit",
+          "relativePath": "review/review-stage-168-report-hub-relocation-and-docs-coverage-audit.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-followup-legacy-structure-cleanup-and-stage124-revisit.md",
+          "title": "검토 보고서 Stage 168 follow-up — legacy 구조 정리와 Stage 124 재검토",
+          "relativePath": "review/review-stage-168-followup-legacy-structure-cleanup-and-stage124-revisit.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-runtime-closeout-and-retired-candidate-pruning.md",
+          "title": "Stage168 closeout: stage157 runtime candidate pruning and documentation resync",
+          "relativePath": "review/review-stage-168-stage157-runtime-closeout-and-retired-candidate-pruning.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-anchor-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-anchor`",
+          "relativePath": "review/review-stage-168-stage157-main-anchor-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-assertive-both-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-assertive-both`",
+          "relativePath": "review/review-stage-168-stage157-main-assertive-both-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-exact-safe-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-exact-safe`",
+          "relativePath": "review/review-stage-168-stage157-main-exact-safe-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-frontier-gate-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-frontier-gate`",
+          "relativePath": "review/review-stage-168-stage157-main-frontier-gate-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-mpc-only-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-mpc-only`",
+          "relativePath": "review/review-stage-168-stage157-main-mpc-only-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-order-only-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-order-only`",
+          "relativePath": "review/review-stage-168-stage157-main-order-only-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-wide-hybrid-direct-pair-verdict.md",
+          "title": "Stage168 direct-pair verdict: `s157-main-wide-hybrid`",
+          "relativePath": "review/review-stage-168-stage157-main-wide-hybrid-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-candidate-renaming-and-mainline-decision-pack.md",
+          "title": "Stage168 follow-up: stage157 candidate renaming and mainline decision-pack prep",
+          "relativePath": "review/review-stage-168-stage157-candidate-renaming-and-mainline-decision-pack.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-mpc-only-reinforced-direct-pair-verdict.md",
+          "title": "Stage168 reinforced direct-pair verdict: `s157-main-mpc-only`",
+          "relativePath": "review/review-stage-168-stage157-main-mpc-only-reinforced-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-soft-both-reinforced-direct-pair-verdict.md",
+          "title": "Stage168 reinforced direct-pair verdict: `s157-main-soft-both`",
+          "relativePath": "review/review-stage-168-stage157-main-soft-both-reinforced-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-168-stage157-main-tight-probe-reinforced-direct-pair-verdict.md",
+          "title": "Stage168 reinforced direct-pair verdict: `s157-main-tight-probe`",
+          "relativePath": "review/review-stage-168-stage157-main-tight-probe-reinforced-direct-pair-verdict.md",
+          "stageNumber": 168
+        },
+        {
+          "fileName": "review-stage-167-stage154-pattern-export-root-cause-analysis.md",
+          "title": "Stage 167 — stage154 pattern export root-cause analysis",
+          "relativePath": "review/review-stage-167-stage154-pattern-export-root-cause-analysis.md",
+          "stageNumber": 167
+        },
+        {
+          "fileName": "review-stage-167-benchmark-reset-samples.md",
+          "title": "Stage 167 benchmark reset samples",
+          "relativePath": "review/review-stage-167-benchmark-reset-samples.md",
+          "stageNumber": 167
+        },
+        {
+          "fileName": "review-stage-166-stage154-pattern-asset-audit.md",
+          "title": "Stage 166 — stage154 pattern asset audit",
+          "relativePath": "review/review-stage-166-stage154-pattern-asset-audit.md",
+          "stageNumber": 166
+        },
+        {
+          "fileName": "review-stage-161-resume-main-verification-notes.md",
+          "title": "Stage 161 resume / main verification notes",
+          "relativePath": "review/review-stage-161-resume-main-verification-notes.md",
+          "stageNumber": 161
+        },
+        {
+          "fileName": "review-stage-158-external-engine-hint-notes.md",
+          "title": "Stage158 external-engine hint pass (Edax / Zebra / Othello-sensei)",
+          "relativePath": "review/review-stage-158-external-engine-hint-notes.md",
+          "stageNumber": 158
+        },
+        {
+          "fileName": "review-stage-157-structural-candidate-priority.md",
+          "title": "Stage157 structural move-ordering / MPC candidate priority",
+          "relativePath": "review/review-stage-157-structural-candidate-priority.md",
+          "stageNumber": 157
+        },
+        {
+          "fileName": "review-stage-145-move-ordering-compatibility-replay-notes.md",
+          "title": "Stage 145 move-ordering compatibility replay notes",
+          "relativePath": "review/review-stage-145-move-ordering-compatibility-replay-notes.md",
+          "stageNumber": 145
+        },
+        {
+          "fileName": "review-stage-144-compact-tuple-confirmation-notes.md",
+          "title": "Stage 144 compact tuple confirmation notes",
+          "relativePath": "review/review-stage-144-compact-tuple-confirmation-notes.md",
+          "stageNumber": 144
+        },
+        {
+          "fileName": "review-stage-135-evaluation-profile-adoption-notes.md",
+          "title": "Stage 135 evaluation profile adoption notes",
+          "relativePath": "review/review-stage-135-evaluation-profile-adoption-notes.md",
+          "stageNumber": 135
+        },
+        {
+          "fileName": "review-stage-134-evaluation-candidate-analysis-summary.md",
+          "title": "Stage 134 evaluation-candidate review",
+          "relativePath": "review/review-stage-134-evaluation-candidate-analysis-summary.md",
+          "stageNumber": 134
+        },
+        {
+          "fileName": "review-stage-133-classic-mtdf-adoption-notes.md",
+          "title": "Stage 133 classic MTD(f) adoption notes",
+          "relativePath": "review/review-stage-133-classic-mtdf-adoption-notes.md",
+          "stageNumber": 133
+        },
+        {
+          "fileName": "review-stage-124-compact-ntuple-go-no-go-and-nonreopen-proof.md",
+          "title": "검토 보고서 Stage 124 — compact systematic short n-tuple additive lane 착수 여부와 비재개 lane 근거 정리",
+          "relativePath": "review/review-stage-124-compact-ntuple-go-no-go-and-nonreopen-proof.md",
+          "stageNumber": 124
+        },
+        {
+          "fileName": "review-stage-120-ai-core-full-survey-and-step3-candidates.md",
+          "title": "검토 보고서 Stage 120 — AI core 전수조사와 Step 3 테스트 후보 분류",
+          "relativePath": "review/review-stage-120-ai-core-full-survey-and-step3-candidates.md",
+          "stageNumber": 120
+        },
+        {
+          "fileName": "review-stage-74-mpc-candidate-review.md",
+          "title": "Stage 74 MPC candidate review",
+          "relativePath": "review/review-stage-74-mpc-candidate-review.md",
+          "stageNumber": 74
+        },
+        {
+          "fileName": "review-stage-69-finalist-follow-up-decision.md",
+          "title": "Stage 69 — finalist follow-up: micro-patch narrowing + noisy confirmation",
+          "relativePath": "review/review-stage-69-finalist-follow-up-decision.md",
+          "stageNumber": 69
+        },
+        {
+          "fileName": "review-stage-52-tuple-lane-closeout-summary.md",
+          "title": "Stage 52 tuple evaluator close-out",
+          "relativePath": "review/review-stage-52-tuple-lane-closeout-summary.md",
+          "stageNumber": 52
+        },
+        {
+          "fileName": "review-stage-51-tuple-pipeline-validation-and-decision.md",
+          "title": "Stage 51 tuple pipeline validation and decision",
+          "relativePath": "review/review-stage-51-tuple-pipeline-validation-and-decision.md",
+          "stageNumber": 51
+        },
+        {
+          "fileName": "review-stage-50-tuple-direction-analysis-summary.md",
+          "title": "Stage50 tuple direction analysis summary",
+          "relativePath": "review/review-stage-50-tuple-direction-analysis-summary.md",
+          "stageNumber": 50
+        },
+        {
+          "fileName": "review-stage-49-tuple-patch-decision-summary.md",
+          "title": "Stage49 tuple decision summary",
+          "relativePath": "review/review-stage-49-tuple-patch-decision-summary.md",
+          "stageNumber": 49
+        },
+        {
+          "fileName": "review-stage-43-top-pair-local-search-summary.md",
+          "title": "Stage 43 top-pair local-search summary (2026-03-30)",
+          "relativePath": "review/review-stage-43-top-pair-local-search-summary.md",
+          "stageNumber": 43
+        },
+        {
+          "fileName": "review-stage-42-multi-action-local-search-follow-up-summary.md",
+          "title": "Stage 42 multi-action local-search follow-up summary (2026-03-30)",
+          "relativePath": "review/review-stage-42-multi-action-local-search-follow-up-summary.md",
+          "stageNumber": 42
+        },
+        {
+          "fileName": "review-stage-38-move-ordering-candidate-step2-summary.md",
+          "title": "Stage 38 move-ordering candidate step 2 summary (2026-03-29)",
+          "relativePath": "review/review-stage-38-move-ordering-candidate-step2-summary.md",
+          "stageNumber": 38
+        },
+        {
+          "fileName": "review-stage-38-move-ordering-search-cost-rerun-summary.md",
+          "title": "Stage 38 move-ordering search-cost rerun summary (2026-03-28)",
+          "relativePath": "review/review-stage-38-move-ordering-search-cost-rerun-summary.md",
+          "stageNumber": 38
+        },
+        {
+          "fileName": "review-stage-25-dormant-runtime-logic-classification.md",
+          "title": "검토 보고서 Stage 25 — dormant 런타임 로직 분류와 처리 기준",
+          "relativePath": "review/review-stage-25-dormant-runtime-logic-classification.md",
+          "stageNumber": 25
+        },
+        {
+          "fileName": "review-stage-24-exact-fastest-first-and-cut-aware-audit.md",
+          "title": "Stage 24 Review - Exact fastest-first and cut-aware ordering audit",
+          "relativePath": "review/review-stage-24-exact-fastest-first-and-cut-aware-audit.md",
+          "stageNumber": 24
+        },
+        {
+          "fileName": "review-stage-23-specialized-few-empties-exact-solver.md",
+          "title": "Stage 23 Review - Specialized exact few-empties solver audit",
+          "relativePath": "review/review-stage-23-specialized-few-empties-exact-solver.md",
+          "stageNumber": 23
+        },
+        {
+          "fileName": "review-stage-22-few-empties-exact-vs-wld-buckets.md",
+          "title": "Stage 22 Review - Few-empties exact solver audit and next candidates",
+          "relativePath": "review/review-stage-22-few-empties-exact-vs-wld-buckets.md",
+          "stageNumber": 22
+        },
+        {
+          "fileName": "review-stage-21-wld-only-stability-cutoff-spotcheck.md",
+          "title": "검토 보고서 Stage 21 — WLD 전용 Stability Cutoff spot-check",
+          "relativePath": "review/review-stage-21-wld-only-stability-cutoff-spotcheck.md",
+          "stageNumber": 21
+        },
+        {
+          "fileName": "review-stage-19-wld-range2-black-parity-benchmark.md",
+          "title": "검토 보고서 Stage 19 — WLD `+2` black parity 벤치마크 및 채택 판단",
+          "relativePath": "review/review-stage-19-wld-range2-black-parity-benchmark.md",
+          "stageNumber": 19
+        },
+        {
+          "fileName": "review-stage-18-wld-pre-exact-root-benchmark.md",
+          "title": "검토 보고서 Stage 18 — WLD Pre-Exact Root 벤치마크 및 채택 판단",
+          "relativePath": "review/review-stage-18-wld-pre-exact-root-benchmark.md",
+          "stageNumber": 18
+        },
+        {
+          "fileName": "review-stage-17-enhanced-transposition-cutoff-benchmark.md",
+          "title": "검토 보고서 Stage 17 — Enhanced Transposition Cutoff 벤치마크 및 채택 판단",
+          "relativePath": "review/review-stage-17-enhanced-transposition-cutoff-benchmark.md",
+          "stageNumber": 17
+        },
+        {
+          "fileName": "review-stage-16-stability-cutoff-prototype-screening.md",
+          "title": "검토 보고서 Stage 16 — Stability Cutoff 프로토타입 스크리닝",
+          "relativePath": "review/review-stage-16-stability-cutoff-prototype-screening.md",
+          "stageNumber": 16
+        },
+        {
+          "fileName": "review-stage-15-exact-root-ux-and-overhead-audit.md",
+          "title": "검토 보고서 Stage 15 — exact root UX 및 중복 비용 감사",
+          "relativePath": "review/review-stage-15-exact-root-ux-and-overhead-audit.md",
+          "stageNumber": 15
+        },
+        {
+          "fileName": "review-stage-14-late-game-boundary-bug-audit.md",
+          "title": "검토 보고서 Stage 14 — late-game boundary bug 감사",
+          "relativePath": "review/review-stage-14-late-game-boundary-bug-audit.md",
+          "stageNumber": 14
+        },
+        {
+          "fileName": "review-stage-13-traditional-evaluator-audit.md",
+          "title": "검토 보고서 Stage 13 — 전통 evaluator 종합 감사",
+          "relativePath": "review/review-stage-13-traditional-evaluator-audit.md",
+          "stageNumber": 13
+        },
+        {
+          "fileName": "review-stage-12-external-engine-technique-survey-and-adoption-candidates.md",
+          "title": "검토 보고서 Stage 12 — 외부 Othello 엔진/학습 사례 조사와 도입 후보",
+          "relativePath": "review/review-stage-12-external-engine-technique-survey-and-adoption-candidates.md",
+          "stageNumber": 12
+        },
+        {
+          "fileName": "review-stage-11-15-16-bucket-17-18-pre-exact-profile-experiment.md",
+          "title": "구현 검토 보고서 Stage 11 — `15~16` bucket / `17~18` pre-exact profile 실험 결과",
+          "relativePath": "review/review-stage-11-15-16-bucket-17-18-pre-exact-profile-experiment.md",
+          "stageNumber": 11
+        },
+        {
+          "fileName": "review-stage-10-exact-window-ordering-profile-retuning.md",
+          "title": "구현 검토 보고서 Stage 10 — exact window ordering profile 재튜닝",
+          "relativePath": "review/review-stage-10-exact-window-ordering-profile-retuning.md",
+          "stageNumber": 10
+        },
+        {
+          "fileName": "review-stage-09-exact-window-late-ordering-profile-redesign.md",
+          "title": "구현 검토 보고서 Stage 9 — exact window 전용 late ordering profile 재설계",
+          "relativePath": "review/review-stage-09-exact-window-late-ordering-profile-redesign.md",
+          "stageNumber": 9
+        },
+        {
+          "fileName": "review-stage-08-exact-teacher-late-ordering-tuning.md",
+          "title": "구현 검토 보고서 Stage 8 — exact teacher 기반 late ordering 튜닝",
+          "relativePath": "review/review-stage-08-exact-teacher-late-ordering-tuning.md",
+          "stageNumber": 8
+        },
+        {
+          "fileName": "review-stage-07-lightweight-move-ordering-evaluator-experiment.md",
+          "title": "구현 검토 보고서 Stage 7 — 경량 move ordering 평가기 실험",
+          "relativePath": "review/review-stage-07-lightweight-move-ordering-evaluator-experiment.md",
+          "stageNumber": 7
+        },
+        {
+          "fileName": "review-stage-06-zero-sum-evaluation-and-audit.md",
+          "title": "구현 검토 보고서 Stage 6",
+          "relativePath": "review/review-stage-06-zero-sum-evaluation-and-audit.md",
+          "stageNumber": 6
+        },
+        {
+          "fileName": "review-stage-05-conservative-selective-search-lmr.md",
+          "title": "Review Stage 5 Implementation Report — Conservative Selective Search (LMR)",
+          "relativePath": "review/review-stage-05-conservative-selective-search-lmr.md",
+          "stageNumber": 5
+        },
+        {
+          "fileName": "review-stage-04-engine-audit.md",
+          "title": "Engine Audit Review - Stage 4",
+          "relativePath": "review/review-stage-04-engine-audit.md",
+          "stageNumber": 4
+        },
+        {
+          "fileName": "review-stage-03-engine-audit.md",
+          "title": "Engine Audit Review - Stage 3",
+          "relativePath": "review/review-stage-03-engine-audit.md",
+          "stageNumber": 3
+        }
+      ]
+    },
+    {
+      "key": "features",
+      "label": "기능",
+      "description": "특정 기능 단위의 보충 설계/통합 문서",
+      "count": 1,
+      "latestStage": null,
+      "entries": [
+        {
+          "fileName": "feature-opening-book-integration.md",
+          "title": "오프닝북 통합 보고서",
+          "relativePath": "features/feature-opening-book-integration.md",
+          "stageNumber": null
+        }
+      ]
+    }
+  ]
+}

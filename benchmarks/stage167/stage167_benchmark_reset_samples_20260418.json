@@ -1,0 +1,242 @@
+{
+  "generatedAt": "2026-04-18T11:41:19+09:00",
+  "purpose": "Keep a few representative pre-fix benchmark symptoms while discarding stale detailed runs after the stage15x factorized pattern-bank export bug was found.",
+  "status": "invalidated-before-restart",
+  "invalidatedBecause": "stage15x exported candidates such as s154-main/s154-wide-safe were benchmarked before the stage167 factorized pattern-bank export fix, so the board-dependent pattern tables were not faithfully present in those generated modules.",
+  "retainedSamples": {
+    "stage162SupportScreening80ms": [
+      {
+        "variantId": "s154-wide-safe",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 16.25
+      },
+      {
+        "variantId": "s154-split",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 14.583333333333334
+      },
+      {
+        "variantId": "s154-both",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 13.333333333333334
+      },
+      {
+        "variantId": "active",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 13
+      },
+      {
+        "variantId": "s154-main",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 10.666666666666666
+      },
+      {
+        "variantId": "s154-safe",
+        "games": 12,
+        "points": 9,
+        "scoreRate": 0.75,
+        "averageDiscDiff": 10
+      }
+    ],
+    "stage162StructuralScreening80ms": [
+      {
+        "variantId": "s154-stable-zebra-open",
+        "games": 12,
+        "points": 10,
+        "averageDiscDiff": 17.083333333333332
+      },
+      {
+        "variantId": "s154-stable-zebra",
+        "games": 12,
+        "points": 9,
+        "averageDiscDiff": 15.75
+      },
+      {
+        "variantId": "s154-zebra-both-probe",
+        "games": 12,
+        "points": 9,
+        "averageDiscDiff": 14.75
+      },
+      {
+        "variantId": "s154-main-base",
+        "games": 12,
+        "points": 9,
+        "averageDiscDiff": 13.083333333333334
+      },
+      {
+        "variantId": "s154-stable-quiet-probe",
+        "games": 12,
+        "points": 9,
+        "averageDiscDiff": 12.666666666666666
+      },
+      {
+        "variantId": "active",
+        "games": 12,
+        "points": 7,
+        "averageDiscDiff": 5.0
+      }
+    ],
+    "stage165Round3_240msOverall": [
+      {
+        "variantId": "active",
+        "games": 12.0,
+        "points": 8.0,
+        "averageDiscDiff": 7.666666666666667
+      },
+      {
+        "variantId": "s154-main-base",
+        "games": 12.0,
+        "points": 7.0,
+        "averageDiscDiff": 6.333333333333333
+      },
+      {
+        "variantId": "s154-wide-safe",
+        "games": 12.0,
+        "points": 7.0,
+        "averageDiscDiff": 5.333333333333333
+      },
+      {
+        "variantId": "s154-stable-zebra",
+        "games": 12.0,
+        "points": 6.0,
+        "averageDiscDiff": 4.333333333333333
+      },
+      {
+        "variantId": "s154-stable-zebra-open",
+        "games": 12.0,
+        "points": 6.0,
+        "averageDiscDiff": 3.8333333333333335
+      },
+      {
+        "variantId": "s154-zebra-both-probe",
+        "games": 12.0,
+        "points": 5.0,
+        "averageDiscDiff": 2.5
+      }
+    ],
+    "stage165Round3_240msNoisyPlusXOT": [
+      {
+        "variantId": "s154-main-base",
+        "games": 8.0,
+        "points": 5.0,
+        "averageDiscDiff": 7.75
+      },
+      {
+        "variantId": "s154-wide-safe",
+        "games": 8.0,
+        "points": 5.0,
+        "averageDiscDiff": 7.25
+      },
+      {
+        "variantId": "active",
+        "games": 8.0,
+        "points": 5.0,
+        "averageDiscDiff": 6.75
+      },
+      {
+        "variantId": "s154-zebra-both-probe",
+        "games": 8.0,
+        "points": 4.0,
+        "averageDiscDiff": 6.0
+      },
+      {
+        "variantId": "s154-stable-zebra",
+        "games": 8.0,
+        "points": 4.0,
+        "averageDiscDiff": 6.0
+      },
+      {
+        "variantId": "s154-stable-zebra-open",
+        "games": 8.0,
+        "points": 4.0,
+        "averageDiscDiff": 5.0
+      }
+    ],
+    "stage166PatternStress240ms": [
+      {
+        "candidateKey": "s154-wide-safe",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": 4
+      },
+      {
+        "candidateKey": "s154-main-base",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": 2.75
+      },
+      {
+        "candidateKey": "s154-stable-zebra-open",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": 2
+      },
+      {
+        "candidateKey": "s154-stable-zebra",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": 1
+      },
+      {
+        "candidateKey": "active",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": 0.125
+      },
+      {
+        "candidateKey": "s154-zebra-both-probe",
+        "games": 8,
+        "points": 4,
+        "averageDiscDiff": -0.75
+      }
+    ],
+    "stage167Stage154RepairedExports": [
+      {
+        "file": "s154-both.generated.js",
+        "bytes": 2338525,
+        "mib": 2.23,
+        "likelyFactorizedPayload": true
+      },
+      {
+        "file": "s154-main.generated.js",
+        "bytes": 2338543,
+        "mib": 2.23,
+        "likelyFactorizedPayload": true
+      },
+      {
+        "file": "s154-safe.generated.js",
+        "bytes": 2336872,
+        "mib": 2.229,
+        "likelyFactorizedPayload": true
+      },
+      {
+        "file": "s154-split.generated.js",
+        "bytes": 2338535,
+        "mib": 2.23,
+        "likelyFactorizedPayload": true
+      },
+      {
+        "file": "s154-wide-safe.generated.js",
+        "bytes": 2338521,
+        "mib": 2.23,
+        "likelyFactorizedPayload": true
+      }
+    ]
+  },
+  "quickReadout": [
+    "stage162 support screening favored s154-wide-safe over s154-main even though both were later shown to have been exported through the broken factorized pattern-bank path.",
+    "stage165 at 240ms favored active overall while s154-main-base and s154-wide-safe stayed close on noisy/XOT slices, but these results are now historical symptoms rather than adoption evidence.",
+    "stage166 pattern-stress games all tied 4/8, which matched the suspicion that the supposed pattern-upgraded candidates were not actually expressing board-dependent pattern strength in the exported modules.",
+    "stage167 repaired exports are ~2.23 MiB each, which is consistent with factorized pattern payloads being present again; stale pre-fix stage15x benchmark outputs should not be used for candidate decisions."
+  ]
+}

@@ -1,0 +1,16 @@
+rowType,variantId,variantLabel,scenarioId,scenarioLabel,points,games,wins,losses,draws,averageDiscDiff,averageOurTimeMsPerGame,averageTheirTimeMsPerGame,wallSeconds
+scenario,active,active-installed,noisy3000-mtdf-seed29,noisy 3000ms MTD(f) seed29,1,2,1,1,0,-5,4549.5,39006.5,87.42566227912903
+scenario,active,active-installed,noisy3000-pvs-seed71,noisy 3000ms PVS seed71,1,2,1,1,0,-10,4852.5,39017,88.03388857841492
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy3000-mtdf-seed29,noisy 3000ms MTD(f) seed29,1,2,1,1,0,-3,7855.5,39009.5,95.21913504600525
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy3000-pvs-seed71,noisy 3000ms PVS seed71,2,2,2,0,0,8,7356,39016,94.17709469795227
+scenario,s151-safe-full,s151-safe-full,noisy3000-mtdf-seed29,noisy 3000ms MTD(f) seed29,1,2,1,1,0,-2,5079.5,39012,89.96293187141418
+scenario,s151-safe-full,s151-safe-full,noisy3000-pvs-seed71,noisy 3000ms PVS seed71,1,2,1,1,0,6,6371,39018.5,92.34863185882568
+scenario,s154-both,s154-both,noisy3000-mtdf-seed29,noisy 3000ms MTD(f) seed29,1,2,1,1,0,-3,6321,39006,92.07375359535217
+scenario,s154-both,s154-both,noisy3000-pvs-seed71,noisy 3000ms PVS seed71,2,2,2,0,0,9,6429,39013,92.24622392654419
+scenario,s154-main,s154-main,noisy3000-mtdf-seed29,noisy 3000ms MTD(f) seed29,1,2,1,1,0,-3,5982,39013,91.36270189285278
+scenario,s154-main,s154-main,noisy3000-pvs-seed71,noisy 3000ms PVS seed71,2,2,2,0,0,9,6653,39013.5,92.72628378868103
+total,active,active-installed,TOTAL,TOTAL,2.0,4.0,2.0,2.0,0.0,-7.5,4701.0,39011.75,175.45955085754395
+total,s154-main-s158-open,s154-main + s158-stable-zebra-open,TOTAL,TOTAL,3.0,4.0,3.0,1.0,0.0,2.5,7605.75,39012.75,189.39622974395752
+total,s151-safe-full,s151-safe-full,TOTAL,TOTAL,2.0,4.0,2.0,2.0,0.0,2.0,5725.25,39015.25,182.31156373023987
+total,s154-both,s154-both,TOTAL,TOTAL,3.0,4.0,3.0,1.0,0.0,3.0,6375.0,39009.5,184.31997752189636
+total,s154-main,s154-main,TOTAL,TOTAL,3.0,4.0,3.0,1.0,0.0,3.0,6317.5,39013.25,184.0889856815338

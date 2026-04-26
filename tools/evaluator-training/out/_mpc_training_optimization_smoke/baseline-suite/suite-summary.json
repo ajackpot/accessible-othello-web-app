@@ -1,0 +1,193 @@
+{
+  "generatedAt": "2026-04-16T12:55:32.652Z",
+  "outputDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite",
+  "dryRun": false,
+  "resume": false,
+  "continueOnError": false,
+  "sharedSearchPairs": {
+    "enabled": false,
+    "mode": "off",
+    "canShareSearchPairs": true,
+    "reason": null,
+    "outputJsonlPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.jsonl",
+    "summaryJsonPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.summary.json",
+    "checkpointJsonPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/shared-mpc-search-pairs.checkpoint.json"
+  },
+  "sharedEvaluationProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json",
+  "sharedMoveOrderingProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json",
+  "sharedTupleProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-tuple-residual-profile.snapshot.json",
+  "sharedBaselineMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-mpc-profile.snapshot.json",
+  "benchmarkBaseline": {
+    "evaluationProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-evaluation-profile.snapshot.json",
+    "moveOrderingProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-move-ordering-profile.snapshot.json",
+    "tupleProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-tuple-residual-profile.snapshot.json",
+    "mpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/shared/active-mpc-profile.snapshot.json",
+    "mpcMode": null
+  },
+  "candidates": [
+    {
+      "key": "candidate-a",
+      "name": "candidate-a",
+      "status": "success",
+      "candidateDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-a",
+      "resolvedConfigPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-a/candidate-config.resolved.json",
+      "steps": {
+        "calibrate": "success",
+        "variant": "success",
+        "exportModule": "disabled",
+        "depthBenchmark": "disabled",
+        "exactBenchmark": "disabled"
+      },
+      "rawMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-a/trained-mpc-profile.raw.json",
+      "finalMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-a/trained-mpc-profile.json",
+      "generatedModulePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-a/learned-eval-profile.generated.js",
+      "generatedModuleBytes": null,
+      "rawProfile": {
+        "name": "calibrated-mpc-profile-v1",
+        "runtime": null,
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "finalProfile": {
+        "name": "trained-mpc-candidate-a",
+        "runtime": {
+          "enableHighCut": true,
+          "enableLowCut": false,
+          "maxWindow": 1,
+          "maxChecksPerNode": 1,
+          "minDepth": 2,
+          "minDepthGap": 2,
+          "maxDepthDistance": 1,
+          "minPly": 1,
+          "highScale": 1,
+          "lowScale": 1,
+          "depthDistanceScale": 1.25,
+          "defaultMode": "high",
+          "maxTriesPerNode": 1
+        },
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "depthBenchmark": null,
+      "exactBenchmark": null
+    },
+    {
+      "key": "candidate-b",
+      "name": "candidate-b",
+      "status": "success",
+      "candidateDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b",
+      "resolvedConfigPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/candidate-config.resolved.json",
+      "steps": {
+        "calibrate": "success",
+        "variant": "success",
+        "exportModule": "disabled",
+        "depthBenchmark": "disabled",
+        "exactBenchmark": "disabled"
+      },
+      "rawMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.raw.json",
+      "finalMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/trained-mpc-profile.json",
+      "generatedModulePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-b/learned-eval-profile.generated.js",
+      "generatedModuleBytes": null,
+      "rawProfile": {
+        "name": "calibrated-mpc-profile-v1",
+        "runtime": null,
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "finalProfile": {
+        "name": "trained-mpc-candidate-b",
+        "runtime": {
+          "enableHighCut": true,
+          "enableLowCut": false,
+          "maxWindow": 1,
+          "maxChecksPerNode": 2,
+          "minDepth": 2,
+          "minDepthGap": 2,
+          "maxDepthDistance": 1,
+          "minPly": 1,
+          "highScale": 1,
+          "lowScale": 1,
+          "depthDistanceScale": 1.25,
+          "defaultMode": "high",
+          "maxTriesPerNode": 2
+        },
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "depthBenchmark": null,
+      "exactBenchmark": null
+    },
+    {
+      "key": "candidate-c",
+      "name": "candidate-c",
+      "status": "success",
+      "candidateDir": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-c",
+      "resolvedConfigPath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-c/candidate-config.resolved.json",
+      "steps": {
+        "calibrate": "success",
+        "variant": "success",
+        "exportModule": "disabled",
+        "depthBenchmark": "disabled",
+        "exactBenchmark": "disabled"
+      },
+      "rawMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-c/trained-mpc-profile.raw.json",
+      "finalMpcProfilePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-c/trained-mpc-profile.json",
+      "generatedModulePath": "tools/evaluator-training/out/_mpc_training_optimization_smoke/baseline-suite/candidates/candidate-c/learned-eval-profile.generated.js",
+      "generatedModuleBytes": null,
+      "rawProfile": {
+        "name": "calibrated-mpc-profile-v1",
+        "runtime": null,
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "finalProfile": {
+        "name": "trained-mpc-candidate-c",
+        "runtime": {
+          "enableHighCut": true,
+          "enableLowCut": true,
+          "maxWindow": 1,
+          "maxChecksPerNode": 2,
+          "minDepth": 2,
+          "minDepthGap": 2,
+          "maxDepthDistance": 1,
+          "minPly": 1,
+          "highScale": 1,
+          "lowScale": 0.95,
+          "depthDistanceScale": 1.25,
+          "defaultMode": "both",
+          "maxTriesPerNode": 2
+        },
+        "usableCalibrationCount": 0,
+        "totalCalibrationCount": 1,
+        "usableKeys": [],
+        "matchedSamples": 4,
+        "matchedBucketAssignments": null,
+        "acceptedSamples": 4
+      },
+      "depthBenchmark": null,
+      "exactBenchmark": null
+    }
+  ],
+  "successCount": 3,
+  "failureCount": 0
+}

@@ -1,0 +1,57 @@
+{
+  "familyKey": "stage151-split-late3",
+  "label": "stage151 split_late3",
+  "sourceModule": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+  "moveOrderingSupersetBuckets": [
+    "7-8",
+    "9-9",
+    "10-10",
+    "11-12",
+    "13-14",
+    "15-16",
+    "17-18",
+    "19-19"
+  ],
+  "moveOrderingVariantKeys": [
+    "safe",
+    "balanced",
+    "wide"
+  ],
+  "orderingPatternBankVariantKeys": [
+    "full",
+    "noend",
+    "latea",
+    "off"
+  ],
+  "mpcSupersetKeys": [
+    "overlap8",
+    "split8"
+  ],
+  "mpcRuntimeVariantKeys": [
+    "safe4High",
+    "overlapHighSafe",
+    "overlapHighTight",
+    "splitHighTight",
+    "overlapBothSoftLow"
+  ],
+  "candidateKeys": [
+    "s151-safe-full",
+    "s151-noend-main",
+    "s151-latea-main",
+    "s151-linear-only",
+    "s151-noend-split",
+    "s151-full-both"
+  ],
+  "sharedArtifacts": {
+    "evaluationProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/source-evaluation-profile.json",
+    "moveOrderingProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/source-move-ordering-profile.json",
+    "tupleProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/source-tuple-profile.json",
+    "mpcProfilePath": "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/source-mpc-profile.json",
+    "evaluationPatternBankPaths": [
+      "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/evaluation-pattern-bank.01.json"
+    ],
+    "orderingPatternBankSourcePaths": [
+      "tools/evaluator-training/out/_stage161_bundle_resume_smoke/stage151-split-late3/shared/ordering-pattern-bank.source.01.json"
+    ]
+  }
+}

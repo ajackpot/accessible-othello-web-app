@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-20T19:26:33.277Z",
+  "recommendation": {
+    "code": "option2",
+    "confidence": "medium",
+    "rationale": "두 후보 모두 vanilla baseline 두 축에서 overall 음수입니다."
+  },
+  "firstCandidate": "s176-main-assertive-both-lite",
+  "secondCandidate": "s176-main-frontier-bothlite-topk2",
+  "summaryPath": "tools/engine-match/out/stage181-trineutron-finals/s176-finals-session01/final-summary.json"
+}

@@ -1,0 +1,135 @@
+{
+  "stage": 156,
+  "label": "Stage 156",
+  "generatedAt": "2026-04-15T23:40:00+09:00",
+  "candidate": "ordering-only edge/corner split scales for move-ordering evaluator",
+  "codeChanges": {
+    "addedOptions": [
+      "moveOrderingEdgePatternScale",
+      "moveOrderingCornerPatternScale"
+    ],
+    "fixedOverridePlumbing": true,
+    "smokeTest": "js/test/stage156_move_ordering_edge_corner_split_smoke.mjs"
+  },
+  "throughput": {
+    "80": {
+      "active": {
+        "averageCompletedDepth": 2.75,
+        "averageElapsedMs": 140.25,
+        "averageNodes": 551,
+        "nodesPerMs": 3.928698752228164,
+        "completionRate": 0.75
+      },
+      "active-ordering-off": {
+        "averageCompletedDepth": 3.5,
+        "averageElapsedMs": 87,
+        "averageNodes": 912.25,
+        "nodesPerMs": 10.485632183908047,
+        "completionRate": 1
+      },
+      "main-recenter": {
+        "averageCompletedDepth": 3.5,
+        "averageElapsedMs": 95.25,
+        "averageNodes": 723.75,
+        "nodesPerMs": 7.5984251968503935,
+        "completionRate": 1
+      },
+      "main-recenter-ordering-off": {
+        "averageCompletedDepth": 3.5,
+        "averageElapsedMs": 101.25,
+        "averageNodes": 659.5,
+        "nodesPerMs": 6.51358024691358,
+        "completionRate": 1
+      }
+    },
+    "280": {
+      "active": {
+        "averageCompletedDepth": 4,
+        "averageElapsedMs": 91.25,
+        "averageNodes": 1094.5,
+        "nodesPerMs": 11.994520547945205,
+        "completionRate": 1
+      },
+      "active-ordering-off": {
+        "averageCompletedDepth": 4,
+        "averageElapsedMs": 87.25,
+        "averageNodes": 1094.5,
+        "nodesPerMs": 12.544412607449857,
+        "completionRate": 1
+      },
+      "main-recenter": {
+        "averageCompletedDepth": 4,
+        "averageElapsedMs": 112.25,
+        "averageNodes": 996,
+        "nodesPerMs": 8.873051224944321,
+        "completionRate": 1
+      },
+      "main-recenter-ordering-off": {
+        "averageCompletedDepth": 4,
+        "averageElapsedMs": 111.5,
+        "averageNodes": 996,
+        "nodesPerMs": 8.932735426008968,
+        "completionRate": 1
+      }
+    }
+  },
+  "externalGate": {
+    "active_pvs": {
+      "games": 8,
+      "wins": 7,
+      "losses": 1,
+      "draws": 0,
+      "points": 7,
+      "scoreRate": 0.875,
+      "averageDiscDiff": 12.5,
+      "averageOurTimeMsPerGame": 1510,
+      "averageOurNodesPerGame": 13957.375
+    },
+    "active_ordering_off_pvs": {
+      "games": 8,
+      "wins": 6,
+      "losses": 2,
+      "draws": 0,
+      "points": 6,
+      "scoreRate": 0.75,
+      "averageDiscDiff": 8.75,
+      "averageOurTimeMsPerGame": 1446.5,
+      "averageOurNodesPerGame": 13720.625
+    },
+    "main_recenter_pvs": {
+      "games": 8,
+      "wins": 6,
+      "losses": 1,
+      "draws": 1,
+      "points": 6.5,
+      "scoreRate": 0.8125,
+      "averageDiscDiff": 16.75,
+      "averageOurTimeMsPerGame": 1670.875,
+      "averageOurNodesPerGame": 13178.75
+    },
+    "main_recenter_ordering_off_pvs": {
+      "games": 8,
+      "wins": 6,
+      "losses": 1,
+      "draws": 1,
+      "points": 6.5,
+      "scoreRate": 0.8125,
+      "averageDiscDiff": 12.5,
+      "averageOurTimeMsPerGame": 1887.625,
+      "averageOurNodesPerGame": 14645
+    }
+  },
+  "decision": {
+    "defaultRuntimeChanged": false,
+    "adoptOrderingOnlySplit": false,
+    "why": [
+      "ordering-only edge/corner off improved throughput in some windows but did not improve external Trineutron score rate",
+      "active baseline remained stronger than active-ordering-off on the external 80ms PVS gate",
+      "main_recenter ordering-only split tied score rate but worsened average disc margin"
+    ],
+    "futureDirection": [
+      "retune evaluator, move-ordering, tuple, and MPC together for new evaluator families instead of isolating one lane",
+      "treat the Stage 156 direct override path as the correct baseline for future external-gated experiments"
+    ]
+  }
+}

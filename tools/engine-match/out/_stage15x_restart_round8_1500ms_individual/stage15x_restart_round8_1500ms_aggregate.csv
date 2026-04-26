@@ -1,0 +1,37 @@
+rowType,variantId,variantLabel,scenarioId,scenarioLabel,family,points,games,wins,losses,draws,averageDiscDiff,averageOurTimeMsPerGame,averageTheirTimeMsPerGame,wallSeconds
+scenario,active,active-installed,noisy1500-mtdf-seed29,noisy 1500ms MTD(f) seed29,mtdf,1,2,1,1,0,5,2549,19505,44.30454730987549
+scenario,active,active-installed,noisy1500-mtdf-seed53,noisy 1500ms MTD(f) seed53,mtdf,1,2,1,1,0,-1,3430.5,19503,46.070767879486084
+scenario,active,active-installed,noisy1500-mtdf-seed107,noisy 1500ms MTD(f) seed107,mtdf,0,2,0,2,0,-20,2553.5,19504,44.32389855384827
+scenario,active,active-installed,noisy1500-pvs-seed71,noisy 1500ms PVS seed71,pvs,1,2,1,1,0,-11,2665.5,19508,44.555304527282715
+scenario,active,active-installed,noisy1500-pvs-seed89,noisy 1500ms PVS seed89,pvs,1,2,1,1,0,7,3009,19517.5,45.25337553024292
+scenario,active,active-installed,noisy1500-pvs-seed131,noisy 1500ms PVS seed131,pvs,0,2,0,2,0,-16,2084.5,19501,43.3694429397583
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-mtdf-seed29,noisy 1500ms MTD(f) seed29,mtdf,1,2,1,1,0,-3,4472,19505.5,48.811142444610596
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-mtdf-seed53,noisy 1500ms MTD(f) seed53,mtdf,1,2,1,1,0,3,4360.5,19514,48.61741876602173
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-mtdf-seed107,noisy 1500ms MTD(f) seed107,mtdf,1,2,1,1,0,-14,3782.5,19500,47.43295669555664
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-pvs-seed71,noisy 1500ms PVS seed71,pvs,2,2,2,0,0,8,3986,19504.5,47.9107449054718
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-pvs-seed89,noisy 1500ms PVS seed89,pvs,0,2,0,2,0,-14,4405,19514,48.69395852088928
+scenario,s154-main-s158-open,s154-main + s158-stable-zebra-open,noisy1500-pvs-seed131,noisy 1500ms PVS seed131,pvs,2,2,2,0,0,19,4045,19527,48.05563259124756
+scenario,s154-both,s154-both,noisy1500-mtdf-seed29,noisy 1500ms MTD(f) seed29,mtdf,1,2,1,1,0,-3,3718.5,19510,47.33516240119934
+scenario,s154-both,s154-both,noisy1500-mtdf-seed53,noisy 1500ms MTD(f) seed53,mtdf,1,2,1,1,0,3,3339.5,19502,46.611454248428345
+scenario,s154-both,s154-both,noisy1500-mtdf-seed107,noisy 1500ms MTD(f) seed107,mtdf,1,2,1,1,0,-14,3231.5,19501,46.39927053451538
+scenario,s154-both,s154-both,noisy1500-pvs-seed71,noisy 1500ms PVS seed71,pvs,2,2,2,0,0,5,3763.5,19526,47.47772407531738
+scenario,s154-both,s154-both,noisy1500-pvs-seed89,noisy 1500ms PVS seed89,pvs,1,2,1,1,0,11,3602,19516,47.114763498306274
+scenario,s154-both,s154-both,noisy1500-pvs-seed131,noisy 1500ms PVS seed131,pvs,2,2,2,0,0,23,3383.5,19504,46.675772190093994
+scenario,s154-main,s154-main,noisy1500-mtdf-seed29,noisy 1500ms MTD(f) seed29,mtdf,1,2,1,1,0,-3,3769,19538,47.51210975646973
+scenario,s154-main,s154-main,noisy1500-mtdf-seed53,noisy 1500ms MTD(f) seed53,mtdf,1,2,1,1,0,0,3688,19523.5,47.323408126831055
+scenario,s154-main,s154-main,noisy1500-mtdf-seed107,noisy 1500ms MTD(f) seed107,mtdf,1,2,1,1,0,-13,3587.5,19502.5,47.07489609718323
+scenario,s154-main,s154-main,noisy1500-pvs-seed71,noisy 1500ms PVS seed71,pvs,2,2,2,0,0,5,4006,19510.5,47.90093922615051
+scenario,s154-main,s154-main,noisy1500-pvs-seed89,noisy 1500ms PVS seed89,pvs,2,2,2,0,0,26,3842.5,19513.5,47.577014446258545
+scenario,s154-main,s154-main,noisy1500-pvs-seed131,noisy 1500ms PVS seed131,pvs,2,2,2,0,0,19,3913,19505.5,47.79881262779236
+family,active,active-installed,MTDF,MTDF,mtdf,2.0,6.0,2.0,4.0,0.0,-5.333333333333333,2844.3333333333335,19504.0,134.69921374320984
+family,active,active-installed,PVS,PVS,pvs,2.0,6.0,2.0,4.0,0.0,-6.666666666666667,2586.3333333333335,19508.833333333332,133.17812299728394
+total,active,active-installed,TOTAL,TOTAL,total,4.0,12.0,4.0,8.0,0.0,-6.0,2715.3333333333335,19506.416666666668,267.8773367404938
+family,s154-main-s158-open,s154-main + s158-stable-zebra-open,MTDF,MTDF,mtdf,3.0,6.0,3.0,3.0,0.0,-4.666666666666667,4205.0,19506.5,144.86151790618896
+family,s154-main-s158-open,s154-main + s158-stable-zebra-open,PVS,PVS,pvs,4.0,6.0,4.0,2.0,0.0,4.333333333333333,4145.333333333333,19515.166666666668,144.66033601760864
+total,s154-main-s158-open,s154-main + s158-stable-zebra-open,TOTAL,TOTAL,total,7.0,12.0,7.0,5.0,0.0,-0.16666666666666666,4175.166666666667,19510.833333333332,289.5218539237976
+family,s154-both,s154-both,MTDF,MTDF,mtdf,3.0,6.0,3.0,3.0,0.0,-4.666666666666667,3429.8333333333335,19504.333333333332,140.34588718414307
+family,s154-both,s154-both,PVS,PVS,pvs,5.0,6.0,5.0,1.0,0.0,13.0,3583.0,19515.333333333332,141.26825976371765
+total,s154-both,s154-both,TOTAL,TOTAL,total,8.0,12.0,8.0,4.0,0.0,4.166666666666667,3506.4166666666665,19509.833333333332,281.6141469478607
+family,s154-main,s154-main,MTDF,MTDF,mtdf,3.0,6.0,3.0,3.0,0.0,-5.333333333333333,3681.5,19521.333333333332,141.910413980484
+family,s154-main,s154-main,PVS,PVS,pvs,6.0,6.0,6.0,0.0,0.0,16.666666666666668,3920.5,19509.833333333332,143.27676630020142
+total,s154-main,s154-main,TOTAL,TOTAL,total,9.0,12.0,9.0,3.0,0.0,5.666666666666667,3801.0,19515.583333333332,285.1871802806854

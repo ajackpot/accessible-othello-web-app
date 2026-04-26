@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-04-20T16:07:26.952Z",
+  "first": {
+    "stage": 157,
+    "key": "s157-main-assertive-both",
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 9,
+    "tier": "aggressive",
+    "risk": "high",
+    "notes": "library 최고공격 후보. stage157 closeout에서는 long-think non-collapse형 채택으로 정리됐습니다.",
+    "moveOrderingStructureProfileKey": "hybrid-probe-v1",
+    "mpcStructureProfileKey": "assertive-both-v1"
+  },
+  "second": {
+    "stage": 176,
+    "key": "s176-main-wide-zebra-bothlite",
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 1,
+    "tier": "aggressive",
+    "risk": "medium",
+    "notes": "wide-zebra lane option1. wide ordering은 유지하고, frontier-bothlite successor에서 검증된 both-lite MPC만 이식합니다.",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage170-frontier-zebra-bothlite-v1"
+  },
+  "options": {
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      17
+    ],
+    "microFileCount": 1
+  },
+  "rows": [
+    {
+      "timeLimitMs": 80,
+      "totalGames": 2,
+      "firstPoints": 1,
+      "secondPoints": 1,
+      "firstScoreRate": 0.5,
+      "secondScoreRate": 0.5,
+      "pointGapRate": 0,
+      "pointDiffPoints": 0,
+      "firstNodesPerMs": 14.805295950155763,
+      "secondNodesPerMs": 16.089521452145213,
+      "seeds": [
+        17
+      ],
+      "outcome": "draw"
+    }
+  ],
+  "microRows": [
+    {
+      "sourceFile": "tools/engine-match/out/_tmp_stage177_pair_smoke/results/micro/80ms_seed17.json",
+      "timeLimitMs": 80,
+      "seed": 17,
+      "totalGames": 2,
+      "firstPoints": 1,
+      "secondPoints": 1,
+      "firstScoreRate": 0.5,
+      "secondScoreRate": 0.5,
+      "pointGapRate": 0,
+      "pointDiffPoints": 0,
+      "firstNodesPerMs": 14.805295950155763,
+      "secondNodesPerMs": 16.089521452145213,
+      "firstTotalTurns": 26,
+      "secondTotalTurns": 26,
+      "firstTotalNodesEstimate": 38020,
+      "secondTotalNodesEstimate": 39001,
+      "firstTotalMsEstimate": 2568,
+      "secondTotalMsEstimate": 2424,
+      "outcome": "draw"
+    }
+  ],
+  "pattern": {
+    "firstPerspective": [
+      "동률"
+    ],
+    "secondPerspective": [
+      "동률"
+    ]
+  },
+  "overall": {
+    "totalGames": 2,
+    "pointDiffPoints": 0,
+    "pointGapRate": 0,
+    "outcome": "draw",
+    "first": {
+      "key": "s157-main-assertive-both",
+      "points": 1,
+      "scoreRate": 0.5,
+      "nodesPerMs": 14.805295950155763
+    },
+    "second": {
+      "key": "s176-main-wide-zebra-bothlite",
+      "points": 1,
+      "scoreRate": 0.5,
+      "nodesPerMs": 16.089521452145213
+    }
+  }
+}

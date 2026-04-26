@@ -1,0 +1,13 @@
+{
+  "runId": "noisy1500-pvs-seed71__active",
+  "variantId": "active",
+  "variantLabel": "active-installed",
+  "scenarioId": "noisy1500-pvs-seed71",
+  "scenarioLabel": "noisy 1500ms PVS seed71",
+  "startedAt": 1776513388.3149047,
+  "finishedAt": 1776513432.8702092,
+  "wallSeconds": 44.555304527282715,
+  "returnCode": 0,
+  "outputJson": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/results/noisy1500-pvs-seed71__active.json",
+  "logPath": "tools/engine-match/out/_stage15x_restart_round8_1500ms_individual/logs/noisy1500-pvs-seed71__active.log"
+}

@@ -1,0 +1,77 @@
+{
+  "createdAt": "2026-04-16T07:51:36.783Z",
+  "projectRoot": "/mnt/data/othello_work/othello",
+  "outputDir": "/mnt/data/othello_work/othello/backups/stage157_pre_structural_logic_20260416",
+  "files": [
+    {
+      "relativePath": "js/ai/search-engine.js",
+      "bytes": 218964,
+      "sha256": "fc326cd03556625f9a47c40e2adc52ea577f38735a0b03a1de155625bf267ec9"
+    },
+    {
+      "relativePath": "js/ai/evaluator.js",
+      "bytes": 58735,
+      "sha256": "010d5bbff67f6ed00abc0ff1be1eaa557ee5c45f1eff2a73eaea92553fd90807"
+    },
+    {
+      "relativePath": "js/ai/evaluation-profiles.js",
+      "bytes": 44509,
+      "sha256": "618fc268bb0bfdd8f3618b709508ce64ca3b24dec550707a6bc2fd142882c6c7"
+    },
+    {
+      "relativePath": "js/ai/learned-eval-profile.generated.js",
+      "bytes": 22100,
+      "sha256": "afb5b8b3c0c7f411a51125bb2f476e2aace8dfd4363b0177fe0504184342e5b7"
+    },
+    {
+      "relativePath": "js/ai/worker.js",
+      "bytes": 1484,
+      "sha256": "e3ad271dcbd38f89cb12e7eede53aed10c07ff99af1d6f5a08b7895b5abeb018"
+    },
+    {
+      "relativePath": "js/ui/engine-client.js",
+      "bytes": 2718,
+      "sha256": "4fb8c3c1c6b71c3b65af32056ae01f0a9a6a7e638dc60226581a066c0af189ad"
+    },
+    {
+      "relativePath": "tools/evaluator-training/train-move-ordering-profile.mjs",
+      "bytes": 49281,
+      "sha256": "a911441c5fb48dee4860e458a4454acdf5ec114fa2228c4c40d43d17562fda5c"
+    },
+    {
+      "relativePath": "tools/evaluator-training/calibrate-mpc-profile.mjs",
+      "bytes": 26549,
+      "sha256": "4885068f71a4fa241da5d76f1067fda9fab52358ea0e431d466dd780903088d5"
+    },
+    {
+      "relativePath": "tools/evaluator-training/export-profile-module.mjs",
+      "bytes": 7031,
+      "sha256": "22718c719b508bf2d3a529f3e3b456ec6f6b7f82baa6ee4fb51e32e6a62ca0c5"
+    },
+    {
+      "relativePath": "tools/evaluator-training/build-generated-profile-module.mjs",
+      "bytes": 11959,
+      "sha256": "8c5c5a97bfb3d43346b018914ac0e05d7c3e54c19fd2bd4cf8786a7ab8ccb9a4"
+    },
+    {
+      "relativePath": "tools/evaluator-training/install-mpc-profile.mjs",
+      "bytes": 4709,
+      "sha256": "3a671b416662fb6494e2a9f21d47cc64fa84e3fc9f54c28f745981d3e6d42358"
+    },
+    {
+      "relativePath": "tools/evaluator-training/install-pattern-bank-profile.mjs",
+      "bytes": 7088,
+      "sha256": "f27932fd9ca5200a3c6661017a024bcfdc4b2d6f66a56e7b18ca41e032b6ad4e"
+    },
+    {
+      "relativePath": "tools/evaluator-training/out/stage151/learned-eval-profile.split_late3.factorized.generated.js",
+      "bytes": 2640131,
+      "sha256": "cd7a515ef9ab5b9f64e78b1e726374d6dd2148b58a2e63cb6c6ee82550c86287"
+    },
+    {
+      "relativePath": "tools/evaluator-training/out/stage154/modules/learned-eval-profile.main_only.recenter.factorized.generated.js",
+      "bytes": 2337664,
+      "sha256": "ab83ed27565fc1b3d5e12d9016ab267fc401cb88874b0fb41f8f3ef924ef15f0"
+    }
+  ]
+}

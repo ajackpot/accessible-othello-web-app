@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-04-20T10:14:30.749Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-wide-zebra",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 1,
+    "tier": "aggressive",
+    "risk": "medium",
+    "notes": "Stage157의 가장 선명한 wide ordering survivor와 stage158의 guarded Zebra MPC survivor를 교차 결합한 1순위 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      80
+    ],
+    "seedList": [
+      71,
+      89,
+      107
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-both"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-reinforced/widezebra-both-80b/s170-main-wide-zebra/engine-options/s154-both__s170-main-wide-zebra.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-reinforced/widezebra-both-80b/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 80,
+      "totalGames": 6,
+      "baselinePoints": 3,
+      "candidatePoints": 3,
+      "baselineScoreRate": 0.5,
+      "candidateScoreRate": 0.5,
+      "pointGap": 0,
+      "baselineNodesPerMs": 8.896751169086881,
+      "candidateNodesPerMs": 9.042167135190391,
+      "recommendation": "두 profile variant의 paired score가 사실상 동률입니다."
+    }
+  ]
+}

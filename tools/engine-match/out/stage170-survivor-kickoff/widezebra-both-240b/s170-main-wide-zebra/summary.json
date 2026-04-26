@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-04-20T06:13:57.641Z",
+  "candidate": {
+    "stage": 170,
+    "key": "s170-main-wide-zebra",
+    "legacyAliases": [],
+    "familyKey": "stage154-main-recenter",
+    "familyLabel": "stage154 main_recenter",
+    "priority": 1,
+    "tier": "aggressive",
+    "risk": "medium",
+    "notes": "Stage157의 가장 선명한 wide ordering survivor와 stage158의 guarded Zebra MPC survivor를 교차 결합한 1순위 통합 후보입니다.",
+    "moveOrderingStructureProfileKey": "wide-hybrid-v1",
+    "mpcStructureProfileKey": "stage154-zebra-guarded-v1",
+    "moveOrderingSource": {
+      "stage": 157,
+      "key": "s157-main-wide-hybrid"
+    },
+    "mpcSource": {
+      "stage": 158,
+      "key": "s154-stable-zebra"
+    }
+  },
+  "options": {
+    "searchAlgorithm": "classic",
+    "timeMsList": [
+      240
+    ],
+    "seedList": [
+      53,
+      71
+    ],
+    "games": 1,
+    "openingPlies": 20,
+    "maxDepth": 6,
+    "exactEndgameEmpties": 10,
+    "solverAdjudicationEmpties": 14,
+    "solverAdjudicationTimeMs": 60000,
+    "maxTableEntries": 90000,
+    "aspirationWindow": 60,
+    "progressEveryPairs": 4,
+    "baselineIds": [
+      "s154-both"
+    ]
+  },
+  "runs": [
+    {
+      "baselineId": "s154-both",
+      "baselineLabel": "s154-both",
+      "baselineGeneratedModule": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/exported/s154-both.generated.js",
+      "baselineEngineOptionsJson": "tools/evaluator-training/out/stage15x-support-stack/stage154-main-recenter/engine-options/s154-both.json",
+      "overlayEngineOptionsJson": "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-240b/s170-main-wide-zebra/engine-options/s154-both__s170-main-wide-zebra.json",
+      "resultJson": "tools/engine-match/out/stage170-survivor-kickoff/widezebra-both-240b/s170-main-wide-zebra/results/s154-both__s170-main-wide-zebra.json"
+    }
+  ],
+  "rows": [
+    {
+      "baselineId": "s154-both",
+      "timeLimitMs": 240,
+      "totalGames": 4,
+      "baselinePoints": 1,
+      "candidatePoints": 3,
+      "baselineScoreRate": 0.25,
+      "candidateScoreRate": 0.75,
+      "pointGap": 0.5,
+      "baselineNodesPerMs": 14.281092012133469,
+      "candidateNodesPerMs": 14.003582437723903,
+      "recommendation": "s154-both + s170-main-wide-zebra가 s154-both보다 paired score 기준 우세합니다."
+    }
+  ]
+}

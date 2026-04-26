@@ -1,0 +1,30 @@
+{
+  "scope": "candidate",
+  "key": "c2",
+  "name": "candidate2",
+  "createdAt": "2026-04-16T12:52:19.149Z",
+  "steps": {
+    "fit-mpc-profile-from-search-pairs": {
+      "status": "success",
+      "description": "c2: fit MPC from shared pairs",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/fit-mpc-profile-from-search-pairs.mjs --search-pairs-jsonl /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/shared/shared-mpc-search-pairs.jsonl --calibration-buckets 22-25:4>8,18-21:4>8 --max-samples-per-bucket 2 --holdout-mod 2 --holdout-residue 0 --target-holdout-coverage 0.99 --z-values 1,1.5,1.96,2.5,3 --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/candidates/c2/trained-mpc-profile.raw.json",
+      "signature": "5a1cdd9ab9657e9e242237a9080a7941f76c17531e8764dba032dd7a96925e56",
+      "outputs": [
+        "tools/evaluator-training/out/_tmp_mpc_suite/candidates/c2/trained-mpc-profile.raw.json"
+      ],
+      "startedAt": "2026-04-16T12:52:19.151Z",
+      "finishedAt": "2026-04-16T12:52:19.381Z"
+    },
+    "make-mpc-runtime-variant": {
+      "status": "success",
+      "description": "c2: derive runtime variant",
+      "command": "/opt/nvm/versions/node/v22.16.0/bin/node /mnt/data/work_mpcopt/othello/tools/evaluator-training/make-mpc-runtime-variant.mjs --mpc-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/candidates/c2/trained-mpc-profile.raw.json --output-json /mnt/data/work_mpcopt/othello/tools/evaluator-training/out/_tmp_mpc_suite/candidates/c2/trained-mpc-profile.json --name trained-mpc-c2 --description \"candidate2 runtime-tuned MPC variant\" --default-mode high --max-window 1 --min-depth 2 --min-depth-gap 2 --max-depth-distance 1 --min-ply 1 --max-checks-per-node 1 --interval-scale 1 --high-scale 1 --low-scale 1 --depth-distance-scale 1.25",
+      "signature": "f46ba40490c2fa34b660a69f7947e8d8eb497b8aac0ed217c31bd0acaefda221",
+      "outputs": [
+        "tools/evaluator-training/out/_tmp_mpc_suite/candidates/c2/trained-mpc-profile.json"
+      ],
+      "startedAt": "2026-04-16T12:52:19.384Z",
+      "finishedAt": "2026-04-16T12:52:19.606Z"
+    }
+  }
+}

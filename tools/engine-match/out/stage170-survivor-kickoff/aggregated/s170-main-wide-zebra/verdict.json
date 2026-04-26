@@ -1,0 +1,20 @@
+{
+  "candidate": "s170-main-wide-zebra",
+  "verdict": "hold",
+  "overall": {
+    "baselinePoints": 23.5,
+    "candidatePoints": 24.5,
+    "totalGames": 48,
+    "pointGap": 0.020833333333333332
+  },
+  "pattern": {
+    "s154-main": ["tie", "win", "loss"],
+    "s154-both": ["win", "loss", "tie"]
+  },
+  "notes": [
+    "overall is only +1.0 point for the candidate",
+    "sign flips remain across both baseline and time axes",
+    "candidate is slower in all six aggregated rows",
+    "reinforced retest is the cleanest next step"
+  ]
+}

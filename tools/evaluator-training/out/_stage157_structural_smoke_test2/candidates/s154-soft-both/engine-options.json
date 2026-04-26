@@ -1,0 +1,50 @@
+{
+  "moveOrderingStructureProfile": {
+    "key": "stage154-wide-hybrid-v1",
+    "label": "stage154 wide hybrid ordering",
+    "description": "stage154용. TT gate + wider top-K + mobility/frontier + shallow probe를 넓은 empties 구간에 적용합니다.",
+    "priority": 80,
+    "ttOrderingMinDepth": 2,
+    "ttOrderingDepthSlack": 2,
+    "allowExactTtOrderingWhenShallow": true,
+    "lightweightEvalTopK": 6,
+    "lightweightEvalMinDepthRemaining": 2,
+    "potentialMobilityWeight": 1150,
+    "frontierWeight": 650,
+    "shallowProbeEnabled": true,
+    "shallowProbeTopK": 3,
+    "shallowProbeMinEmpties": 10,
+    "shallowProbeMaxEmpties": 24,
+    "shallowProbeMinDepthRemaining": 6,
+    "shallowProbeDepth": 2,
+    "shallowProbeScoreScale": 38,
+    "exactFastestFirstMode": "square-parity-reply"
+  },
+  "mpcStructureProfile": {
+    "key": "stage154-both-guarded-v1",
+    "label": "stage154 guarded both-side MPC",
+    "description": "stage154용. both-side MPC를 켜되 gate/verification을 같이 둔 공격 후보입니다.",
+    "priority": 81,
+    "staticEvalGateEnabled": true,
+    "staticEvalGateMinDepth": 3,
+    "staticEvalGateMinEmpties": 18,
+    "staticEvalGateMaxEmpties": 60,
+    "staticEvalGateScaleHigh": 0.9,
+    "staticEvalGateScaleLow": 0.96,
+    "volatilityGuardEnabled": true,
+    "volatilityMinEmpties": 18,
+    "volatilityMaxEmpties": 42,
+    "volatilityMaxLegalMoves": 10,
+    "volatilitySkipCornerAvailable": true,
+    "verificationEnabled": true,
+    "verificationMinDepth": 5,
+    "verificationBandScale": 0.2,
+    "verificationDepthOffset": 1,
+    "runtimeOverrides": {
+      "enableHighCut": true,
+      "enableLowCut": true,
+      "maxWindow": 2,
+      "maxChecksPerNode": 2
+    }
+  }
+}

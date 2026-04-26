@@ -1,0 +1,36 @@
+{
+  "outputDir": "tools/evaluator-training/out/_tmp_mpc_suite",
+  "sharedSearchPairs": {
+    "mode": "on"
+  },
+  "defaults": {
+    "sampleStride": 1,
+    "sampleResidue": 0,
+    "maxSamplesPerBucket": 2,
+    "holdoutMod": 2,
+    "holdoutResidue": 0,
+    "targetHoldoutCoverage": 0.99,
+    "timeLimitMs": 1000,
+    "progressEvery": 1,
+    "maxTableEntries": 50000,
+    "aspirationWindow": 40,
+    "zValues": [1, 1.5, 1.96, 2.5, 3],
+    "exportModule": false,
+    "benchmarks": {
+      "depth": { "enabled": false },
+      "exact": { "enabled": false }
+    }
+  },
+  "candidates": [
+    {
+      "key": "c1",
+      "name": "candidate1",
+      "calibrationBuckets": ["22-25:4>8"]
+    },
+    {
+      "key": "c2",
+      "name": "candidate2",
+      "calibrationBuckets": ["22-25:4>8", "18-21:4>8"]
+    }
+  ]
+}
